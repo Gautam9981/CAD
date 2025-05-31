@@ -1,9 +1,8 @@
 #ifndef CLI_H
 #define CLI_H
 
-int run_cli(int argc, char** argv);
+int run_cli(void);
 
 #endif
 
-/* CLI interface header: Declares the function to run cmd line tools */
-
+/* Define the function for starting the cli tool */
