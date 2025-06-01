@@ -61,3 +61,5 @@ int main() {
     printf("Welcome to CAD CLI v0.0 (BETA)\n");
     return run_cli();
 }
+
+/* This is the main file that sets up the cli environment */

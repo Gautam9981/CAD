@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include "geometry.h"
+#include "sketch.h"
 
 static enum { None, Cube, Sphere } curr_shape = None;
 static float param = 0.0f;
@@ -202,3 +203,63 @@ int save_stl(int argc, char** argv) {
     printf("Saved STL file: %s\n", filename);
     return 0;
 }
+
+
+int export_sketch_to_dxf(const char *filename) {
+    FILE *f = fopen(filename, "w");
+    if (!f) {
+        printf("Failed to open file %s for writing\n", filename);
+        return 1;
+    }
+
+    fprintf(f, "0\nSECTION\n2\nHEADER\n0\nENDSEC\n");
+    fprintf(f, "0\nSECTION\n2\nENTITIES\n");
+    Entity* entities = get_sketch_entities();
+    int count = get_sketch_count();
+
+    for (int i = 0; i < count; i++) {
+        Entity *e = &entities[i];
+        switch (e->type) {
+            case point:
+                fprintf(f,
+                    "0\nPOINT\n"
+                    "8\n0\n"
+                    "10\n%.6f\n"
+                    "20\n%.6f\n"
+                    "30\n0.0\n",
+                    e->point.x, e->point.y);
+                break;
+
+            case line:
+                fprintf(f,
+                    "0\nLINE\n"
+                    "8\n0\n"
+                    "10\n%.6f\n"
+                    "20\n%.6f\n"
+                    "30\n0.0\n"
+                    "11\n%.6f\n"
+                    "21\n%.6f\n"
+                    "31\n0.0\n",
+                    e->line.x1, e->line.y1, e->line.x2, e->line.y2);
+                break;
+
+            case circle:
+                fprintf(f,
+                    "0\nCIRCLE\n"
+                    "8\n0\n"
+                    "10\n%.6f\n"
+                    "20\n%.6f\n"
+                    "30\n0.0\n"
+                    "40\n%.6f\n",
+                    e->circle.x, e->circle.y, e->circle.r);
+                break;
+        }
+    }
+
+    fprintf(f, "0\nENDSEC\n0\nEOF\n");
+    fclose(f);
+    printf("Sketch exported to %s\n", filename);
+    return 0;
+}
+
+/* This is the file where the geometries are being created, with the ability to change the graphics by changing the number of triangles (tasselization; dont know how to spell this word) */

@@ -3,6 +3,7 @@
 #include <string.h>
 #include "commands.h"
 #include "geometry.h"
+#include "sketch.h"
 
 // Globals to control subdivisions (default values)
 static int cube_divisions = 20;
@@ -11,19 +12,25 @@ static int sphere_lon_divisions = 30;
 
 int help(int argc, char** argv) {
     printf("Available commands:\n");
-    printf("  cube <size>          - Create a cube with specified size\n");
-    printf("  c <size>             - Alias for cube\n");
-    printf("  sphere <radius>      - Create a sphere with specified radius\n");
-    printf("  sp <radius>          - Alias for sphere\n");
-    printf("  save <filename>      - Save current shape to an STL file\n");
-    printf("  s <filename>         - Alias for save\n");
-    printf("  cube_div <count>     - Set cube subdivisions (for smoothness)\n");
-    printf("  sphere_div <lat> <lon> - Set sphere latitude and longitude subdivisions\n");
-    printf("  help (h)             - Show this help message\n");
-    printf("  version (v)          - Show software version\n");
-    printf("  exit (e)             - Exit the program\n");
+    printf("  cube <size>                 - Create a cube with specified size\n");
+    printf("  c <size>                    - Alias for cube\n");
+    printf("  sphere <radius>             - Create a sphere with specified radius\n");
+    printf("  sp <radius>                 - Alias for sphere\n");
+    printf("  save <filename>             - Save current shape to an STL file\n");
+    printf("  s <filename>                - Alias for save\n");
+    printf("  cube_div <count>            - Set cube subdivisions (for smoothness)\n");
+    printf("  sphere_div <lat> <lon>      - Set sphere latitude and longitude subdivisions\n");
+    printf("  sketch_point <x> <y>        - Add a point to the sketch\n");
+    printf("  sketch_line <x1> <y1> <x2> <y2> - Add a line to the sketch\n");
+    printf("  sketch_circle <x> <y> <radius>  - Add a circle to the sketch\n");
+    printf("  sketch_clear                - Clear all sketch entities\n");
+    printf("  export_dxf <filename>       - Export the sketch to a DXF file\n");
+    printf("  help (h)                   - Show this help message\n");
+    printf("  version (v)                - Show software version\n");
+    printf("  exit (e)                   - Exit the program\n");
     return 0;
 }
+
 
 int cmd_exit(int argc, char** argv) {
     printf("Exiting the CLI. Thanks for using it!\n");
@@ -96,6 +103,19 @@ int save_file(int argc, char** argv) {
     return save_stl(argc, argv);
 }
 
+int cmd_sketch_clear(int argc, char** argv) {
+    clear_sketch();
+    return 0;
+}
+
+int cmd_export_dxf(int argc, char** argv) {
+    if (argc < 2) {
+        printf("Usage: export_dxf <filename>\n");
+        return 1;
+    }
+    return export_sketch_to_dxf(argv[1]);
+}
+
 // Command list including new subdivision commands and aliases
 Command commands[] = {
     {"cube", create_cube, "cube <size>, cube_div <divisions>"},
@@ -110,8 +130,16 @@ Command commands[] = {
     {"v", version, "Alias for version"},
     {"exit", cmd_exit, "Exit the program"},
     {"e", cmd_exit, "Alias for exit"},
-    {NULL, NULL, NULL}
+    
+    {"sketch_point", sketch_point, "Add a point: sketch_point <x> <y>"},
+    {"sketch_line", sketch_line, "Add a line: sketch_line <x1> <y1> <x2> <y2>"},
+    {"sketch_circle", sketch_circle, "Add a circle: sketch_circle <x> <y> <radius>"},
+    {"sketch_list", sketch_list, "List sketch entities"},
+    {"sketch_clear", cmd_sketch_clear, "Clear the sketch"},
+    {"export_dxf", cmd_export_dxf, "Export the sketch to a DXF file: export_dxf <filename>"}
 };
 
 
 int num_commands = sizeof(commands) / sizeof(commands[0]);
+
+/* This is a list of commands that we have currently, can only create spheres and cubes */
