@@ -1,1 +1,72 @@
+Instructions to compile and run the code:
+For Linux (package-manager dependent; If these packages aren't already installed on your system):
+DNF/RPM (Fedora or RHEL-based distros):
+    1. sudo dnf groupinstall "Development Tools" or sudo dnf install gcc gcc-c++
+    2. Compile the project like so (gcc command.c sketch.c geometry.c -o program_name -lm)
+    3. Then run the compiled executable like so: ./program_name
+Pacman (Arch-based distros):
+    1. sudo pacman -Syu base-devel
+    2. Compile the project like so (gcc command.c sketch.c geometry.c -o program_name -lm)
+    3. Then run the compiled executable like so: ./program_name
+APT (Debian or Ubuntu-based distros):
+    1. sudo apt install build-essential
+    2. Compile the project like so (gcc command.c sketch.c geometry.c -o program_name -lm)
+    3. Then run the compiled executable like so: ./program_name
+Zypper (OpenSuse):
+    1. sudo zypper install pattern devel_C_C++
+    2. Compile the project like so (gcc command.c sketch.c geometry.c -o program_name -lm)
+    3. Then run the compiled executable like so: ./program_name
+Eopkg (Solus):
+    1. sudo eopkg install gcc (you may also install gcc-c++ for C++ support)
+    2. Compile the project like so (gcc command.c sketch.c geometry.c -o program_name -lm)
+    3. Then run the compiled executable like so: ./program_name
+Nix (NixOS):
+    1. nix-env -iA nixpkgs.gcc nixpkgs.gnumake nixpkgs.gdb
+    2. Compile the project like so (gcc command.c sketch.c geometry.c -o program_name -lm)
+    3. Then run the compiled executable like so: ./program_name
+XBPS (Void Linux):
+    1. Sudo xbps-install gcc base-devel
+    2. Compile the project like so (gcc command.c sketch.c geometry.c -o program_name -lm)
+    3. Then run the compiled executable like so: ./program_name
+Portage (Gentoo):
+    1. sudo emerge --ask sys-devel/gcc
+    2. Compile the project like so (gcc command.c sketch.c geometry.c -o program_name -lm)
+    3. Then run the compiled executable like so: ./program_name
+Slackpkg (Slackware Linux) (If configured; In most cases, the development packages should already be installed):
+    1. If slackpkg is configured, you may type the following: slackpkg install gcc make glibc-devel (or you may use the installation media)
+    2. Compile the project like so (gcc command.c sketch.c geometry.c -o program_name -lm)
+    3. Then run the compiled executable like so: ./program_name
+ 
 
+For Windows:
+Option 1: Using WSL
+    Note: If you're using WSL, it is a similar set of instructions as in Linux (Refer to instructions above, depending on your wsl distro)
+Option 2: Using msys2 (I will also provide instructions on how to get gcc in your path variable, so you can run it from cmd prompt)
+    1. Download the install for msys2 and run the installer (website: https://www.msys2.org/)
+    2. Run the installer and then type the following: pacman -S mingw-w64-x86_64-gcc make (This is pacman-based)
+    3. To add it to your path, type, "Edit the system variable", allow admin access, then go to the button that says "Environment Variables".
+    4. Next, you will click on "Path", click in the New button, and search for the appropriate path of your gcc.exe (In my case, it would be in C:\msys2\mingw64\bin; May be different, depending on the location you set when you ran the installer)
+    5. To check, open command prompt and run gcc --version (It should work now)
+    6. Once you finish that, stay on that command prompt window and then compile the project, as per the following command: gcc command.c sketch.c geometry.c -o program_name -lm
+    7. Then run the compiled executable like so: ./program_name 
+Option 3: Using Microsoft Visual Studio
+    1. Download the community edition of Microsoft Visual Studio
+    2. Install it (include "Desktop development with C++" workload)
+    3. Navigate to the directory
+    4. Compile like so: cl /program_name.exe command.c sketch.c geometry.c
+    5. Run it like so: ./program_name.exe
+
+For MacOS:
+    Option 1: Xcode tools
+        1. Before you can run any code, you need to install the xcode command line tools, do so by typing the following in terminal: xcode-select --install
+        2. It will ask you for a prompt of whether you would like to install the tools, select y (This will give you clang, make, git, and other basic development libraries)
+        3. Once you get the tools, compile the project like so: clang -o program_name main.c command.c sketch.c geometry.c -lm
+        4. Then run the compiled executable like so: ./program_name
+    Option 2: GCC (Homebrew)
+        1. If you prefer to use GCC over clang, you can do so by typing the following, which will enable you get Homebrew (package manager for MacOS systems, allowing access to Linux other packages): /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        2. The prior step will require sudo access (type the password when prompted, then type enter)
+        3. Then type brew install gcc, it will fetch gcc and install it
+        4. Compile it like so: gcc-number -o sketch main.c command.c sketch.c geometry.c -lm (the number depends on the gcc version you get; if you type in brew install gcc-13, you type in 13 for compilation, and so forth)
+        5. Then run the compiled executable like so: ./program_name
+
+These are the instructions so far, if I am missing the OS that you are using, feel free to let me know!
