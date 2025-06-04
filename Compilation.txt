@@ -37,7 +37,11 @@ Slackpkg (Slackware Linux) (If configured; In most cases, the development packag
     1. If slackpkg is configured, you may type the following: slackpkg install gcc make glibc-devel (or you may use the installation media)
     2. Compile the project like so (gcc cli.c command.c sketch.c geometry.c -o program_name -lm)
     3. Then run the compiled executable like so: ./program_name
- 
+
+For BSD (FreeBSD; If clang is already there, skip to step 2, if not, go through step 1 as well; FreeBSD specific instructions):
+    1. To install clang, run sudo pkg install llvm (includes clang in the tools; get the latest version) or sudo pkg install llvm-number (installs a specific version, if you have a preference)
+    2. Compile the project like so (cc cli.c command.c sketch.c geometry.c -o program_name -lm)
+    3. Then run the compiled executable like so: ./program_name
 
 For Windows:
 Option 1: Using WSL
