@@ -71,3 +71,5 @@ For MacOS:
         5. Then run the compiled executable like so: ./program_name
 
 These are the instructions so far, if I am missing the OS or way that you are that you are compiling this code, feel free to let me know!
+
+Note: Once you run the application and save the files, you may need a third party CAD program to see the results (Fusion, Solidworks, or FreeCAD, or any other cad software), as I haven't worked on the gui component yet
