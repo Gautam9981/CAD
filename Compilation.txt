@@ -70,4 +70,4 @@ For MacOS:
         4. Compile it like so: gcc-number -o sketch cli.c command.c sketch.c geometry.c -lm (the number depends on the gcc version you get; if you type in brew install gcc-13, you type in 13 for compilation, and so forth)
         5. Then run the compiled executable like so: ./program_name
 
-These are the instructions so far, if I am missing the OS that you are using, feel free to let me know!
+These are the instructions so far, if I am missing the OS or way that you are that you are compiling this code, feel free to let me know!
