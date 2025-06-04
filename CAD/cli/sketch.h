@@ -25,4 +25,4 @@ int export_sketch_to_dxf(const char *filename);
 
 #endif 
 
-/* Defines the functions and variables needed for basic sketching (line, circle) */
+/* Defines the functions and variables needed for basic sketching (line, circle, exporting to dxf, and so forth) */
