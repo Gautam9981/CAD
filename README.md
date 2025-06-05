@@ -13,3 +13,7 @@ Now I can sketch basic lines and circles and points! However, I can't necessaril
 Day 3 (6/2/25)
 
 Today, I wasn't really able to get much coding done, however, I will provide the necessary instructions to compile the program in its current state; So far, I have only tested it for Linux systems, or Windows systems with WSL (Windows Subsystem for Linux). Regardless, I will provide instructions for each type of operating system (to the best of my ability) (Instructions are in Compilation.txt)
+
+Day 4 (6/4/25)
+
+Today, I started working on a very rudimentary undo/redo functionality for the geometries and the sketches. So far, it works perfectly for lines, however, I would prefer to not have to save it to the file everytime, it should be able to refer to the current file. As for the geometries, it functions even worse, keeping the geometries, despite typing undo and redo. I plan to fix it soon, and I should be able to undo and redo (with improved logic for other functions as well)
