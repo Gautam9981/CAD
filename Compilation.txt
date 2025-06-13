@@ -79,7 +79,7 @@ Slackpkg (Slackware)
 3. Run the main class:  
    java MainClassName
 
-🐚 BSD (FreeBSD)
+BSD (FreeBSD)
 1. Install OpenJDK:  
    sudo pkg install openjdk23
 2. Compile the project:  
