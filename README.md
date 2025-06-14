@@ -20,7 +20,7 @@ Today, I started working on a very rudimentary undo/redo functionality for the g
 
 Day 5 (6/13/25)
 
-Upon a few days break, I have realized that if I continued to go with C, I think it would become too complicated to maintain the current state of functionality and simplicity in the code, so I have converted all of the C code into Java code
+Upon a few days break, I have realized that if I continued to go with C, I think it would become too complicated to maintain the current state of functionality and simplicity in the code, so I have converted all of the C files into Java
 
 Day 6 (6/14/25)
 
