@@ -1,6 +1,8 @@
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.BufferedReader;
+import java.io.FileReader;
 
 public class Geometry {
     public enum Shape { NONE, CUBE, SPHERE }
@@ -157,4 +159,42 @@ public class Geometry {
         out.println("    endloop");
         out.println("  endfacet");
     }
+
+    public static void loadStl(String filename) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            String line;
+            int triangleCount = 0;
+
+            while ((line = reader.readLine()) != null) {
+                line = line.trim().toLowerCase();
+                if (line.startsWith("facet normal")) {
+                    String[] parts = line.split("\\s+");
+                    float nx = Float.parseFloat(parts[2]);
+                    float ny = Float.parseFloat(parts[3]);
+                    float nz = Float.parseFloat(parts[4]);
+
+                    
+                    reader.readLine();
+
+                    
+                    for (int i = 0; i < 3; i++) {
+                        String vertexLine = reader.readLine().trim();
+                        String[] vertexParts = vertexLine.split("\\s+");
+                        float x = Float.parseFloat(vertexParts[1]);
+                        float y = Float.parseFloat(vertexParts[2]);
+                        float z = Float.parseFloat(vertexParts[3]);
+
+                        System.out.printf("Vertex %d: (%.3f, %.3f, %.3f)%n", i + 1, x, y, z);
+                    }
+
+                    reader.readLine();
+                    reader.readLine();
+                    triangleCount++;
+                }
+            }
+
+            System.out.println("Finished reading STL. Triangles read: " + triangleCount);
+        }
+    }
 }
+

@@ -1,4 +1,5 @@
 import java.util.Scanner;
+import java.io.IOException;
 
 public class Cli {
     private static int cubeDivisions = 20;
@@ -91,6 +92,10 @@ public class Cli {
                     sketchList();
                     break;
 
+                case "load":
+                    loadFile(argsArray);
+                    break;
+
                 default:
                     System.out.println("Unknown command: " + command + ". Type 'help' for a list.");
             }
@@ -105,14 +110,15 @@ public class Cli {
         System.out.println("  sp <radius>                 - Alias for sphere");
         System.out.println("  save <filename>             - Save shape to STL");
         System.out.println("  s <filename>                - Alias for save");
+        System.out.println("  load <filename>             - Load STL or DXF file");
         System.out.println("  cube_div <count>            - Set cube subdivisions");
         System.out.println("  sphere_div <lat> <lon>      - Set sphere subdivisions");
-        System.out.println("  sketch_point <x> <y>        - Add a point to sketch");
-        System.out.println("  sketch_line <x1> <y1> <x2> <y2> - Add a line to sketch");
-        System.out.println("  sketch_circle <x> <y> <r>   - Add a circle to sketch");
-        System.out.println("  sketch_list                 - List all sketch entities");
+        System.out.println("  sketch_point <x> <y>        - Add point to sketch");
+        System.out.println("  sketch_line <x1> <y1> <x2> <y2> - Add line to sketch");
+        System.out.println("  sketch_circle <x> <y> <r>   - Add circle to sketch");
         System.out.println("  sketch_clear                - Clear sketch");
-        System.out.println("  export_dxf <filename>       - Export to DXF");
+        System.out.println("  sketch_list                 - List all sketch entities");
+        System.out.println("  export_dxf <filename>       - Export sketch to DXF");
         System.out.println("  help (h), version (v), exit (e)");
     }
 
@@ -257,5 +263,29 @@ public class Cli {
 
     private static void sketchList() {
         sketch.listSketch();
+    }
+
+    private static void loadFile(String[] args) {
+        if (args.length < 2) {
+            System.out.println("Usage: load <filename>");
+            return;
+        }
+
+        String filename = args[1];
+        String lowerFilename = filename.toLowerCase();
+
+        try {
+            if (lowerFilename.endsWith(".stl")) {
+                Geometry.loadStl(filename);
+                System.out.println("STL file loaded: " + filename);
+            } else if (lowerFilename.endsWith(".dxf")) {
+                sketch.loadDxf(filename);
+                System.out.println("DXF file loaded: " + filename);
+            } else {
+                System.out.println("Unsupported file format provided.");
+            }
+        } catch (Exception e) {
+            System.out.println("Error loading file: " + filename);
+        }
     }
 }

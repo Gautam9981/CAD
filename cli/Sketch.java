@@ -3,6 +3,8 @@ import java.util.List;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.FileReader;
+import java.io.BufferedReader;
 
 public class Sketch {
 
@@ -153,86 +155,131 @@ public class Sketch {
         }
     }
 
-public void exportSketchToDXF(String filename) throws IOException {
-    try (PrintWriter out = new PrintWriter(new FileWriter(filename))) {
-        out.println("0");
-        out.println("SECTION");
-        out.println("2");
-        out.println("HEADER");
-        out.println("9");
-        out.println("$ACADVER");
-        out.println("1");
-        out.println("AC1009");  // R12 version (simple)
-        out.println("0");
-        out.println("ENDSEC");
+    public void exportSketchToDXF(String filename) throws IOException {
+        try (PrintWriter out = new PrintWriter(new FileWriter(filename))) {
+            out.println("0");
+            out.println("SECTION");
+            out.println("2");
+            out.println("HEADER");
+            out.println("9");
+            out.println("$ACADVER");
+            out.println("1");
+            out.println("AC1009");  // R12 version
+            out.println("0");
+            out.println("ENDSEC");
 
-        out.println("0");
-        out.println("SECTION");
-        out.println("2");
-        out.println("ENTITIES");
+            out.println("0");
+            out.println("SECTION");
+            out.println("2");
+            out.println("ENTITIES");
 
-        for (Entity e : sketchEntities) {
-            switch (e.type) {
-                case POINT -> {
-                    Point p = (Point) e;
-                    out.println("0");
-                    out.println("POINT");
-                    out.println("8");  // Layer
-                    out.println("0");
-                    out.println("10"); // X coordinate
-                    out.println(p.x);
-                    out.println("20"); // Y coordinate
-                    out.println(p.y);
-                    out.println("30"); // Z coordinate (0 for 2D)
-                    out.println("0.0");
+            for (Entity e : sketchEntities) {
+                switch (e.type) {
+                    case POINT -> {
+                        Point p = (Point) e;
+                        out.println("0");
+                        out.println("POINT");
+                        out.println("8");
+                        out.println("0");
+                        out.println("10");
+                        out.println(p.x);
+                        out.println("20");
+                        out.println(p.y);
+                        out.println("30");
+                        out.println("0.0");
+                    }
+                    case LINE -> {
+                        Line l = (Line) e;
+                        out.println("0");
+                        out.println("LINE");
+                        out.println("8");
+                        out.println("0");
+                        out.println("10");
+                        out.println(l.x1);
+                        out.println("20");
+                        out.println(l.y1);
+                        out.println("30");
+                        out.println("0.0");
+                        out.println("11");
+                        out.println(l.x2);
+                        out.println("21");
+                        out.println(l.y2);
+                        out.println("31");
+                        out.println("0.0");
+                    }
+                    case CIRCLE -> {
+                        Circle c = (Circle) e;
+                        out.println("0");
+                        out.println("CIRCLE");
+                        out.println("8");
+                        out.println("0");
+                        out.println("10");
+                        out.println(c.x);
+                        out.println("20");
+                        out.println(c.y);
+                        out.println("30");
+                        out.println("0.0");
+                        out.println("40");
+                        out.println(c.r);
+                    }
                 }
-                case LINE -> {
-                    Line l = (Line) e;
-                    out.println("0");
-                    out.println("LINE");
-                    out.println("8"); // Layer
-                    out.println("0");
-                    out.println("10"); // start X
-                    out.println(l.x1);
-                    out.println("20"); // start Y
-                    out.println(l.y1);
-                    out.println("30"); // start Z
-                    out.println("0.0");
-                    out.println("11"); // end X
-                    out.println(l.x2);
-                    out.println("21"); // end Y
-                    out.println(l.y2);
-                    out.println("31"); // end Z
-                    out.println("0.0");
-                }
-                case CIRCLE -> {
-                    Circle c = (Circle) e;
-                    out.println("0");
-                    out.println("CIRCLE");
-                    out.println("8"); // Layer
-                    out.println("0");
-                    out.println("10"); // center X
-                    out.println(c.x);
-                    out.println("20"); // center Y
-                    out.println(c.y);
-                    out.println("30"); // center Z
-                    out.println("0.0");
-                    out.println("40"); // radius
-                    out.println(c.r);
+            }
+
+            out.println("0");
+            out.println("ENDSEC");
+            out.println("0");
+            out.println("EOF");
+        }
+        System.out.println("Sketch exported to DXF file: " + filename);
+    }
+
+    public void loadDxf(String filename) throws IOException {
+        sketchEntities.clear();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.equalsIgnoreCase("POINT")) {
+                    float x = 0, y = 0;
+                    while ((line = reader.readLine()) != null) {
+                        line = line.trim();
+                        switch (line) {
+                            case "10" -> x = Float.parseFloat(reader.readLine().trim());
+                            case "20" -> y = Float.parseFloat(reader.readLine().trim());
+                            case "0" -> { break; }
+                        }
+                        if (line.equals("0")) break;
+                    }
+                    addPoint(x, y);
+                } else if (line.equalsIgnoreCase("LINE")) {
+                    float x1 = 0, y1 = 0, x2 = 0, y2 = 0;
+                    while ((line = reader.readLine()) != null) {
+                        line = line.trim();
+                        switch (line) {
+                            case "10" -> x1 = Float.parseFloat(reader.readLine().trim());
+                            case "20" -> y1 = Float.parseFloat(reader.readLine().trim());
+                            case "11" -> x2 = Float.parseFloat(reader.readLine().trim());
+                            case "21" -> y2 = Float.parseFloat(reader.readLine().trim());
+                            case "0" -> { break; }
+                        }
+                        if (line.equals("0")) break;
+                    }
+                    addLine(x1, y1, x2, y2);
+                } else if (line.equalsIgnoreCase("CIRCLE")) {
+                    float x = 0, y = 0, r = 0;
+                    while ((line = reader.readLine()) != null) {
+                        line = line.trim();
+                        switch (line) {
+                            case "10" -> x = Float.parseFloat(reader.readLine().trim());
+                            case "20" -> y = Float.parseFloat(reader.readLine().trim());
+                            case "40" -> r = Float.parseFloat(reader.readLine().trim());
+                            case "0" -> { break; }
+                        }
+                        if (line.equals("0")) break;
+                    }
+                    addCircle(x, y, r);
                 }
             }
         }
-
-        // Entities Section end
-        out.println("0");
-        out.println("ENDSEC");
-
-        // EOF
-        out.println("0");
-        out.println("EOF");
     }
-    System.out.println("Sketch exported to DXF file: " + filename);
 }
-
-}
-
