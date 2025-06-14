@@ -18,6 +18,10 @@ Day 4 (6/4/25)
 
 Today, I started working on a very rudimentary undo/redo functionality for the geometries and the sketches. So far, it works perfectly for lines, however, I would prefer to not have to save it to the file everytime, it should be able to refer to the current file. As for the geometries, it functions even worse, keeping the geometries, despite typing undo and redo. I plan to fix it soon, and I should be able to undo and redo (with improved logic for other functions as well; I have made a separate subset of code called "Broken Code", so that I can fix it later on, but for now, DO NOT TRY TO COMPILE THIS VERSION; It isn't syntactically broken, the logic is broken, so it won't work as expected (For now, the main culprit is history.c and history.h)
 
-Day 5 (6/13/250
+Day 5 (6/13/25)
 
 Upon a few days break, I have realized that if I continued to go with C, I think it would become too complicated to maintain the current state of functionality and simplicity in the code, so I have converted all of the C code into Java code
+
+Day 6 (6/14/25)
+
+Made a basic load functionality, in the sense that for dxf, it says it is loaded, while for stl, it lists every vertice in the file. I haven't been able to edit them as of yet, so that will be my next set of steps.
