@@ -11,7 +11,7 @@ DNF / RPM (Fedora, RHEL-based)
 2. Compile the project:  
    javac *.java
 3. Run the main class:  
-   java MainClassName
+   java Cli
 
 Pacman (Arch-based (Arch Linux, Manjaro, etc))
 1. Install OpenJDK:  
@@ -19,7 +19,7 @@ Pacman (Arch-based (Arch Linux, Manjaro, etc))
 2. Compile the project:  
    javac *.java
 3. Run the main class:  
-   java MainClassName
+   java Cli
 
 APT (Debian-based (Debian, Ubuntu, etc))
 1. Install Java Development Kit:  
@@ -27,7 +27,7 @@ APT (Debian-based (Debian, Ubuntu, etc))
 2. Compile the project:  
    javac *.java
 3. Run the main class:  
-   java MainClassName
+   java Cli
 
 Zypper (openSUSE)
 1. Install JDK:  
@@ -35,7 +35,7 @@ Zypper (openSUSE)
 2. Compile the project:  
    javac *.java
 3. Run the main class:  
-   java MainClassName
+   java Cli
 
 Eopkg (Solus)
 1. Install JDK:  
@@ -43,7 +43,7 @@ Eopkg (Solus)
 2. Compile the project:  
    javac *.java
 3. Run the main class:  
-   java MainClassName
+   java Cli
 
 Nix (NixOS)
 1. Install JDK:  
@@ -51,7 +51,7 @@ Nix (NixOS)
 2. Compile the project:  
    javac *.java
 3. Run the main class:  
-   java MainClassName
+   java Cli
 
 XBPS (Void Linux)
 1. Install OpenJDK:  
@@ -59,7 +59,7 @@ XBPS (Void Linux)
 2. Compile the project:  
    javac *.java
 3. Run the main class:  
-   java MainClassName
+   java Cli
 
 Portage (Gentoo)
 1. Install JDK:  
@@ -67,7 +67,7 @@ Portage (Gentoo)
 2. Compile the project:  
    javac *.java
 3. Run the main class:  
-   java MainClassName
+   java Cli
 
 Slackpkg (Slackware)
 1. If slackpkg is configured:  
@@ -77,15 +77,15 @@ Slackpkg (Slackware)
 2. Compile the project:  
    javac *.java
 3. Run the main class:  
-   java MainClassName
+   java Cli
 
-🐚 BSD (FreeBSD)
+BSD (FreeBSD)
 1. Install OpenJDK:  
    sudo pkg install openjdk23
 2. Compile the project:  
    javac *.java
 3. Run the main class:  
-   java MainClassName
+   java Cli
 
 Windows
 
@@ -100,7 +100,7 @@ Option 2: Using Windows natively (CMD or PowerShell)
 4. Compile your code:  
    javac *.java
 5. Run it:  
-   java MainClassName
+   java Cli
 
 Option 3: Using Microsoft Visual Studio Code (with Java Extension Pack)
 1. Install Visual Studio Code
@@ -118,7 +118,7 @@ Option 1: Using Xcode Command Line Tools
 3. Compile the project:  
    javac *.java
 4. Run the main class:  
-   java MainClassName
+   java Cli
 
 Option 2: Using Homebrew (Preferred)
 1. Install Homebrew (if not installed):  
@@ -130,8 +130,8 @@ Option 2: Using Homebrew (Preferred)
 4. Compile:  
    javac *.java
 5. Run:  
-   java MainClassName
+   java Cli
 
 Note:
 Once you run the application and it generates output files (e.g., geometry or CAD instructions), you may need third-party CAD software like Fusion 360, SolidWorks, FreeCAD, or similar tools to visualize them.
-GUI support is not implemented yet, so this version is CLI-only.
+GUI support is not implemented yet, so this version is CLI-only. it can load them, but it cannot edit them, as for now.
