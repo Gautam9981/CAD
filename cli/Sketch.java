@@ -105,8 +105,6 @@ public class Sketch {
         }
     }
 
-    // Optional example of command-like method:
-    // Using parameter arrays similar to argv but directly passed as arguments
     public int sketchPoint(String[] args) {
         if (args.length != 2) {
             System.out.println("Usage: sketchPoint <x> <y>");
@@ -157,7 +155,6 @@ public class Sketch {
 
 public void exportSketchToDXF(String filename) throws IOException {
     try (PrintWriter out = new PrintWriter(new FileWriter(filename))) {
-        // DXF Header
         out.println("0");
         out.println("SECTION");
         out.println("2");
@@ -169,7 +166,6 @@ public void exportSketchToDXF(String filename) throws IOException {
         out.println("0");
         out.println("ENDSEC");
 
-        // Entities Section start
         out.println("0");
         out.println("SECTION");
         out.println("2");

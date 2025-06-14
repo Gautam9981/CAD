@@ -5,7 +5,6 @@ public class Cli {
     private static int sphereLatDiv = 30;
     private static int sphereLonDiv = 30;
 
-    // Added static Sketch instance to manage sketch data
     private static Sketch sketch = new Sketch();
 
     public static void main(String[] args) {
@@ -76,6 +75,22 @@ public class Cli {
                     exportDxf(argsArray);
                     break;
 
+                case "sketch_point":
+                    sketchPoint(argsArray);
+                    break;
+
+                case "sketch_line":
+                    sketchLine(argsArray);
+                    break;
+
+                case "sketch_circle":
+                    sketchCircle(argsArray);
+                    break;
+
+                case "sketch_list":
+                    sketchList();
+                    break;
+
                 default:
                     System.out.println("Unknown command: " + command + ". Type 'help' for a list.");
             }
@@ -92,6 +107,10 @@ public class Cli {
         System.out.println("  s <filename>                - Alias for save");
         System.out.println("  cube_div <count>            - Set cube subdivisions");
         System.out.println("  sphere_div <lat> <lon>      - Set sphere subdivisions");
+        System.out.println("  sketch_point <x> <y>        - Add a point to sketch");
+        System.out.println("  sketch_line <x1> <y1> <x2> <y2> - Add a line to sketch");
+        System.out.println("  sketch_circle <x> <y> <r>   - Add a circle to sketch");
+        System.out.println("  sketch_list                 - List all sketch entities");
         System.out.println("  sketch_clear                - Clear sketch");
         System.out.println("  export_dxf <filename>       - Export to DXF");
         System.out.println("  help (h), version (v), exit (e)");
@@ -190,7 +209,6 @@ public class Cli {
 
     private static void sketchClear() {
         sketch.clearSketch();
-        System.out.println("Sketch cleared.");
     }
 
     private static void exportDxf(String[] args) {
@@ -205,5 +223,39 @@ public class Cli {
         } catch (Exception e) {
             System.out.println("Error exporting DXF: " + e.getMessage());
         }
+    }
+
+    private static void sketchPoint(String[] args) {
+        if (args.length < 3) {
+            System.out.println("Usage: sketch_point <x> <y>");
+            return;
+        }
+        String[] params = { args[1], args[2] };
+        int result = sketch.sketchPoint(params);
+        if (result == 0) System.out.println("Point added to sketch.");
+    }
+
+    private static void sketchLine(String[] args) {
+        if (args.length < 5) {
+            System.out.println("Usage: sketch_line <x1> <y1> <x2> <y2>");
+            return;
+        }
+        String[] params = { args[1], args[2], args[3], args[4] };
+        int result = sketch.sketchLine(params);
+        if (result == 0) System.out.println("Line added to sketch.");
+    }
+
+    private static void sketchCircle(String[] args) {
+        if (args.length < 4) {
+            System.out.println("Usage: sketch_circle <x> <y> <radius>");
+            return;
+        }
+        String[] params = { args[1], args[2], args[3] };
+        int result = sketch.sketchCircle(params);
+        if (result == 0) System.out.println("Circle added to sketch.");
+    }
+
+    private static void sketchList() {
+        sketch.listSketch();
     }
 }
