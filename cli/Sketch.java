@@ -164,7 +164,7 @@ public class Sketch {
             out.println("9");
             out.println("$ACADVER");
             out.println("1");
-            out.println("AC1009");  // R12 version
+            out.println("AC1009"); 
             out.println("0");
             out.println("ENDSEC");
 
