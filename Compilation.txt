@@ -138,5 +138,4 @@ Option 2: Using Homebrew (Preferred)
    java Cli
 
 Note:
-Once you run the application and it generates output files (e.g., geometry or CAD instructions), you may need third-party CAD software like Fusion 360, SolidWorks, FreeCAD, or similar tools to visualize them.
-GUI support is not implemented yet, so this version is CLI-only.
+Once you run the application and it generates output files (e.g., geometry or CAD instructions), you may need third-party CAD software like Fusion 360, SolidWorks, FreeCAD, or similar tools to visualize them. GUI support is not implemented yet, so this version is CLI-only. (For testing)
