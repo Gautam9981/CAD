@@ -48,7 +48,7 @@ nixos/configuration.nix)
 Day 8 (6/17/25) 
 I’ve only revised the documenatation about how to compile the code, as I’ve noticed some strange behavior with Solus OS (As shown below step 3
 for Solus compilation instructions), that it may lead to a broken symlink between the binary of java and javac, which may result in a command not
-found error, as it wouldn’t be able to find the binary files to connect to those commands. I have posted the fix that you can do to fix that issue. Do
+found error, as it wouldn’t be able to find the binary files to connect to those commands. I have posted the fix that you can do to fix that issue (Fix is completely optional!)
 
 
 
