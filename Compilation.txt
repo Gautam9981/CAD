@@ -46,12 +46,23 @@ Eopkg (Solus)
    java Cli
 
 Nix (NixOS)
+Option 1: nix-env 
 1. Install JDK:  
    nix-env -iA nixpkgs.openjdk
 2. Compile the project:  
    javac *.java
 3. Run the main class:  
    java Cli
+
+Option 2: Editing the configuration.nix
+1. Type the following: 
+   sudo editor_name (vim, nano, or any others) /etc/nixos/configuration.nix
+2. Find the line that says environment.SystemPackages, and add "openjdk" in that list
+3. Type sudo nixos-rebuild switch (This should get the package and apply the changes)
+4. Compile the project:
+   javac *.java
+5. Run the main class:
+   java cli
 
 XBPS (Void Linux)
 1. Install OpenJDK:  
@@ -70,15 +81,6 @@ Portage (Gentoo)
 3. Run the main class:  
    java Cli
 
-Slackpkg (Slackware)
-1. If slackpkg is configured:  
-   slackpkg install openjdk
-   else:
-   use the installer to get the package
-2. Compile the project:  
-   javac *.java
-3. Run the main class:  
-   java Cli
 
 BSD (FreeBSD)
 1. Install OpenJDK:  
