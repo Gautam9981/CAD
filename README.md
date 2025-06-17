@@ -30,3 +30,7 @@ Made a basic load functionality, in the sense that for dxf, it says it is loaded
 Day 7 (6/16/25)
 
 I've only edited the compilation documentation, by removing slackware (May add it back in the future, once I figure out the packaging instructions properly), and I edited the Nix compilation set of instructions, as there are at least two options of getting the same thing (nix-env and editing /etc/nixos/configuration.nix)
+
+6/17/25
+
+I've only revised the documenatation about how to compile the code, as I've noticed some strange behavior with Solus OS (Outlined as "step" 4 for Solus compilation instructions), that it may lead to a broken symlink between the binary of java and javac, which may result in a command not found error, as it wouldn't be able to find the binary files to connect to those commands. I have posted the fix that you can do to fix that issue. Do expect me to revise the compilation instructions further, as I test the software on other operating systems; I may make packages out of this project, so that the package manager of that system can handle installation, rather than having you compile them (not sure right now though).
