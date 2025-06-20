@@ -35,3 +35,7 @@ I’ve only revised the documenatation about how to compile the code, as I’ve 
 Day 9 (6/18/25)
 
 I've somewhat rewritten the code a little bit, doing some light refactoring. That's about all I've done today
+
+Day 10 (6/20/25)
+
+I've updated the compilation.txt file to reflect the option for MacOS, if they decide to use Visual Studio Code, rather than doing XCode + Homebrew or Homebrew
