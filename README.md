@@ -30,7 +30,7 @@ I’ve only edited the compilation documentation, by removing slackware (May add
 
 Day 8 (6/17/25) 
 
-I’ve only revised the documenatation about how to compile the code, as I’ve noticed some strange behavior with Solus OS (As shown below step 3 for Solus compilation instructions), that it may lead to a broken symlink between the binary of java and javac, which may result in a command not found error, as it wouldn’t be able to find the binary files to connect to those commands. I have posted the fix that you can do to fix that issue (Fix is completely optional!). I will revise the compilation instructions further, as I test the software on other operating systems; I may make packages out of this project, so that the package manager of that system can handle installation, rather than having you compile them (not sure right now though; If anyone wants to get into contact with me, my email is: mahajanga801@gmail.com)
+I’ve only revised the documenatation about how to compile the code, as I’ve noticed some strange behavior with Solus OS (As shown below step 3 for Solus compilation instructions), that it may lead to a broken symlink between the binary of java and javac, which may result in a command not found error, as it wouldn’t be able to find the binary files to connect to those commands. I have posted the fix that you can do to fix that issue (Fix is completely optional!). I will revise the compilation instructions further, as I test the software on other operating systems; I may make packages out of this project, so that the package manager of that system can handle installation, rather than having you compile them (not sure right now though
 
 Day 9 (6/18/25)
 
