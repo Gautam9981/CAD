@@ -168,8 +168,8 @@ public class Cli {
         }
         try {
             int count = Integer.parseInt(args[1]);
-            if (count < 1 || count > 100) {
-                System.out.println("Cube subdivisions must be between 1 and 100.");
+            if (count < 1 || count > 200) {
+                System.out.println("Cube subdivisions must be between 1 and 200.");
             } else {
                 cubeDivisions = count;
                 System.out.println("Cube subdivisions set to " + cubeDivisions);
