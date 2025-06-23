@@ -1,3 +1,4 @@
+package cli;
 import java.util.Scanner;
 
 public class Cli {
@@ -9,6 +10,11 @@ public class Cli {
 
     public static void main(String[] args) {
         System.out.println("Welcome to CAD CLI v0.2 (BETA)");
+        runCli();
+    }
+
+    public static void launch() {
+        System.out.println("Running Cli mode...");
         runCli();
     }
 
