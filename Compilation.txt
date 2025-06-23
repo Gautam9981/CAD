@@ -9,41 +9,41 @@ DNF / RPM (Fedora, RHEL-based)
 1. Install Java Development Kit:  
    sudo dnf install java-24(or 23)-openjdk-devel
 2. Compile the project:  
-   javac *.java
+   javac cli/*.java Main.java
 3. Run the main class:  
-   java Cli
+   java Main
 
 Pacman (Arch-based (Arch Linux, Manjaro, etc))
 1. Install OpenJDK:  
    sudo pacman -S jdk-openjdk
 2. Compile the project:  
-   javac *.java
+   javac cli/*.java Main.java
 3. Run the main class:  
-   java Cli
+   java Main
 
 APT (Debian-based (Debian, Ubuntu, etc))
 1. Install Java Development Kit:  
    sudo apt install default-jdk
 2. Compile the project:  
-   javac *.java
+   javac cli/*.java Main.java
 3. Run the main class:  
-   java Cli
+   java Main
 
 Zypper (openSUSE)
 1. Install JDK:  
    sudo zypper install java-24(or 23)-openjdk-devel
 2. Compile the project:  
-   javac *.java
+   javac cli/*.java Main.java
 3. Run the main class:  
-   java Cli
+   java Main
 
 Eopkg (Solus)
 1. Install JDK:  
    sudo eopkg install openjdk-version number(Should use eopkg search openjdk to find the latest version number)
 2. Compile the project:  
-   javac *.java
+   javac cli/*.java Main.java
 3. Run the main class:  
-   java Cli
+   java Main.java
 Note: With Solus OS, when openjdk is installed, there may be a broken symlink between java and javac and their respective binary directories, so you may fix that by typing the following:
    sudo ln -s /usr/lib64/openjdk-(version number)/bin/java /usr/bin/java (May have to do that same for javac) (This is an optional step)
 
@@ -52,9 +52,9 @@ Option 1: nix-env
 1. Install JDK:  
    nix-env -iA nixpkgs.openjdk
 2. Compile the project:  
-   javac *.java
+   javac cli/*.java Main.java
 3. Run the main class:  
-   java Cli
+   java Main
 
 Option 2: Editing the configuration.nix
 1. Type the following: 
@@ -62,35 +62,35 @@ Option 2: Editing the configuration.nix
 2. Find the line that says environment.SystemPackages, and add "openjdk" in that list
 3. Type sudo nixos-rebuild switch (This should get the package and apply the changes)
 4. Compile the project:
-   javac *.java
+   javac cli/*.java Main.java
 5. Run the main class:
-   java cli
+   java Main
 
 XBPS (Void Linux)
 1. Install OpenJDK:  
    sudo xbps-install -S openjdk
 2. Before you compile the project, you may have to specity the PATH for the javac command and make it show up in bash, type "echo 'export JAVA_HOME=/usr/lib/jvm/java-21-openjdk' >> ~/.bashrc", then restart
 3. Compile the project:  
-   javac *.java
+   javac cli/*.java Main.java
 4. Run the main class:  
-   java Cli
+   java Main
 
 Portage (Gentoo)
 1. Install JDK:  
    sudo emerge --ask dev-java/openjdk
 2. Compile the project:  
-   javac *.java
+   javac cli/*.java Main.java
 3. Run the main class:  
-   java Cli
+   java Main
 
 
 BSD (FreeBSD)
 1. Install OpenJDK:  
    sudo pkg install openjdk23
 2. Compile the project:  
-   javac *.java
+   javac cli/*.java
 3. Run the main class:  
-   java Cli
+   java Main
 
 Windows
 
@@ -103,9 +103,9 @@ Option 2: Using Windows natively (CMD or PowerShell)
 3. Confirm installation:  
    java -version and javac -version
 4. Compile your code:  
-   javac *.java
+   javac cli/*.java Main.java
 5. Run it:  
-   java Cli
+   java Main
 
 Option 3: Using Microsoft Visual Studio Code (with Java Extension Pack) (Easier)
 1. Install Visual Studio Code
@@ -122,9 +122,9 @@ Option 1: Using Xcode Command Line Tools
 2. Install JDK:  
    brew install openjdk (or download manually)
 3. Compile the project:  
-   javac *.java
+   javac cli/*.java Main.java
 4. Run the main class:  
-   java Cli
+   java Main
 
 Option 2: Using Homebrew 
 1. Install Homebrew (if not installed):  
@@ -134,12 +134,12 @@ Option 2: Using Homebrew
 3. Add Java to your shell profile:
    export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
 4. Compile:  
-   javac *.java
+   javac cli/*.java Main.java
 5. Run:  
-   java Cli
+   java Main
 
 Option 3: Using Visual Studio Code (Same instructions as for Windows)
 1. Refer to Windows, Option 3 for more instructions
 
 Note:
-Once you run the application and it generates output files (e.g., geometry or CAD instructions), you may need third-party CAD software like Fusion 360, SolidWorks, FreeCAD, or similar tools to visualize them. GUI support is not implemented yet, so this version is CLI-only. (For testing)
+Once you run the application and it generates output files (e.g., geometry or CAD instructions), you may need third-party CAD software like Fusion 360, SolidWorks, FreeCAD, or similar tools to visualize them. (For testing)
