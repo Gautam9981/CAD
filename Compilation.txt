@@ -9,7 +9,7 @@ DNF / RPM (Fedora, RHEL-based)
 1. Install Java Development Kit:  
    sudo dnf install java-24(or 23)-openjdk-devel
 2. Compile the project:  
-   javac cli/*.java Main.java
+   javac cli/*.java core/*.java gui/*.java Main.java
 3. Run the main class:  
    java Main
 
@@ -17,7 +17,7 @@ Pacman (Arch-based (Arch Linux, Manjaro, etc))
 1. Install OpenJDK:  
    sudo pacman -S jdk-openjdk
 2. Compile the project:  
-   javac cli/*.java Main.java
+   javac cli/*.java core/*.java gui/*.java Main.java
 3. Run the main class:  
    java Main
 
@@ -25,7 +25,7 @@ APT (Debian-based (Debian, Ubuntu, etc))
 1. Install Java Development Kit:  
    sudo apt install default-jdk
 2. Compile the project:  
-   javac cli/*.java Main.java
+   javac cli/*.java core/*.java gui/*.java Main.java
 3. Run the main class:  
    java Main
 
@@ -33,7 +33,7 @@ Zypper (openSUSE)
 1. Install JDK:  
    sudo zypper install java-24(or 23)-openjdk-devel
 2. Compile the project:  
-   javac cli/*.java Main.java
+   javac cli/*.java core/*.java gui/*.java Main.java
 3. Run the main class:  
    java Main
 
@@ -41,7 +41,7 @@ Eopkg (Solus)
 1. Install JDK:  
    sudo eopkg install openjdk-version number(Should use eopkg search openjdk to find the latest version number)
 2. Compile the project:  
-   javac cli/*.java Main.java
+   javac cli/*.java core/*.java gui/*.java Main.java
 3. Run the main class:  
    java Main.java
 Note: With Solus OS, when openjdk is installed, there may be a broken symlink between java and javac and their respective binary directories, so you may fix that by typing the following:
@@ -52,7 +52,7 @@ Option 1: nix-env
 1. Install JDK:  
    nix-env -iA nixpkgs.openjdk
 2. Compile the project:  
-   javac cli/*.java Main.java
+   javac cli/*.java core/*.java gui/*.java Main.java
 3. Run the main class:  
    java Main
 
@@ -62,7 +62,7 @@ Option 2: Editing the configuration.nix
 2. Find the line that says environment.SystemPackages, and add "openjdk" in that list
 3. Type sudo nixos-rebuild switch (This should get the package and apply the changes)
 4. Compile the project:
-   javac cli/*.java Main.java
+   javac cli/*.java core/*.java gui/*.java Main.java
 5. Run the main class:
    java Main
 
@@ -71,7 +71,7 @@ XBPS (Void Linux)
    sudo xbps-install -S openjdk
 2. Before you compile the project, you may have to specity the PATH for the javac command and make it show up in bash, type "echo 'export JAVA_HOME=/usr/lib/jvm/java-21-openjdk' >> ~/.bashrc", then restart
 3. Compile the project:  
-   javac cli/*.java Main.java
+   javac cli/*.java core/*.java gui/*.java Main.java
 4. Run the main class:  
    java Main
 
@@ -79,7 +79,7 @@ Portage (Gentoo)
 1. Install JDK:  
    sudo emerge --ask dev-java/openjdk
 2. Compile the project:  
-   javac cli/*.java Main.java
+   javac cli/*.java core/*.java gui/*.java Main.java
 3. Run the main class:  
    java Main
 
@@ -88,7 +88,7 @@ BSD (FreeBSD)
 1. Install OpenJDK:  
    sudo pkg install openjdk23
 2. Compile the project:  
-   javac cli/*.java
+   javac cli/*.java core/*.java gui/*.java Main.java
 3. Run the main class:  
    java Main
 
@@ -103,7 +103,7 @@ Option 2: Using Windows natively (CMD or PowerShell)
 3. Confirm installation:  
    java -version and javac -version
 4. Compile your code:  
-   javac cli/*.java Main.java
+   javac cli/*.java core/*.java gui/*.java Main.java
 5. Run it:  
    java Main
 
@@ -122,7 +122,7 @@ Option 1: Using Xcode Command Line Tools
 2. Install JDK:  
    brew install openjdk (or download manually)
 3. Compile the project:  
-   javac cli/*.java Main.java
+   javac cli/*.java core/*.java gui/*.java Main.java
 4. Run the main class:  
    java Main
 
@@ -134,7 +134,7 @@ Option 2: Using Homebrew
 3. Add Java to your shell profile:
    export PATH="/opt/homebrew/opt/openjdk/bin:$PATH"
 4. Compile:  
-   javac cli/*.java Main.java
+   javac cli/*.java core/*.java gui/*.java Main.java
 5. Run:  
    java Main
 
