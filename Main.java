@@ -1,6 +1,6 @@
 import java.util.Scanner;
 import cli.Cli;
-//import gui.Gui;
+import gui.Gui;
 
 public class Main {
 
@@ -10,9 +10,9 @@ public class Main {
                 case "cli":
                     Cli.launch();
                     break;
-                //case "gui":
-                    //GUI.launch();
-                    //break;
+                case "gui":
+                    Gui.launch();
+                    break;
                 default:
                     System.out.println("Usage: java Main [cli|gui]");
                     break;
@@ -24,8 +24,8 @@ public class Main {
 
             if (input.equals("1")) {
                 Cli.launch();
-            } //else if (input.equals("2")) {
-                //GUI.launch();}
+            } else if (input.equals("2")) {
+                Gui.launch();}
             else {
                 System.out.println("Invalid choice. Please try again");
             }

@@ -1,4 +1,6 @@
 package cli;
+import core.Sketch;
+import core.Geometry;
 import java.util.Scanner;
 
 public class Cli {
