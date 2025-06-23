@@ -83,4 +83,4 @@ I've updated the compilation.txt file to reflect the option for MacOS, if they d
 
 
 
-Contributors: Gautam9981 (Me) and Aditya
+Contributors: Gautam9981 (Me) and AdityaJha25 (Aditya)
