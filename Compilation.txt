@@ -43,7 +43,7 @@ Eopkg (Solus)
 2. Compile the project:  
    javac cli/*.java core/*.java gui/*.java Main.java
 3. Run the main class:  
-   java Main.java
+   java Main
 Note: With Solus OS, when openjdk is installed, there may be a broken symlink between java and javac and their respective binary directories, so you may fix that by typing the following:
    sudo ln -s /usr/lib64/openjdk-(version number)/bin/java /usr/bin/java (May have to do that same for javac) (This is an optional step)
 
