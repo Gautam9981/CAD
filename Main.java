@@ -5,19 +5,6 @@ import gui.Gui;
 public class Main {
 
     public static void main(String[] args) {
-        if (args.length > 0) {
-            switch (args[0].toLowerCase()) {
-                case "cli":
-                    Cli.launch();
-                    break;
-                case "gui":
-                    Gui.launch();
-                    break;
-                default:
-                    System.out.println("Usage: java Main [cli|gui]");
-                    break;
-            }
-        } else {
             Scanner scanner = new Scanner(System.in);
             System.out.println("Select mode: (1) CLI or (2) GUI");
             String input = scanner.nextLine();
@@ -32,4 +19,3 @@ public class Main {
             scanner.close();
         }
     }
-}
