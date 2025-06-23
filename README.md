@@ -42,7 +42,7 @@ I've updated the compilation.txt file to reflect the option for MacOS, if they d
 
 Day 11 (6/23/25)
 
-I've heard from my collaborator that he has built a gui form of this application, so I immediately updated the files such that there would a Main class, where it would enable the user to select between the gui and the cli interfaces for their use of the application. I've also updated compilation.txt for the set of new compilation instructions for multiple classes and separate folders.
+I've heard from my collaborator that he has built a gui form of this application, so I immediately updated the files such that there would a Main class, where it would enable the user to select between the gui and the cli interfaces for their use of the application. I've also updated Compilation.txt for the set of new compilation instructions for multiple classes and separate folders.
 
 
 
