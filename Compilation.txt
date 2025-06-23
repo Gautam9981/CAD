@@ -112,7 +112,7 @@ Option 3: Using Microsoft Visual Studio Code (with Java Extension Pack) (Easier)
 2. Install Java Extension Pack
 3. It may ask you to install a jdk, go with the latest given of Adoptium (for right now, it is 21)
 4. Open the folder with your .java files
-5. Press Ctrl + Shift + B or use the play button to compile and run
+5. Press Ctrl + Shift + B or use the play button to compile and run (Run Main.java!!!)
 
 macOS
 
