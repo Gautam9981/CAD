@@ -47,20 +47,22 @@ public class Geometry {
         extrudedTriangles.clear();
         var entities = sketch.getEntities();
         for (int i = 0; i < entities.size(); i++) {
-            Sketch.LineEntity line = (Sketch.LineEntity) entities.get(i);
-            float x1 = line.x1, y1 = line.y1;
-            float x2 = line.x2, y2 = line.y2;
+            Sketch.Entity entity = entities.get(i);
+            if (entity instanceof Sketch.Line line) {
+                float x1 = line.x1, y1 = line.y1;
+                float x2 = line.x2, y2 = line.y2;
 
-            float z0 = 0f;
-            float z1 = height;
+                float z0 = 0f;
+                float z1 = height;
 
-            float[] p1 = new float[]{x1, y1, z0};
-            float[] p2 = new float[]{x2, y2, z0};
-            float[] p3 = new float[]{x2, y2, z1};
-            float[] p4 = new float[]{x1, y1, z1};
+                float[] p1 = new float[]{x1, y1, z0};
+                float[] p2 = new float[]{x2, y2, z0};
+                float[] p3 = new float[]{x2, y2, z1};
+                float[] p4 = new float[]{x1, y1, z1};
 
-            extrudedTriangles.addAll(List.of(p1, p2, p3));
-            extrudedTriangles.addAll(List.of(p1, p3, p4));
+                extrudedTriangles.addAll(List.of(p1, p2, p3));
+                extrudedTriangles.addAll(List.of(p1, p3, p4));
+            }
         }
 
         currShape = Shape.NONE;

@@ -240,107 +240,101 @@ public class Sketch {
     }
 
     public void loadDxf(String filename) throws IOException {
-        sketchEntities.clear();
-        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                if (line.equalsIgnoreCase("POINT")) {
-                    float x = 0, y = 0;
-                    while ((line = reader.readLine()) != null) {
-                        line = line.trim();
-                        switch (line) {
-                            case "10" -> x = Float.parseFloat(reader.readLine().trim());
-                            case "20" -> y = Float.parseFloat(reader.readLine().trim());
-                            case "0" -> { break; }
+    sketchEntities.clear();
+    try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+        String line;
+        String groupCode = null;
+        String value = null;
+        String currentEntityType = null;
+
+        float x1 = 0, y1 = 0, x2 = 0, y2 = 0, x = 0, y = 0, r = 0;
+
+        while ((line = reader.readLine()) != null) {
+            line = line.trim();
+            if (groupCode == null) {
+                groupCode = line;  // read group code
+            } else {
+                value = line;  // read value for group code
+
+                if (groupCode.equals("0")) {
+                    // If previous entity pending, add it before processing next
+                    if (currentEntityType != null) {
+                        switch (currentEntityType) {
+                            case "POINT" -> addPoint(x, y);
+                            case "LINE" -> addLine(x1, y1, x2, y2);
+                            case "CIRCLE" -> addCircle(x, y, r);
                         }
-                        if (line.equals("0")) break;
                     }
-                    addPoint(x, y);
-                } else if (line.equalsIgnoreCase("LINE")) {
-                    float x1 = 0, y1 = 0, x2 = 0, y2 = 0;
-                    while ((line = reader.readLine()) != null) {
-                        line = line.trim();
-                        switch (line) {
-                            case "10" -> x1 = Float.parseFloat(reader.readLine().trim());
-                            case "20" -> y1 = Float.parseFloat(reader.readLine().trim());
-                            case "11" -> x2 = Float.parseFloat(reader.readLine().trim());
-                            case "21" -> y2 = Float.parseFloat(reader.readLine().trim());
-                            case "0" -> { break; }
+                    currentEntityType = value;  // New entity type or section
+
+                    // Reset values
+                    x1 = y1 = x2 = y2 = x = y = r = 0;
+                } else {
+                    // Parse coordinates or radius according to currentEntityType and groupCode
+                    if (currentEntityType != null) {
+                        switch (currentEntityType) {
+                            case "POINT" -> {
+                                if (groupCode.equals("10")) x = Float.parseFloat(value);
+                                else if (groupCode.equals("20")) y = Float.parseFloat(value);
+                            }
+                            case "LINE" -> {
+                                if (groupCode.equals("10")) x1 = Float.parseFloat(value);
+                                else if (groupCode.equals("20")) y1 = Float.parseFloat(value);
+                                else if (groupCode.equals("11")) x2 = Float.parseFloat(value);
+                                else if (groupCode.equals("21")) y2 = Float.parseFloat(value);
+                            }
+                            case "CIRCLE" -> {
+                                if (groupCode.equals("10")) x = Float.parseFloat(value);
+                                else if (groupCode.equals("20")) y = Float.parseFloat(value);
+                                else if (groupCode.equals("40")) r = Float.parseFloat(value);
+                            }
                         }
-                        if (line.equals("0")) break;
                     }
-                    addLine(x1, y1, x2, y2);
-                } else if (line.equalsIgnoreCase("CIRCLE")) {
-                    float x = 0, y = 0, r = 0;
-                    while ((line = reader.readLine()) != null) {
-                        line = line.trim();
-                        switch (line) {
-                            case "10" -> x = Float.parseFloat(reader.readLine().trim());
-                            case "20" -> y = Float.parseFloat(reader.readLine().trim());
-                            case "40" -> r = Float.parseFloat(reader.readLine().trim());
-                            case "0" -> { break; }
-                        }
-                        if (line.equals("0")) break;
-                    }
-                    addCircle(x, y, r);
                 }
+                groupCode = null; // reset for next pair
+            }
+        }
+
+        // Add the last entity if pending
+        if (currentEntityType != null) {
+            switch (currentEntityType) {
+                case "POINT" -> addPoint(x, y);
+                case "LINE" -> addLine(x1, y1, x2, y2);
+                case "CIRCLE" -> addCircle(x, y, r);
             }
         }
     }
+    System.out.println("Loaded sketch with " + sketchEntities.size() + " entities.");
+}
 
     public boolean isClosedLoop() {
-        if (sketchEntities.isEmpty()) {
-            return false;
-        }
-        Entity first = null;
-        Entity last = null;
+        // Extract all lines only
+        List<Line> lines = new ArrayList<>();
         for (Entity e : sketchEntities) {
-            if (e instanceof Point || e instanceof Line || e instanceof Circle) {
-                first = e;
-                break;
+            if (e instanceof Line) {
+                lines.add((Line) e);
             }
         }
-        for (int i = sketchEntities.size() - 1; i >= 0; i--) {
-            Entity e = sketchEntities.get(i);
-            if (e instanceof Point || e instanceof Line || e instanceof Circle) {
-                last = e;
-                break;
+        if (lines.isEmpty()) return false;
+
+        // Check connectivity of consecutive lines
+        for (int i = 0; i < lines.size() - 1; i++) {
+            Line current = lines.get(i);
+            Line next = lines.get(i + 1);
+            if (!pointsAreClose(current.x2, current.y2, next.x1, next.y1)) {
+                return false;
             }
         }
-        if (first == null || last == null) return false;
+        // Check if last line end connects to first line start
+        Line first = lines.get(0);
+        Line last = lines.get(lines.size() - 1);
+        return pointsAreClose(last.x2, last.y2, first.x1, first.y1);
+    }
 
-        float fx, fy;
-        if (first instanceof Point) {
-            Point p = (Point) first;
-            fx = p.x; fy = p.y;
-        } else if (first instanceof Line) {
-            Line l = (Line) first;
-            fx = l.x1; fy = l.y1;
-        } else if (first instanceof Circle) {
-            Circle c = (Circle) first;
-            fx = c.x; fy = c.y;
-        } else {
-            return false;
-        }
-
-        float lx, ly;
-        if (last instanceof Point) {
-            Point p = (Point) last;
-            lx = p.x; ly = p.y;
-        } else if (last instanceof Line) {
-            Line l = (Line) last;
-            lx = l.x2; ly = l.y2;
-        } else if (last instanceof Circle) {
-            Circle c = (Circle) last;
-            lx = c.x; ly = c.y;
-        } else {
-            return false;
-        }
-
+    private boolean pointsAreClose(float x1, float y1, float x2, float y2) {
         final float tolerance = 0.001f;
-        float dx = fx - lx;
-        float dy = fy - ly;
-        return (dx*dx + dy*dy) < (tolerance * tolerance);
+        float dx = x1 - x2;
+        float dy = y1 - y2;
+        return (dx * dx + dy * dy) < (tolerance * tolerance);
     }
 }

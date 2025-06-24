@@ -1,4 +1,5 @@
 package cli;
+
 import core.Sketch;
 import core.Geometry;
 import java.util.Scanner;
@@ -102,6 +103,11 @@ public class Cli {
                         loadFile(argsArray);
                         break;
 
+                    case "extrude":    // New extrude command
+                    case "ex":
+                        extrudeSketch(argsArray);
+                        break;
+
                     default:
                         System.out.println("Unknown command: " + command + ". Type 'help' for a list.");
                 }
@@ -126,6 +132,7 @@ public class Cli {
         System.out.println("  sketch_clear                - Clear sketch");
         System.out.println("  sketch_list                 - List all sketch entities");
         System.out.println("  export_dxf <filename>       - Export sketch to DXF");
+        System.out.println("  extrude <height>            - Extrude the current closed sketch to a height");
         System.out.println("  help (h), version (v), exit (e)");
     }
 
@@ -293,6 +300,20 @@ public class Cli {
             }
         } catch (Exception e) {
             System.out.println("Error loading file: " + filename);
+        }
+    }
+
+    // New method for extrusion
+    private static void extrudeSketch(String[] args) {
+        if (args.length < 2) {
+            System.out.println("Usage: extrude <height>");
+            return;
+        }
+        try {
+            float height = Float.parseFloat(args[1]);
+            Geometry.extrude(sketch, height);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid height value.");
         }
     }
 }
