@@ -44,6 +44,9 @@ Day 11 (6/23/25)
 
 I've heard from my collaborator that he has built a gui form of this application, so I immediately updated the files such that there would a Main class, where it would enable the user to select between the gui and the cli interfaces for their use of the application. I've also updated Compilation.txt for the set of new compilation instructions for multiple classes and separate folders. I have the gui stuff, changed the structure of the repo such that gui and cli are their own thing, but the set of classes they share (such as Geometry and Sketch), remain separate, to support modularity down the line
 
+Day 12 (6/24/25)
+
+I've started trying to build an extrude features, which basically takes in a sketch, and makes a 3D model of it, The issue is really the file formatting, what file format would be best, I am not sure, as I make the sketch, tried extruding, however, it shows nothing when I load the file (Mayble saving it as .stl is not the greatest idea, prolly will need GUI massively updated)
 
 
 
