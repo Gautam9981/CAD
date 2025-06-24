@@ -195,8 +195,8 @@ public class Cli {
         try {
             int lat = Integer.parseInt(args[1]);
             int lon = Integer.parseInt(args[2]);
-            if (lat < 1 || lat > 100 || lon < 1 || lon > 100) {
-                System.out.println("Sphere subdivisions must be between 1 and 100.");
+            if (lat < 1 || lat > 200 || lon < 1 || lon > 200) {
+                System.out.println("Sphere subdivisions must be between 1 and 200.");
             } else {
                 sphereLatDiv = lat;
                 sphereLonDiv = lon;
