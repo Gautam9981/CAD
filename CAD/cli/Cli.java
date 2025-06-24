@@ -304,7 +304,7 @@ public class Cli {
     }
 
     // New method for extrusion
-    private static void extrudeSketch(String[] args) {
+    /*private static void extrudeSketch(String[] args) {
         if (args.length < 2) {
             System.out.println("Usage: extrude <height>");
             return;
@@ -315,5 +315,5 @@ public class Cli {
         } catch (NumberFormatException e) {
             System.out.println("Invalid height value.");
         }
-    }
+    } /*
 }
