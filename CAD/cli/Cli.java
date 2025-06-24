@@ -103,10 +103,10 @@ public class Cli {
                         loadFile(argsArray);
                         break;
 
-                    case "extrude":    // New extrude command
-                    case "ex":
-                        extrudeSketch(argsArray);
-                        break;
+                    //case "extrude":    // New extrude command
+                    //case "ex":
+                        //extrudeSketch(argsArray);
+                        //break;
 
                     default:
                         System.out.println("Unknown command: " + command + ". Type 'help' for a list.");
@@ -132,7 +132,7 @@ public class Cli {
         System.out.println("  sketch_clear                - Clear sketch");
         System.out.println("  sketch_list                 - List all sketch entities");
         System.out.println("  export_dxf <filename>       - Export sketch to DXF");
-        System.out.println("  extrude <height>            - Extrude the current closed sketch to a height");
+        //System.out.println("  extrude <height>            - Extrude the current closed sketch to a height");
         System.out.println("  help (h), version (v), exit (e)");
     }
 

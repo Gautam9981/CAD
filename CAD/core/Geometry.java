@@ -39,6 +39,8 @@ public class Geometry {
     }
 
     public static void extrude(Sketch sketch, float height) {
+        // TODO: Broken extrusion logic temporarily disabled.
+        /*
         if (!sketch.isClosedLoop()) {
             System.out.println("Sketch must be a closed loop to extrude.");
             return;
@@ -67,6 +69,8 @@ public class Geometry {
 
         currShape = Shape.NONE;
         System.out.println("Extruded sketch stored in memory.");
+        */
+        System.out.println("Extrude logic is disabled (pending fix).");
     }
 
     public static void saveStl(String filename) throws IOException {
@@ -82,12 +86,16 @@ public class Geometry {
             } else if (currShape == Shape.SPHERE) {
                 generateSphereStl(out, param, sphereLatDiv, sphereLonDiv);
             } else if (!extrudedTriangles.isEmpty()) {
+                // TODO: Skip exporting broken extruded geometry.
+                /*
                 for (int i = 0; i < extrudedTriangles.size(); i += 3) {
                     float[] a = extrudedTriangles.get(i);
                     float[] b = extrudedTriangles.get(i + 1);
                     float[] c = extrudedTriangles.get(i + 2);
                     writeTriangle(out, a, b, c);
                 }
+                */
+                System.out.println("Skipping export of extruded geometry (not implemented).");
             }
             out.println("endsolid shape");
         }
