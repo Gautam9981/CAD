@@ -1,9 +1,12 @@
 package core;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Geometry {
     public enum Shape { NONE, CUBE, SPHERE }
@@ -13,6 +16,7 @@ public class Geometry {
     public static int cubeDivisions = 1;
     public static int sphereLatDiv = 30;
     public static int sphereLonDiv = 30;
+    private static List<float[]> extrudedTriangles = new ArrayList<>();
 
     public static void createCube(float size, int divisions) {
         if (divisions < 1 || divisions > 100) {
@@ -34,8 +38,37 @@ public class Geometry {
         System.out.printf("Sphere created with radius %.2f and %d subdivisions%n", radius, divisions);
     }
 
+    public static void extrude(Sketch sketch, float height) {
+        if (!sketch.isClosedLoop()) {
+            System.out.println("Sketch must be a closed loop to extrude.");
+            return;
+        }
+
+        extrudedTriangles.clear();
+        var entities = sketch.getEntities();
+        for (int i = 0; i < entities.size(); i++) {
+            Sketch.LineEntity line = (Sketch.LineEntity) entities.get(i);
+            float x1 = line.x1, y1 = line.y1;
+            float x2 = line.x2, y2 = line.y2;
+
+            float z0 = 0f;
+            float z1 = height;
+
+            float[] p1 = new float[]{x1, y1, z0};
+            float[] p2 = new float[]{x2, y2, z0};
+            float[] p3 = new float[]{x2, y2, z1};
+            float[] p4 = new float[]{x1, y1, z1};
+
+            extrudedTriangles.addAll(List.of(p1, p2, p3));
+            extrudedTriangles.addAll(List.of(p1, p3, p4));
+        }
+
+        currShape = Shape.NONE;
+        System.out.println("Extruded sketch stored in memory.");
+    }
+
     public static void saveStl(String filename) throws IOException {
-        if (currShape == Shape.NONE) {
+        if (currShape == Shape.NONE && extrudedTriangles.isEmpty()) {
             System.out.println("No shape created yet");
             return;
         }
@@ -46,6 +79,13 @@ public class Geometry {
                 generateCubeStl(out, param, cubeDivisions);
             } else if (currShape == Shape.SPHERE) {
                 generateSphereStl(out, param, sphereLatDiv, sphereLonDiv);
+            } else if (!extrudedTriangles.isEmpty()) {
+                for (int i = 0; i < extrudedTriangles.size(); i += 3) {
+                    float[] a = extrudedTriangles.get(i);
+                    float[] b = extrudedTriangles.get(i + 1);
+                    float[] c = extrudedTriangles.get(i + 2);
+                    writeTriangle(out, a, b, c);
+                }
             }
             out.println("endsolid shape");
         }
@@ -171,7 +211,6 @@ public class Geometry {
                 if (line.startsWith("facet normal")) {
                     reader.readLine();
 
-                    
                     for (int i = 0; i < 3; i++) {
                         String vertexLine = reader.readLine().trim();
                         String[] vertexParts = vertexLine.split("\\s+");
@@ -192,4 +231,3 @@ public class Geometry {
         }
     }
 }
-

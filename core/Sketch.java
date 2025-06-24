@@ -1,4 +1,5 @@
 package core;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.io.FileWriter;
@@ -94,6 +95,10 @@ public class Sketch {
         return sketchEntities;
     }
 
+    public List<Entity> getEntities() {
+        return sketchEntities;
+    }
+
     public int getSketchCount() {
         return sketchEntities.size();
     }
@@ -165,7 +170,7 @@ public class Sketch {
             out.println("9");
             out.println("$ACADVER");
             out.println("1");
-            out.println("AC1009"); 
+            out.println("AC1009");
             out.println("0");
             out.println("ENDSEC");
 
@@ -282,5 +287,60 @@ public class Sketch {
                 }
             }
         }
+    }
+
+    public boolean isClosedLoop() {
+        if (sketchEntities.isEmpty()) {
+            return false;
+        }
+        Entity first = null;
+        Entity last = null;
+        for (Entity e : sketchEntities) {
+            if (e instanceof Point || e instanceof Line || e instanceof Circle) {
+                first = e;
+                break;
+            }
+        }
+        for (int i = sketchEntities.size() - 1; i >= 0; i--) {
+            Entity e = sketchEntities.get(i);
+            if (e instanceof Point || e instanceof Line || e instanceof Circle) {
+                last = e;
+                break;
+            }
+        }
+        if (first == null || last == null) return false;
+
+        float fx, fy;
+        if (first instanceof Point) {
+            Point p = (Point) first;
+            fx = p.x; fy = p.y;
+        } else if (first instanceof Line) {
+            Line l = (Line) first;
+            fx = l.x1; fy = l.y1;
+        } else if (first instanceof Circle) {
+            Circle c = (Circle) first;
+            fx = c.x; fy = c.y;
+        } else {
+            return false;
+        }
+
+        float lx, ly;
+        if (last instanceof Point) {
+            Point p = (Point) last;
+            lx = p.x; ly = p.y;
+        } else if (last instanceof Line) {
+            Line l = (Line) last;
+            lx = l.x2; ly = l.y2;
+        } else if (last instanceof Circle) {
+            Circle c = (Circle) last;
+            lx = c.x; ly = c.y;
+        } else {
+            return false;
+        }
+
+        final float tolerance = 0.001f;
+        float dx = fx - lx;
+        float dy = fy - ly;
+        return (dx*dx + dy*dy) < (tolerance * tolerance);
     }
 }
