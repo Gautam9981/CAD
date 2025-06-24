@@ -103,7 +103,7 @@ public class Cli {
                         loadFile(argsArray);
                         break;
 
-                    //case "extrude":    // New extrude command
+                    //case "extrude":    // New extrude command (Broken)
                     //case "ex":
                         //extrudeSketch(argsArray);
                         //break;
@@ -303,17 +303,17 @@ public class Cli {
         }
     }
 
-    // New method for extrusion
-    /*private static void extrudeSketch(String[] args) {
-        if (args.length < 2) {
-            System.out.println("Usage: extrude <height>");
-            return;
-        }
-        try {
-            float height = Float.parseFloat(args[1]);
-            Geometry.extrude(sketch, height);
-        } catch (NumberFormatException e) {
-            System.out.println("Invalid height value.");
-        }
-    } /*
+    // New method for extrusion (Currently Broken)
+    // private static void extrudeSketch(String[] args) {
+        //if (args.length < 2) {
+            //System.out.println("Usage: extrude <height>");
+            //return;
+        //}
+        //try {
+            //float height = Float.parseFloat(args[1]);
+            //Geometry.extrude(sketch, height);
+        //} catch (NumberFormatException e) {
+            //System.out.println("Invalid height value.");
+        //}
+    //} 
 }
