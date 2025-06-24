@@ -11,7 +11,7 @@ public class Cli {
     private static Sketch sketch = new Sketch();
 
     public static void main(String[] args) {
-        System.out.println("Welcome to CAD CLI v0.2 (BETA)");
+        System.out.println("Welcome to CAD CLI v1.0 (BETA)");
         runCli();
     }
 
@@ -130,7 +130,7 @@ public class Cli {
     }
 
     private static void version() {
-        System.out.println("CAD, version 0.2 (Beta)");
+        System.out.println("CAD, version 1.0 (Beta)");
     }
 
     private static void exit() {
