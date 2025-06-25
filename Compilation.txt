@@ -2,9 +2,18 @@
 Instructions to Compile and Run the Code (Java)
 
 This guide outlines OS-specific steps to install Java (if not already installed), compile .java files, and run your Java program from the terminal.
+Note: If you download or clone the repo, it will show a CAD subdirectory. If you try to compile it right after, it will complain, as the gui and cli and core components aren't in the running directory, so I suggest you move those three subdirectories within CAD to outside that directory, basically, you should have the following order of files:
+CAD
+├── .git/
+├── cli/
+├── core/
+├── gui/
+├── Compilation.txt
+├── Main.class
+├── Main.java
+├── README.md
 
 Linux (by Package Manager, assuming the packages are not already installed!)
-
 DNF / RPM (Fedora, RHEL-based)
 1. Install Java Development Kit:  
    sudo dnf install java-24(or 23)-openjdk-devel
