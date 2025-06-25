@@ -1,5 +1,6 @@
 package cli;
 
+import core.Point;
 import core.Sketch;
 import core.Geometry;
 import java.util.Scanner;
@@ -95,6 +96,10 @@ public class Cli {
                         sketchCircle(argsArray);
                         break;
 
+                    case "sketch_polygon":
+                        sketchPolygon(argsArray);
+                        break;
+
                     case "sketch_list":
                         sketchList();
                         break;
@@ -102,11 +107,6 @@ public class Cli {
                     case "load":
                         loadFile(argsArray);
                         break;
-
-                    //case "extrude":    // New extrude command (Broken)
-                    //case "ex":
-                        //extrudeSketch(argsArray);
-                        //break;
 
                     default:
                         System.out.println("Unknown command: " + command + ". Type 'help' for a list.");
@@ -128,11 +128,12 @@ public class Cli {
         System.out.println("  sphere_div <lat> <lon>      - Set sphere subdivisions");
         System.out.println("  sketch_point <x> <y>        - Add point to sketch");
         System.out.println("  sketch_line <x1> <y1> <x2> <y2> - Add line to sketch");
-        System.out.println("  sketch_circle <x> <y> <r>   - Add circle to sketch");
+        System.out.println("  sketch_circle <x> <y> <radius> - Add circle to sketch");
+        System.out.println("  sketch_polygon <x> <y> <radius> <sides> - Add polygon (3-25 sides)");
+        System.out.println("  sketch_polygon <x1> <y1> <x2> <y2> ... <xn> <yn> - Add polygon from explicit points (at least 3 points)");
         System.out.println("  sketch_clear                - Clear sketch");
         System.out.println("  sketch_list                 - List all sketch entities");
         System.out.println("  export_dxf <filename>       - Export sketch to DXF");
-        //System.out.println("  extrude <height>            - Extrude the current closed sketch to a height");
         System.out.println("  help (h), version (v), exit (e)");
     }
 
@@ -229,6 +230,7 @@ public class Cli {
 
     private static void sketchClear() {
         sketch.clearSketch();
+        System.out.println("Sketch cleared.");
     }
 
     private static void exportDxf(String[] args) {
@@ -253,6 +255,7 @@ public class Cli {
         String[] params = { args[1], args[2] };
         int result = sketch.sketchPoint(params);
         if (result == 0) System.out.println("Point added to sketch.");
+        else System.out.println("Failed to add point.");
     }
 
     private static void sketchLine(String[] args) {
@@ -263,6 +266,7 @@ public class Cli {
         String[] params = { args[1], args[2], args[3], args[4] };
         int result = sketch.sketchLine(params);
         if (result == 0) System.out.println("Line added to sketch.");
+        else System.out.println("Failed to add line.");
     }
 
     private static void sketchCircle(String[] args) {
@@ -273,6 +277,62 @@ public class Cli {
         String[] params = { args[1], args[2], args[3] };
         int result = sketch.sketchCircle(params);
         if (result == 0) System.out.println("Circle added to sketch.");
+        else System.out.println("Failed to add circle.");
+    }
+
+    private static void sketchPolygon(String[] args) {
+        if (args.length == 5) {
+            // Regular polygon mode: x, y, radius, sides
+            try {
+                float x = Float.parseFloat(args[1]);
+                float y = Float.parseFloat(args[2]);
+                float radius = Float.parseFloat(args[3]);
+                int sides = Integer.parseInt(args[4]);
+
+                if (sides < 3 || sides > 25) {
+                    System.out.println("Polygon sides must be between 3 and 25.");
+                    return;
+                }
+
+                int result = sketch.addNSidedPolygon(x, y, radius, sides);
+                if (result == 0) {
+                    System.out.println("Polygon added to sketch.");
+                } else {
+                    System.out.println("Failed to add polygon to sketch.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid numeric value in arguments.");
+            }
+        } else if (args.length >= 8 && args.length % 2 == 1) {
+            // Explicit points mode: x1 y1 x2 y2 ... xn yn (at least 3 points)
+            try {
+                int pointCount = (args.length - 1) / 2;
+                if (pointCount < 3) {
+                    System.out.println("At least 3 points are required to define a polygon.");
+                    return;
+                }
+
+                java.util.List<Sketch.PointEntity> points = new java.util.ArrayList<>();
+                for (int i = 1; i < args.length; i += 2) {
+                    float px = Float.parseFloat(args[i]);
+                    float py = Float.parseFloat(args[i + 1]);
+                    points.add(new Sketch.PointEntity(px, py));
+                }
+
+                int result = sketch.addPolygon(points);
+                if (result == 0) {
+                    System.out.println("Polygon added to sketch.");
+                } else {
+                    System.out.println("Failed to add polygon to sketch.");
+                }
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid numeric value in polygon points.");
+            }
+        } else {
+            System.out.println("Usage:");
+            System.out.println("  sketch_polygon <x> <y> <radius> <sides>       - Regular polygon (3-25 sides)");
+            System.out.println("  sketch_polygon <x1> <y1> <x2> <y2> ... <xn> <yn> - Polygon from explicit points (at least 3 points)");
+        }
     }
 
     private static void sketchList() {
@@ -293,7 +353,7 @@ public class Cli {
                 Geometry.loadStl(filename);
                 System.out.println("STL file loaded: " + filename);
             } else if (lowerFilename.endsWith(".dxf")) {
-                sketch.loadDxf(filename);
+                sketch.loadDXF(filename);
                 System.out.println("DXF file loaded: " + filename);
             } else {
                 System.out.println("Unsupported file format provided.");
@@ -302,18 +362,4 @@ public class Cli {
             System.out.println("Error loading file: " + filename);
         }
     }
-
-    // New method for extrusion (Currently Broken)
-    // private static void extrudeSketch(String[] args) {
-        //if (args.length < 2) {
-            //System.out.println("Usage: extrude <height>");
-            //return;
-        //}
-        //try {
-            //float height = Float.parseFloat(args[1]);
-            //Geometry.extrude(sketch, height);
-        //} catch (NumberFormatException e) {
-            //System.out.println("Invalid height value.");
-        //}
-    //} 
 }

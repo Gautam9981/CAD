@@ -1,4 +1,5 @@
 package gui;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -11,6 +12,7 @@ public class Gui extends JFrame {
     private JTextField sketchPointX, sketchPointY;
     private JTextField sketchLineX1, sketchLineY1, sketchLineX2, sketchLineY2;
     private JTextField sketchCircleX, sketchCircleY, sketchCircleR;
+    private JTextField sketchPolygonX, sketchPolygonY, sketchPolygonR, sketchPolygonSides;
 
     public static int sphereLatDiv = 10;
     public static int sphereLonDiv = 10;
@@ -20,7 +22,7 @@ public class Gui extends JFrame {
     public Gui() {
         sketch = new Sketch();
         setTitle("CAD GUI");
-        setSize(900, 600);
+        setSize(1000, 700);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -40,7 +42,7 @@ public class Gui extends JFrame {
         addButton(commandPanel, "Load File", e -> loadFile(new String[] { fileField.getText() }));
         addButton(commandPanel, "Set Cube Div", e -> setCubeDivisions(new String[] { cubeSizeField.getText() }));
         addButton(commandPanel, "Set Sphere Div", e -> setSphereDivisions(new String[] { latField.getText(), lonField.getText() }));
-        addButton(commandPanel, "Export DXF", e -> exportDxf(new String[] { fileField.getText() }));
+        addButton(commandPanel, "Export DXF", e -> exportDXF(new String[] { fileField.getText() }));
         addButton(commandPanel, "Sketch Clear", e -> sketchClear());
         addButton(commandPanel, "Sketch List", e -> sketchList());
         addButton(commandPanel, "Sketch Point", e -> sketchPoint(new String[] { sketchPointX.getText(), sketchPointY.getText() }));
@@ -49,6 +51,9 @@ public class Gui extends JFrame {
         }));
         addButton(commandPanel, "Sketch Circle", e -> sketchCircle(new String[] {
             sketchCircleX.getText(), sketchCircleY.getText(), sketchCircleR.getText()
+        }));
+        addButton(commandPanel, "Sketch Polygon", e -> sketchPolygon(new String[] {
+            sketchPolygonX.getText(), sketchPolygonY.getText(), sketchPolygonR.getText(), sketchPolygonSides.getText()
         }));
 
         JPanel inputPanel = new JPanel(new GridLayout(0, 2, 5, 5));
@@ -61,6 +66,8 @@ public class Gui extends JFrame {
         sketchLineX1 = new JTextField(); sketchLineY1 = new JTextField();
         sketchLineX2 = new JTextField(); sketchLineY2 = new JTextField();
         sketchCircleX = new JTextField(); sketchCircleY = new JTextField(); sketchCircleR = new JTextField();
+        sketchPolygonX = new JTextField(); sketchPolygonY = new JTextField();
+        sketchPolygonR = new JTextField(); sketchPolygonSides = new JTextField();
 
         inputPanel.add(new JLabel("Cube Size:")); inputPanel.add(cubeSizeField);
         inputPanel.add(new JLabel("Sphere Radius:")); inputPanel.add(sphereRadiusField);
@@ -76,6 +83,10 @@ public class Gui extends JFrame {
         inputPanel.add(new JLabel("Circle X:")); inputPanel.add(sketchCircleX);
         inputPanel.add(new JLabel("Circle Y:")); inputPanel.add(sketchCircleY);
         inputPanel.add(new JLabel("Circle Radius:")); inputPanel.add(sketchCircleR);
+        inputPanel.add(new JLabel("Polygon Center X:")); inputPanel.add(sketchPolygonX);
+        inputPanel.add(new JLabel("Polygon Center Y:")); inputPanel.add(sketchPolygonY);
+        inputPanel.add(new JLabel("Polygon Radius:")); inputPanel.add(sketchPolygonR);
+        inputPanel.add(new JLabel("Polygon Sides (3-25):")); inputPanel.add(sketchPolygonSides);
 
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.add(new JScrollPane(commandPanel), BorderLayout.WEST);
@@ -97,6 +108,7 @@ public class Gui extends JFrame {
         appendOutput("  sketch_point <x> <y>");
         appendOutput("  sketch_line <x1> <y1> <x2> <y2>");
         appendOutput("  sketch_circle <x> <y> <r>");
+        appendOutput("  sketch_polygon <x> <y> <radius> <sides>");
         appendOutput("  export_dxf <filename>");
     }
 
@@ -135,6 +147,7 @@ public class Gui extends JFrame {
             float radius = Float.parseFloat(args[0]);
             int maxDiv = Math.max(sphereLatDiv, sphereLonDiv);
             Geometry.createSphere(radius, maxDiv);
+            appendOutput("Sphere created with radius " + radius);
         } catch (NumberFormatException e) {
             appendOutput("Invalid radius value.");
         } catch (IllegalArgumentException e) {
@@ -206,7 +219,7 @@ public class Gui extends JFrame {
                 Geometry.loadStl(filename);
                 appendOutput("STL file loaded: " + filename);
             } else if (lowerFilename.endsWith(".dxf")) {
-                sketch.loadDxf(filename);
+                sketch.loadDXF(filename);
                 appendOutput("DXF file loaded: " + filename);
             } else {
                 appendOutput("Unsupported file format.");
@@ -216,7 +229,7 @@ public class Gui extends JFrame {
         }
     }
 
-    private static void exportDxf(String[] args) {
+    private static void exportDXF(String[] args) {
         if (args.length < 1) {
             appendOutput("Usage: export_dxf <filename>");
             return;
@@ -262,16 +275,25 @@ public class Gui extends JFrame {
         if (sketch.sketchCircle(args) == 0) appendOutput("Circle added to sketch.");
     }
 
+    private static void sketchPolygon(String[] args) {
+        if (args.length < 4) {
+            appendOutput("Usage: sketch_polygon <x> <y> <radius> <sides>");
+            return;
+        }
+        if (sketch.sketchPolygon(args) == 0) {
+            appendOutput("Polygon added to sketch.");
+        }
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new Gui().setVisible(true));
     }
 
     public static void launch() {
-    System.out.println("Launching GUI...");
-    SwingUtilities.invokeLater(() -> {
-        Gui gui = new Gui();
-        gui.setVisible(true);
-    });
-}
-
+        System.out.println("Launching GUI...");
+        SwingUtilities.invokeLater(() -> {
+            Gui gui = new Gui();
+            gui.setVisible(true);
+        });
+    }
 }
