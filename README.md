@@ -44,6 +44,10 @@ Day 11 (6/23/25)
 
 I've heard from my collaborator that he has built a gui form of this application, so I immediately updated the files such that there would a Main class, where it would enable the user to select between the gui and the cli interfaces for their use of the application. I've also updated Compilation.txt for the set of new compilation instructions for multiple classes and separate folders. I have the gui stuff, changed the structure of the repo such that gui and cli are their own thing, but the set of classes they share (such as Geometry and Sketch), remain separate, to support modularity down the line
 
+Day 12 (6/24/25)
+
+I am able to create different types of shapes using the CLI. I will expect my collaborator to incorporate such logic into the GUI, it can make sketches based off of points I made. 
+
 
 
 
