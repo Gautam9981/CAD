@@ -141,5 +141,3 @@ Option 2: Using Homebrew
 Option 3: Using Visual Studio Code (Same instructions as for Windows)
 1. Refer to Windows, Option 3 for more instructions
 
-Note:
-Once you run the application and it generates output files (e.g., geometry or CAD instructions), you may need third-party CAD software like Fusion 360, SolidWorks, FreeCAD, or similar tools to visualize them. (For testing)
