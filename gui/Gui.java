@@ -24,7 +24,7 @@ public class Gui extends JFrame {
     public Gui() {
         sketch = new Sketch();
         setTitle("CAD GUI");
-        setSize(1000, 700);
+        setSize(1920, 1080);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
