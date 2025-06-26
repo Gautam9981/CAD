@@ -48,6 +48,10 @@ Day 12 (6/24/25)
 
 I am able to create different types of shapes using the CLI. I will expect my collaborator to incorporate such logic into the GUI, it can make sketches based off of points I made. 
 
+Day 13 (6/25/25)
+
+I just updated the size of the GUI to match 1080p monitors and screens, so it should look better.
+
 
 
 
