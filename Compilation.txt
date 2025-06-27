@@ -94,7 +94,7 @@ Portage (Gentoo)
 
 Unix (by Package Manager, assuming the packages are not already installed!)
 
-BSD (FreeBSD)
+Pkg (FreeBSD)
 1. Install OpenJDK:  
    sudo pkg install openjdk23
 2. Compile the project:  
