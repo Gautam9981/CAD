@@ -92,6 +92,7 @@ Portage (Gentoo)
 3. Run the main class:  
    java Main
 
+Unix-Based Systems (by Package Manager, assuming the packages are not already installed!)
 
 BSD (FreeBSD)
 1. Install OpenJDK:  
