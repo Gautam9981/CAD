@@ -22,7 +22,7 @@ Upon a few days break, I have realized that if I continued to go with C, I think
 
 Day 6 (6/14/25) 
 
-Made a basic load functionality, in the sense that for dxf, it says it is loaded, while for stl, it lists every vertice in the file. I haven’t been able to edit them as of yet, so that will be my next set of steps. I also made a feedback form, as shown below: [Feedback Form](https://forms.gle/KznSDYzDjYr6YmGV7) (This form is fully optional, and will only be used to determine what set of features should be included) 
+Made a basic load functionality, in the sense that for dxf, it says it is loaded, while for stl, it lists every vertice in the file. I haven’t been able to edit them as of yet, so that will be my next set of steps. I also made a feedback form, as shown below: [Feedback Form](https://forms.gle/6JeLGzmrWwT5CRcj8) (This form is fully optional, and will only be used to determine what set of features should be included) 
 
 Day 7 (6/16/25) 
 
