@@ -52,6 +52,10 @@ Day 13 (6/25/25)
 
 I just updated the size of the GUI to match 1080p monitors and screens, so it should look better.
 
+Day 14 (6/26/25)
+
+I have update the CLI to show units and scale the sketches appropriately (says units when loaded the .dxf file); Will set it up for GUI for later, with necessary changes
+
 
 
 
