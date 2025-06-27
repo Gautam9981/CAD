@@ -15,15 +15,28 @@ public class Cli {
 
     private static Sketch sketch = new Sketch();
 
-    public static void main(String[] args) {
-        System.out.println("Welcome to CAD CLI v1.0 (BETA)");
-        runCli();
-    }
-
     public static void launch() {
+        System.out.println("Welcome to CAD CLI v1.0 (BETA)");
         System.out.println("Running Cli mode...");
         runCli();
     }
+
+    private enum Unit {
+        MM(1.0f), CM(10.0f), M(1000.0f), IN(25.4f), FT(304.8f);
+
+        final float toMillimeter;
+
+        Unit(float toMillimeter) {
+            this.toMillimeter = toMillimeter;
+        }
+    }
+
+    private static Unit currentUnit = Unit.MM;
+
+    private static float convertToMillimeters(float value) {
+        return value * currentUnit.toMillimeter;
+    }
+
 
     public static void runCli() {
         try (Scanner scanner = new Scanner(System.in)) {
@@ -111,6 +124,10 @@ public class Cli {
                         loadFile(argsArray);
                         break;
 
+                    case "units":
+                        setUnits(argsArray);
+                        break;
+
                     default:
                         System.out.println("Unknown command: " + command + ". Type 'help' for a list.");
                 }
@@ -137,6 +154,7 @@ public class Cli {
         System.out.println("  sketch_clear                - Clear sketch");
         System.out.println("  sketch_list                 - List all sketch entities");
         System.out.println("  export_dxf <filename>       - Export sketch to DXF");
+        System.out.println("  units <mm|cm|m|in|ft>       - Set units");
         System.out.println("  help (h), version (v), exit (e)");
     }
 
@@ -314,7 +332,6 @@ public class Cli {
                 System.out.println("Invalid numeric value in arguments.");
             }
         } else if (args.length >= 7 && args.length % 2 == 1) {
-            // Handle polygon from explicit points
             try {
                 int pointCount = (args.length - 1) / 2;
                 if (pointCount < 3 || pointCount > 25) {
@@ -370,4 +387,23 @@ public class Cli {
             System.out.println("Error loading file: " + filename);
         }
     }
+
+    private static void setUnits(String[] args) {
+        if (args.length < 2) {
+            System.out.println("Usage: units <mm|cm|m|in|ft>");
+            return;
+        }
+        String unit = args[1].toLowerCase();
+        List < String > validUnits = List.of("mm", "cm", "m", "in", "ft");
+
+        if (!validUnits.contains(unit)) {
+            System.out.println("Unsupported unit. Supported units: mm, cm, m, in, ft");
+            return;
+        }
+
+        sketch.setUnits(unit);
+        System.out.println("Units set to: " + unit);
+    }
+
+
 }

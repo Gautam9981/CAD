@@ -43,7 +43,6 @@ public class Sketch {
             this.x2 = x2;
             this.y2 = y2;
         }
-        @Override
         public String toString() {
             return String.format("Line from (%.3f, %.3f) to (%.3f, %.3f)", x1, y1, x2, y2);
         }
@@ -57,7 +56,6 @@ public class Sketch {
             this.y = y;
             this.r = r;
         }
-        @Override
         public String toString() {
             return String.format("Circle at (%.3f, %.3f) with radius %.3f", x, y, r);
         }
@@ -72,7 +70,6 @@ public class Sketch {
             this.type = TypeSketch.POLYGON;
             this.points = new ArrayList < > (points);
         }
-        @Override
         public String toString() {
             StringBuilder sb = new StringBuilder("Polygon with points: ");
             for (PointEntity p: points) {
@@ -81,6 +78,7 @@ public class Sketch {
             return sb.toString();
         }
     }
+
 
     private static final int MAX_SKETCH_ENTITIES = 1000;
     private final List < Entity > sketchEntities = new ArrayList < > ();
@@ -153,12 +151,50 @@ public class Sketch {
         }
     }
 
+    private String units = "mm";
+
+    public void setUnits(String units) {
+        this.units = units;
+    }
+
+    public String getUnits() {
+        return this.units;
+    }
+
+    private int getDXFUnitCode(String unitStr) {
+        return switch (unitStr.toLowerCase()) {
+            case "in", "inch", "inches" -> 1;
+            case "ft", "feet" -> 2;
+            case "mm", "millimeter", "millimeters" -> 4;
+            case "cm", "centimeter", "centimeters" -> 5;
+            case "m", "meter", "meters" -> 6;
+            default -> 0;
+        };
+    }
+
+    private static String getUnitsFromDXFCode(int code) {
+        switch(code) {
+            case 1: return "in";
+            case 2: return "ft";
+            case 4: return "mm";
+            case 5: return "cm";
+            case 6: return "m";
+            default: return "mm";
+            }
+    }
+
     public void exportSketchToDXF(String filename) {
         try (PrintWriter out = new PrintWriter(new FileWriter(filename))) {
             out.println("0");
             out.println("SECTION");
             out.println("2");
             out.println("HEADER");
+
+            out.println("9");
+            out.println("$INSUNITS");
+            out.println("70");
+            out.println(getDXFUnitCode(this.units));
+
             out.println("0");
             out.println("ENDSEC");
 
@@ -206,19 +242,18 @@ public class Sketch {
                     out.println(c.r);
                 } else if (e instanceof Polygon) {
                     Polygon poly = (Polygon) e;
-                    // Start POLYLINE entity
                     out.println("0");
                     out.println("POLYLINE");
                     out.println("8");
                     out.println("0");
-                    out.println("66"); // Indicates vertices follow
+                    out.println("66");
                     out.println("1");
-                    out.println("70"); // Polyline flag - 1 means closed polygon
+                    out.println("70");
                     out.println("1");
-                    out.println("90"); // Number of vertices
+                    out.println("90");
                     out.println(poly.points.size());
 
-                    // Write each point as a VERTEX entity
+
                     for (PointEntity p: poly.points) {
                         out.println("0");
                         out.println("VERTEX");
@@ -230,7 +265,6 @@ public class Sketch {
                         out.println(p.y);
                     }
 
-                    // End of vertices sequence
                     out.println("0");
                     out.println("SEQEND");
                     out.println("8");
@@ -323,10 +357,30 @@ public class Sketch {
 
 
     public void loadDXF(String filename) throws IOException {
+        this.units="unitless";
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+                if (line.equalsIgnoreCase("$INSUNITS")) {
+                    reader.readLine();
+                    String valueLine = reader.readLine();
+                    if (valueLine != null) {
+                        int code = Integer.parseInt(valueLine.trim());
+                        this.units = getUnitsFromDXFCode(code);
+                    }
+                    break;
+                }
+            }
+        }
+
+        float scale = unitScaleFactor(units);
+
+
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
             String currentEntity = null;
-
 
             float x1 = 0, y1 = 0, x2 = 0, y2 = 0, cx = 0, cy = 0, radius = 0;
             List < PointEntity > polyPoints = null;
@@ -334,8 +388,6 @@ public class Sketch {
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
 
-                // DXF uses pairs of lines: group code, then value
-                // So read group code and then value
                 if (line.isEmpty()) continue;
                 String groupCode = line;
                 String value = reader.readLine();
@@ -343,16 +395,23 @@ public class Sketch {
                 value = value.trim();
 
                 switch (groupCode) {
-                    case "0": // Start of a new entity or section
+                    case "0":
                         if (currentEntity != null) {
-                            // Previous entity finished, add it
-                            addEntity(currentEntity, x1, y1, x2, y2, cx, cy, radius, polyPoints);
-                            // Reset polyPoints
+                            addEntity(
+                                currentEntity,
+                                x1 * scale,
+                                y1 * scale,
+                                x2 * scale,
+                                y2 * scale,
+                                cx * scale,
+                                cy * scale,
+                                radius * scale,
+                                polyPoints != null ? scalePoints(polyPoints, scale) : null
+                            );
                             polyPoints = null;
                         }
                         currentEntity = value.toUpperCase();
                         break;
-
 
                     case "10":
                         float x = Float.parseFloat(value);
@@ -402,20 +461,47 @@ public class Sketch {
                         }
                         break;
 
-                    case "90":
-                        break;
-
-
+                        // Ignore other group codes
                     default:
                         break;
                 }
             }
 
-            // After file read, add last entity if pending
             if (currentEntity != null) {
-                addEntity(currentEntity, x1, y1, x2, y2, cx, cy, radius, polyPoints);
+                addEntity(
+                    currentEntity,
+                    x1 * scale,
+                    y1 * scale,
+                    x2 * scale,
+                    y2 * scale,
+                    cx * scale,
+                    cy * scale,
+                    radius * scale,
+                    polyPoints != null ? scalePoints(polyPoints, scale) : null
+                );
             }
         }
+
+        System.out.println("DXF loaded with units: " + units + " (scale factor applied: " + scale + ")");
+    }
+
+    private float unitScaleFactor(String units) {
+        return switch (units) {
+            case "in" -> 25.4f;
+            case "ft"-> 304.8f;
+            case "mm" -> 1.0f;
+            case "cm" -> 10.0f;
+            case "m" -> 1000.0f;
+            default -> 1.0f;
+        };
+    }
+
+    private List < PointEntity > scalePoints(List < PointEntity > points, float scale) {
+        List < PointEntity > scaled = new ArrayList < > ();
+        for (PointEntity p: points) {
+            scaled.add(new PointEntity(p.x * scale, p.y * scale));
+        }
+        return scaled;
     }
 
     private void addEntity(String entityType, float x1, float y1, float x2, float y2,

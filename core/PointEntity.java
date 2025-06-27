@@ -9,7 +9,6 @@ public class PointEntity {
         this.y = y;
     }
 
-    @Override
     public String toString() {
         return "PointEntity(" + x + ", " + y + ")";
     }

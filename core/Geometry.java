@@ -23,8 +23,8 @@ public class Geometry {
     private static List < float[] > extrudedTriangles = new ArrayList < > ();
 
     public static void createCube(float size, int divisions) {
-        if (divisions < 1 || divisions > 100) {
-            throw new IllegalArgumentException("Cube divisions must be between 1 and 100");
+        if (divisions < 1 || divisions > 200) {
+            throw new IllegalArgumentException("Cube divisions must be between 1 and 200");
         }
         cubeDivisions = divisions;
         param = size;
