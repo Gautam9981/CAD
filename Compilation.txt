@@ -16,7 +16,7 @@ CAD
 Linux (by Package Manager, assuming the packages are not already installed!)
 DNF / RPM (Fedora, RHEL-based)
 1. Install Java Development Kit:  
-   sudo dnf install java-24(or 23)-openjdk-devel
+   sudo dnf install java-24(or any number)-openjdk-devel java-24(or any number)-openjdk
 2. Compile the project:  
    javac cli/*.java core/*.java gui/*.java Main.java
 3. Run the main class:  
