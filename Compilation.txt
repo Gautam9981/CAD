@@ -130,7 +130,7 @@ Option 1: Using Xcode Command Line Tools
 1. Install tools:  
    xcode-select --install
 2. Install JDK:  
-   brew install openjdk (or download manually)
+   brew install openjdk (or download manually); It is possible to get the JDK from installing the Java Extensions in Visual Studio Code
 3. Compile the project:  
    javac cli/*.java core/*.java gui/*.java Main.java
 4. Run the main class:  
