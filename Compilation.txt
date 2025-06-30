@@ -5,7 +5,7 @@ This guide outlines OS-specific steps to install Java (if not already installed)
 Note: To clone the repo, use the following command: git clone https://github.com/Gautam9981/CAD.git
 
 Linux (by Package Manager, assuming the packages are not already installed!)
-DNF / RPM (Fedora, RHEL-based)
+DNF / RPM (Fedora-based (RHEL, Almalinux, etc))
 1. Install Java Development Kit:  
    sudo dnf install java-24(or any number)-openjdk-devel java-24(or any number)-openjdk
 2. Compile the project:  
@@ -21,7 +21,7 @@ Pacman (Arch-based (Arch Linux, Manjaro, etc))
 3. Run the main class:  
    java Main
 
-APT (Debian-based (Debian, Ubuntu, etc))
+APT / DEB (Debian-based (Debian, Ubuntu, etc))
 1. Install Java Development Kit:  
    sudo apt install default-jdk
 2. Compile the project:  
