@@ -7,6 +7,7 @@ import core.Sketch;
 import core.Geometry;
 import java.util.List;
 import java.util.ArrayList;
+import gui.SketchCanvas;
 
 public class Gui extends JFrame {
     private static JTextArea outputArea;
@@ -15,7 +16,9 @@ public class Gui extends JFrame {
     private JTextField sketchLineX1, sketchLineY1, sketchLineX2, sketchLineY2;
     private JTextField sketchCircleX, sketchCircleY, sketchCircleR;
     private JTextField sketchPolygonX, sketchPolygonY, sketchPolygonR, sketchPolygonSides;
+    private SketchCanvas canvas;
 
+    private JComboBox<String> unitSelector = new JComboBox<>(new String[] { "mm", "cm", "m", "in", "ft" });
     public static int sphereLatDiv = 10;
     public static int sphereLonDiv = 10;
     public static int cubeDivisions = 10;
@@ -23,6 +26,8 @@ public class Gui extends JFrame {
 
     public Gui() {
         sketch = new Sketch();
+        canvas = new SketchCanvas(sketch);
+        canvas.setPreferredSize(new Dimension(800, 800));
         setTitle("CAD GUI");
         setSize(1920, 1080);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -47,9 +52,7 @@ public class Gui extends JFrame {
         addButton(commandPanel, "Save File", e -> saveFile(new String[] {
             fileField.getText()
         }));
-        addButton(commandPanel, "Load File", e -> loadFile(new String[] {
-            fileField.getText()
-        }));
+        addButton(commandPanel, "Load File", e -> loadFile(new String[] { fileField.getText() }));
         addButton(commandPanel, "Set Cube Div", e -> setCubeDivisions(new String[] {
             cubeSizeField.getText()
         }));
@@ -130,14 +133,26 @@ public class Gui extends JFrame {
         inputPanel.add(sketchPolygonR);
         inputPanel.add(new JLabel("Polygon Sides (3-25):"));
         inputPanel.add(sketchPolygonSides);
+        inputPanel.add(new JLabel("Units: "));
+        inputPanel.add(unitSelector);
 
         JPanel topPanel = new JPanel(new BorderLayout());
         topPanel.add(new JScrollPane(commandPanel), BorderLayout.WEST);
         topPanel.add(inputPanel, BorderLayout.CENTER);
 
+        //getContentPane().setLayout(new BorderLayout());
+        //getContentPane().add(topPanel, BorderLayout.NORTH);
+        //getContentPane().add(scrollPane, BorderLayout.CENTER);
+        // Previous Implementation of GUI
+
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.add(scrollPane, BorderLayout.SOUTH);
+        centerPanel.add(canvas, BorderLayout.CENTER);
+
         getContentPane().setLayout(new BorderLayout());
         getContentPane().add(topPanel, BorderLayout.NORTH);
-        getContentPane().add(scrollPane, BorderLayout.CENTER);
+        getContentPane().add(centerPanel, BorderLayout.CENTER);
+        // New Implementation of GUI
     }
 
     private static void help() {
@@ -250,40 +265,62 @@ public class Gui extends JFrame {
         }
     }
 
-    private static void loadFile(String[] args) {
-        if (args.length < 1) {
-            appendOutput("Usage: load <filename>");
+    private void loadFile(String[] args) {
+    String filename = null;
+
+    if (args.length < 1 || args[0].trim().isEmpty()) {
+        // No filename provided — open file picker dialog
+        JFileChooser fileChooser = new JFileChooser();
+        int result = fileChooser.showOpenDialog(null);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            filename = fileChooser.getSelectedFile().getAbsolutePath();
+        } else {
+            appendOutput("File loading canceled.");
             return;
         }
-        String filename = args[0];
-        String lowerFilename = filename.toLowerCase();
-        try {
-            if (lowerFilename.endsWith(".stl")) {
-                Geometry.loadStl(filename);
-                appendOutput("STL file loaded: " + filename);
-            } else if (lowerFilename.endsWith(".dxf")) {
-                sketch.loadDXF(filename);
-                appendOutput("DXF file loaded: " + filename);
-            } else {
-                appendOutput("Unsupported file format.");
-            }
-        } catch (Exception e) {
-            appendOutput("Error loading file: " + e.getMessage());
-        }
+    } else {
+        // Filename provided in args
+        filename = args[0];
     }
 
-    private static void exportDXF(String[] args) {
+    String lowerFilename = filename.toLowerCase();
+    try {
+        if (lowerFilename.endsWith(".stl")) {
+            Geometry.loadStl(filename);
+            appendOutput("STL file loaded: " + filename);
+        } else if (lowerFilename.endsWith(".dxf")) {
+            sketch.loadDXF(filename);
+            appendOutput("DXF file loaded: " + filename);
+        } else {
+            appendOutput("Unsupported file format.");
+            return;
+        }
+
+        canvas.repaint();
+    } catch (Exception e) {
+        appendOutput("Error loading file: " + e.getMessage());
+    }
+}
+
+
+    private void exportDXF(String[] args) {
         if (args.length < 1) {
             appendOutput("Usage: export_dxf <filename>");
             return;
         }
+        String filename = args[0];
+        String unit = (String) unitSelector.getSelectedItem();
+
+        sketch.setUnits(unit);
+
         try {
-            sketch.exportSketchToDXF(args[0]);
-            appendOutput("Sketch exported to " + args[0]);
+            sketch.exportSketchToDXF(filename);
+            appendOutput("Sketch exported to " + filename + " with units: " + unit);
         } catch (Exception e) {
             appendOutput("Error exporting DXF: " + e.getMessage());
         }
     }
+
 
     private static void sketchClear() {
         sketch.clearSketch();
@@ -344,7 +381,7 @@ public class Gui extends JFrame {
                     return;
                 }
 
-                List <Sketch.PointEntity> points = new ArrayList <> ();
+                List < Sketch.PointEntity > points = new ArrayList < > ();
                 for (int i = 1; i < args.length; i += 2) {
                     float px = Float.parseFloat(args[i]);
                     float py = Float.parseFloat(args[i + 1]);
@@ -362,10 +399,6 @@ public class Gui extends JFrame {
             System.out.println("  sketch_polygon <x> <y> <radius> <sides>           - Regular polygon (3 to 25 sides)");
             System.out.println("  sketch_polygon <x1> <y1> <x2> <y2> ... <xn> <yn>   - Polygon from explicit points (3 to 25 points)");
         }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new Gui().setVisible(true));
     }
 
     public static void launch() {
