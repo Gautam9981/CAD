@@ -58,7 +58,7 @@ I have update the CLI to show units and scale the sketches appropriately (says u
 
 Day 15 (7/1/25)
 
-Now that sketch will show up in the GUI, once it is loaded. It is a very basic pane, I will include more functionality later on
+Now that sketch will show up in the GUI, once it is loaded. It is a very basic pane, I will include more functionality later on. I have also created a .exe file of the application, using launch4j (.jar, then .exe)
 
 
 
