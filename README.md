@@ -56,6 +56,10 @@ Day 14 (6/26/25)
 
 I have update the CLI to show units and scale the sketches appropriately (says units when loaded the .dxf file); Will set it up for GUI for later, with necessary changes
 
+Day 15 (7/1/25)
+
+Now that sketch will show up in the GUI, once it is loaded. It is a very basic pane, I will include more functionality later on
+
 
 
 
