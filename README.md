@@ -58,7 +58,22 @@ I have update the CLI to show units and scale the sketches appropriately (says u
 
 Day 15 (7/1/25)
 
-Now that sketch will show up in the GUI, once it is loaded. It is a very basic pane, I will include more functionality later on. I have also created a .exe file of the application, using launch4j (.jar, then .exe). I also created a .tar.gz file for MacOS and Linux Users, so that they can run the files using a run script (in .sh). Unless you are a developer, please ignore the compilation.txt instructions
+Now that sketch will show up in the GUI, once it is loaded. It is a very basic pane, I will include more functionality later on. I have also created a .exe file of the application, using launch4j (.jar, then .exe). I also created a .tar.gz file for MacOS and Linux Users, so that they can run the files using a run script (in .sh). Unless you are a developer, please ignore the compilation.txt instructions 
+
+Instructions for Running the program:
+
+For Windows: 
+1. Get the JDK (Download a JDK from Oracle or Adoptium) and install it
+2. Download the .exe file
+3. Run the .exe file (If you see this message: "Windows protected your PC — Microsoft Defender SmartScreen prevented an unrecognized app from starting…", Click "More info". Then click "Run anyway".)
+
+For MacOS/Linux:
+1. Download JDK (Oracle or Adoptium), and install it
+2. Download the .tar.gz file
+3. give the run.sh execution permissions (may do chmod +x run.sh for full execution, or chmod 744 run.sh; For safest use, calculate the number, then do chmod (your number) run.sh)
+4. Run it (./run.sh)
+
+
 
 
 
