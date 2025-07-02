@@ -71,7 +71,7 @@ For MacOS/Linux/FreeBSD:
 1. Download JDK (Oracle or Adoptium), and install it
 2. Download the .tar.gz file
 3. give the run.sh execution permissions (may do chmod +x run.sh for full execution, or chmod 744 run.sh; For safest use, calculate the number, then do chmod (your number) run.sh)
-4. Run it (./run.sh) Note: for FreeBSD, change the shebang line (#!/bin/bash) to (#!/bin/sh)
+4. Run it (./run.sh) (Note: for FreeBSD, change the shebang line (#!/bin/bash) to (#!/bin/sh))
 
 
 
