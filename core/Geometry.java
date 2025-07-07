@@ -1,14 +1,12 @@
 package core;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Geometry {
+
+    /** Enum representing the types of shapes that can be created */
     public enum Shape {
         NONE,
         CUBE,
@@ -17,66 +15,69 @@ public class Geometry {
 
     private static Shape currShape = Shape.NONE;
     private static float param = 0.0f;
+
     public static int cubeDivisions = 1;
     public static int sphereLatDiv = 30;
     public static int sphereLonDiv = 30;
-    private static List < float[] > extrudedTriangles = new ArrayList < > ();
 
+    private static final List<float[]> extrudedTriangles = new ArrayList<>();
+
+    /**
+     * Creates a cube with the specified size and subdivisions.
+     *
+     * @param size      Length of the cube's sides.
+     * @param divisions Number of subdivisions along each axis (1–200).
+     * @throws IllegalArgumentException if divisions is out of range.
+     */
     public static void createCube(float size, int divisions) {
         if (divisions < 1 || divisions > 200) {
             throw new IllegalArgumentException("Cube divisions must be between 1 and 200");
         }
+
         cubeDivisions = divisions;
         param = size;
         currShape = Shape.CUBE;
+
         System.out.printf("Cube created with size %.2f and %d subdivisions%n", size, divisions);
     }
 
+    /**
+     * Creates a sphere with the specified radius and subdivisions.
+     *
+     * @param radius    Radius of the sphere.
+     * @param divisions Number of latitude/longitude divisions (3–100).
+     * @throws IllegalArgumentException if divisions is out of range.
+     */
     public static void createSphere(float radius, int divisions) {
         if (divisions < 3 || divisions > 100) {
             throw new IllegalArgumentException("Sphere divisions must be between 3 and 100");
         }
+
         sphereLatDiv = sphereLonDiv = divisions;
         param = radius;
         currShape = Shape.SPHERE;
+
         System.out.printf("Sphere created with radius %.2f and %d subdivisions%n", radius, divisions);
     }
 
+    /**
+     * Attempts to extrude a 2D sketch to a 3D object.
+     * Currently disabled due to broken logic.
+     *
+     * @param sketch Sketch object representing a closed 2D loop.
+     * @param height Height to extrude the sketch.
+     */
     public static void extrude(Sketch sketch, float height) {
         // TODO: Broken extrusion logic temporarily disabled.
-        /*
-        if (!sketch.isClosedLoop()) {
-            System.out.println("Sketch must be a closed loop to extrude.");
-            return;
-        }
-
-        extrudedTriangles.clear();
-        var entities = sketch.getEntities();
-        for (int i = 0; i < entities.size(); i++) {
-            Sketch.Entity entity = entities.get(i);
-            if (entity instanceof Sketch.Line line) {
-                float x1 = line.x1, y1 = line.y1;
-                float x2 = line.x2, y2 = line.y2;
-
-                float z0 = 0f;
-                float z1 = height;
-
-                float[] p1 = new float[]{x1, y1, z0};
-                float[] p2 = new float[]{x2, y2, z0};
-                float[] p3 = new float[]{x2, y2, z1};
-                float[] p4 = new float[]{x1, y1, z1};
-
-                extrudedTriangles.addAll(List.of(p1, p2, p3));
-                extrudedTriangles.addAll(List.of(p1, p3, p4));
-            }
-        }
-
-        currShape = Shape.NONE;
-        System.out.println("Extruded sketch stored in memory.");
-        */
         System.out.println("Extrude logic is disabled (pending fix).");
     }
 
+    /**
+     * Saves the current shape (cube or sphere) to an ASCII STL file.
+     *
+     * @param filename Path to the STL file.
+     * @throws IOException if file writing fails.
+     */
     public static void saveStl(String filename) throws IOException {
         if (currShape == Shape.NONE && extrudedTriangles.isEmpty()) {
             System.out.println("No shape created yet");
@@ -85,28 +86,60 @@ public class Geometry {
 
         try (PrintWriter out = new PrintWriter(new FileWriter(filename))) {
             out.println("solid shape");
-            if (currShape == Shape.CUBE) {
-                generateCubeStl(out, param, cubeDivisions);
-            } else if (currShape == Shape.SPHERE) {
-                generateSphereStl(out, param, sphereLatDiv, sphereLonDiv);
-            } else if (!extrudedTriangles.isEmpty()) {
-                // TODO: Skip exporting broken extruded geometry.
-                /*
-                for (int i = 0; i < extrudedTriangles.size(); i += 3) {
-                    float[] a = extrudedTriangles.get(i);
-                    float[] b = extrudedTriangles.get(i + 1);
-                    float[] c = extrudedTriangles.get(i + 2);
-                    writeTriangle(out, a, b, c);
+
+            switch (currShape) {
+                case CUBE -> generateCubeStl(out, param, cubeDivisions);
+                case SPHERE -> generateSphereStl(out, param, sphereLatDiv, sphereLonDiv);
+                default -> {
+                    if (!extrudedTriangles.isEmpty()) {
+                        // TODO: Implement export of extruded geometry.
+                        System.out.println("Skipping export of extruded geometry (not implemented).");
+                    }
                 }
-                */
-                System.out.println("Skipping export of extruded geometry (not implemented).");
             }
+
             out.println("endsolid shape");
         }
 
         System.out.println("Saved STL file: " + filename);
     }
 
+    /**
+     * Loads an STL file and prints its vertices to the console.
+     *
+     * @param filename Path to the STL file.
+     * @throws IOException if reading the file fails.
+     */
+    public static void loadStl(String filename) throws IOException {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            String line;
+            int triangleCount = 0;
+
+            while ((line = reader.readLine()) != null) {
+                line = line.trim().toLowerCase();
+                if (line.startsWith("facet normal")) {
+                    reader.readLine(); // outer loop
+
+                    for (int i = 0; i < 3; i++) {
+                        String[] parts = reader.readLine().trim().split("\\s+");
+                        float x = Float.parseFloat(parts[1]);
+                        float y = Float.parseFloat(parts[2]);
+                        float z = Float.parseFloat(parts[3]);
+
+                        System.out.printf("Vertex %d: (%.3f, %.3f, %.3f)%n", i + 1, x, y, z);
+                    }
+
+                    reader.readLine(); // endloop
+                    reader.readLine(); // endfacet
+                    triangleCount++;
+                }
+            }
+
+            System.out.println("Finished reading STL. Triangles read: " + triangleCount);
+        }
+    }
+
+    /** Writes STL triangles representing a subdivided cube. */
     private static void generateCubeStl(PrintWriter out, float size, int divisions) {
         float half = size / 2.0f;
         float step = size / divisions;
@@ -120,27 +153,27 @@ public class Geometry {
                     float y1 = y0 + step;
 
                     switch (face) {
-                        case 0 -> {
+                        case 0 -> { // +X face
                             writeTriangle(out, half, x0, y0, half, x1, y0, half, x1, y1);
                             writeTriangle(out, half, x0, y0, half, x1, y1, half, x0, y1);
                         }
-                        case 1 -> {
+                        case 1 -> { // -X face
                             writeTriangle(out, -half, x0, y0, -half, x1, y1, -half, x1, y0);
                             writeTriangle(out, -half, x0, y0, -half, x0, y1, -half, x1, y1);
                         }
-                        case 2 -> {
+                        case 2 -> { // +Y face
                             writeTriangle(out, x0, half, y0, x1, half, y0, x1, half, y1);
                             writeTriangle(out, x0, half, y0, x1, half, y1, x0, half, y1);
                         }
-                        case 3 -> {
+                        case 3 -> { // -Y face
                             writeTriangle(out, x0, -half, y0, x1, -half, y1, x1, -half, y0);
                             writeTriangle(out, x0, -half, y0, x0, -half, y1, x1, -half, y1);
                         }
-                        case 4 -> {
+                        case 4 -> { // +Z face
                             writeTriangle(out, x0, y0, half, x1, y0, half, x1, y1, half);
                             writeTriangle(out, x0, y0, half, x1, y1, half, x0, y1, half);
                         }
-                        case 5 -> {
+                        case 5 -> { // -Z face
                             writeTriangle(out, x0, y0, -half, x1, y1, -half, x1, y0, -half);
                             writeTriangle(out, x0, y0, -half, x0, y1, -half, x1, y1, -half);
                         }
@@ -150,6 +183,7 @@ public class Geometry {
         }
     }
 
+    /** Writes STL triangles for a UV sphere. */
     private static void generateSphereStl(PrintWriter out, float radius, int latDiv, int lonDiv) {
         for (int i = 0; i < latDiv; i++) {
             float theta1 = (float) Math.PI * i / latDiv;
@@ -176,72 +210,76 @@ public class Geometry {
         }
     }
 
-    private static float[] sph(float r, float theta, float phi) {
-        return new float[] {
+    /**
+     * Converts spherical coordinates to Cartesian.
+ *
+ * @param r     Radius.
+ * @param theta Polar angle (latitude).
+ * @param phi   Azimuthal angle (longitude).
+ * @return Cartesian coordinate [x, y, z].
+ */
+private static float[] sph(float r, float theta, float phi) {
+    return new float[]{
             r * (float) Math.sin(theta) * (float) Math.cos(phi),
-                r * (float) Math.cos(theta),
-                r * (float) Math.sin(theta) * (float) Math.sin(phi)
-        };
+            r * (float) Math.cos(theta),
+            r * (float) Math.sin(theta) * (float) Math.sin(phi)
+    };
+}
+
+/**
+ * Writes a triangle to the STL file using three vertex arrays.
+ *
+ * @param out PrintWriter for the STL file.
+ * @param a   Vertex A [x, y, z].
+ * @param b   Vertex B [x, y, z].
+ * @param c   Vertex C [x, y, z].
+ */
+private static void writeTriangle(PrintWriter out, float[] a, float[] b, float[] c) {
+    writeTriangle(out, a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2]);
+}
+
+/**
+ * Writes a triangle facet to the STL file.
+ * Calculates the normal vector using cross product.
+ *
+ * @param out PrintWriter for the STL file.
+ * @param ax  Vertex A x-coordinate.
+ * @param ay  Vertex A y-coordinate.
+ * @param az  Vertex A z-coordinate.
+ * @param bx  Vertex B x-coordinate.
+ * @param by  Vertex B y-coordinate.
+ * @param bz  Vertex B z-coordinate.
+ * @param cx  Vertex C x-coordinate.
+ * @param cy  Vertex C y-coordinate.
+ * @param cz  Vertex C z-coordinate.
+ */
+private static void writeTriangle(PrintWriter out,
+                                  float ax, float ay, float az,
+                                  float bx, float by, float bz,
+                                  float cx, float cy, float cz) {
+    float ux = bx - ax, uy = by - ay, uz = bz - az;
+    float vx = cx - ax, vy = cy - ay, vz = cz - az;
+
+    // Cross product (u × v)
+    float nx = uy * vz - uz * vy;
+    float ny = uz * vx - ux * vz;
+    float nz = ux * vy - uy * vx;
+
+    // Normalize normal vector
+    float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+    if (len != 0) {
+        nx /= len;
+        ny /= len;
+        nz /= len;
     }
 
-    private static void writeTriangle(PrintWriter out, float[] a, float[] b, float[] c) {
-        writeTriangle(out, a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2]);
+    out.printf("  facet normal %f %f %f%n", nx, ny, nz);
+    out.println("    outer loop");
+    out.printf("      vertex %f %f %f%n", ax, ay, az);
+    out.printf("      vertex %f %f %f%n", bx, by, bz);
+    out.printf("      vertex %f %f %f%n", cx, cy, cz);
+    out.println("    endloop");
+    out.println("  endfacet");
     }
-
-    private static void writeTriangle(PrintWriter out,
-        float ax, float ay, float az,
-        float bx, float by, float bz,
-        float cx, float cy, float cz) {
-        float ux = bx - ax, uy = by - ay, uz = bz - az;
-        float vx = cx - ax, vy = cy - ay, vz = cz - az;
-
-        float nx = uy * vz - uz * vy;
-        float ny = uz * vx - ux * vz;
-        float nz = ux * vy - uy * vx;
-
-        float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
-        if (len != 0) {
-            nx /= len;
-            ny /= len;
-            nz /= len;
-        }
-
-        out.printf("  facet normal %f %f %f%n", nx, ny, nz);
-        out.println("    outer loop");
-        out.printf("      vertex %f %f %f%n", ax, ay, az);
-        out.printf("      vertex %f %f %f%n", bx, by, bz);
-        out.printf("      vertex %f %f %f%n", cx, cy, cz);
-        out.println("    endloop");
-        out.println("  endfacet");
-    }
-
-    public static void loadStl(String filename) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-            String line;
-            int triangleCount = 0;
-
-            while ((line = reader.readLine()) != null) {
-                line = line.trim().toLowerCase();
-                if (line.startsWith("facet normal")) {
-                    reader.readLine();
-
-                    for (int i = 0; i < 3; i++) {
-                        String vertexLine = reader.readLine().trim();
-                        String[] vertexParts = vertexLine.split("\\s+");
-                        float x = Float.parseFloat(vertexParts[1]);
-                        float y = Float.parseFloat(vertexParts[2]);
-                        float z = Float.parseFloat(vertexParts[3]);
-
-                        System.out.printf("Vertex %d: (%.3f, %.3f, %.3f)%n", i + 1, x, y, z);
-                    }
-
-                    reader.readLine();
-                    reader.readLine();
-                    triangleCount++;
-                }
-            }
-
-            System.out.println("Finished reading STL. Triangles read: " + triangleCount);
-        }
-    }
+    
 }
