@@ -1,6 +1,4 @@
 package cli;
-
-import core.Point;
 import core.Sketch;
 import core.Geometry;
 import java.util.Scanner;

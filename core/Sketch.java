@@ -8,7 +8,6 @@ import java.io.PrintWriter;
 import java.io.FileReader;
 import java.io.BufferedReader;
 import java.awt.Graphics;
-import java.awt.Component;
 
 public class Sketch {
 
@@ -433,7 +432,6 @@ public class Sketch {
                     entityType = entityType.trim().toUpperCase();
 
                     if (entityType.equals("SECTION")) {
-                        String sectionNameCode = reader.readLine();
                         String sectionName = reader.readLine();
                         if (sectionName != null && sectionName.equalsIgnoreCase("ENTITIES")) {
                             inEntitiesSection = true;
