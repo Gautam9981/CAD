@@ -60,6 +60,7 @@ public class Gui extends JFrame {
 
         // Command panel holding all buttons in a vertical grid layout
         JPanel commandPanel = new JPanel(new GridLayout(0, 1, 5, 5));
+        commandPanel.setLayout(new FlowLayout(FlowLayout.LEFT)); 
 
         // Add buttons with their corresponding action listeners
         addButton(commandPanel, "Help", e -> help());
