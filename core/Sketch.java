@@ -1,14 +1,14 @@
 package core; // Declares the package for the Sketch class.
 
-import java.util.ArrayList; // Used for dynamic arrays of entities and points.
-import java.util.List; // Interface for collections of entities and points.
-import java.io.FileWriter; // Used for writing character files.
-import java.io.IOException; // Handles I/O errors.
-import java.io.PrintWriter; // Prints formatted representations of objects to a text-output stream.
-import java.io.FileReader; // Reads character files.
-import java.io.BufferedReader; // Reads text from a character-input stream, buffering characters for efficient reading.
-import java.awt.Graphics; // Provides the basic graphics context for rendering.
-import java.awt.Component; // AWT component for obtaining graphics context (though not directly used in the refactored draw method).
+import java.util.ArrayList;
+import java.util.List; 
+import java.io.FileWriter; 
+import java.io.IOException; 
+import java.io.PrintWriter; 
+import java.io.FileReader; 
+import java.io.BufferedReader; 
+import java.awt.Graphics; 
+import java.awt.Component; 
 
 /**
  * The `Sketch` class manages a collection of geometric entities,
