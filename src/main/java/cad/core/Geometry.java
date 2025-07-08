@@ -1,4 +1,4 @@
-package core;
+package cad.core;
 
 import java.io.FileWriter;
 import java.io.IOException;

@@ -1,7 +1,7 @@
-package cli;
+package cad.cli;
 
-import core.Sketch;
-import core.Geometry;
+import cad.core.Sketch;
+import cad.core.Geometry;
 import java.util.Scanner;
 import java.util.List;
 import java.util.ArrayList;

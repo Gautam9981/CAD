@@ -1,11 +1,12 @@
-package gui;
+package cad.gui;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
-import core.Geometry;
-import core.Sketch;
+import cad.core.Geometry;
+import cad.core.Sketch;
+//import cad.gui.SketchCanvas;
 
 public class Gui extends JFrame {
     // === UI Components ===
@@ -36,7 +37,7 @@ public class Gui extends JFrame {
             System.err.println("Failed to initialize Look and Feel: " + ex);
         }
 
-        sketch = new Sketch();
+        Sketch sketch = new Sketch();
         canvas = new SketchCanvas(sketch);
 
         setTitle("CAD GUI");
