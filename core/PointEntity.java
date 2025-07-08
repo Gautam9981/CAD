@@ -1,23 +1,20 @@
 package core;
 
 /**
- * A mutable 2D point entity with public x and y coordinates.
- * Suitable for use cases where the point's position may change over time,
- * such as in simulations, games, or graphical objects.
+ * Represents a 2D point entity with x and y coordinates.
  */
 public class PointEntity {
-
-    /** The x-coordinate of the point. Can be modified directly. */
+    /** The x-coordinate of the point */
     public float x;
 
-    /** The y-coordinate of the point. Can be modified directly. */
+    /** The y-coordinate of the point */
     public float y;
 
     /**
-     * Constructs a PointEntity with the specified coordinates.
-     *
-     * @param x the initial x-coordinate
-     * @param y the initial y-coordinate
+     * Constructs a PointEntity with specified x and y coordinates.
+     * 
+     * @param x The x-coordinate
+     * @param y The y-coordinate
      */
     public PointEntity(float x, float y) {
         this.x = x;
@@ -25,10 +22,9 @@ public class PointEntity {
     }
 
     /**
-     * Returns a string representation of this PointEntity.
-     * Format: PointEntity(x, y)
-     *
-     * @return a string describing the current coordinates of this point
+     * Returns a string representation of the PointEntity.
+     * 
+     * @return A string in the format PointEntity(x, y)
      */
     @Override
     public String toString() {
