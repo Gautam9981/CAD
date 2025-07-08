@@ -10,7 +10,7 @@ import java.util.List;
 public class Gui extends JFrame {
     // === UI Components ===
     private static JTextArea outputArea;
-
+    
     // Input fields for various commands
     private JTextField cubeSizeField, sphereRadiusField, fileField, latField, lonField;
     private JTextField sketchPointX, sketchPointY;
