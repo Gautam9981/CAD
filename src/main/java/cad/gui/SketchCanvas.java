@@ -1,9 +1,9 @@
-package gui;
+package cad.gui;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.IOException;
-import core.Sketch;
+import cad.core.Sketch;
 
 /**
  * A JPanel subclass that renders a Sketch object.

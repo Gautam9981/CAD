@@ -1,4 +1,4 @@
-package core;
+package cad.core;
 
 /**
  * Represents a 2D point entity with x and y coordinates.

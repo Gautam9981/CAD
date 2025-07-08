@@ -1,6 +1,7 @@
+package cad;
 import java.util.Scanner;
-import cli.Cli;
-import gui.Gui;
+import cad.cli.Cli;
+import cad.gui.Gui;
 
 public class Main {
 
