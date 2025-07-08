@@ -7,20 +7,37 @@ import java.util.Scanner;
 import java.util.List;
 import java.util.ArrayList;
 
-
+/**
+ * Command-line interface for the CAD application.
+ * Supports commands to create shapes, manage sketches, save/load files, and configure settings.
+ */
 public class Cli {
+
+    /** Default subdivisions for cubes */
     private static int cubeDivisions = 20;
+
+    /** Latitude subdivisions for spheres */
     private static int sphereLatDiv = 30;
+
+    /** Longitude subdivisions for spheres */
     private static int sphereLonDiv = 30;
 
+    /** Sketch instance to manage 2D drawing entities */
     private static Sketch sketch = new Sketch();
 
+    /**
+     * Launch the CLI application.
+     * Prints welcome message and enters the command input loop.
+     */
     public static void launch() {
         System.out.println("Welcome to CAD CLI v1.0 (BETA)");
         System.out.println("Running Cli mode...");
         runCli();
     }
 
+    /**
+     * Enum representing supported measurement units and their conversion to millimeters.
+     */
     private enum Unit {
         MM(1.0f), CM(10.0f), M(1000.0f), IN(25.4f), FT(304.8f);
 
@@ -31,13 +48,23 @@ public class Cli {
         }
     }
 
+    /** Current selected unit for measurements (default: millimeters) */
     private static Unit currentUnit = Unit.MM;
 
+    /**
+     * Converts a value from the current unit to millimeters.
+     * 
+     * @param value The value in current unit
+     * @return The value converted to millimeters
+     */
     private static float convertToMillimeters(float value) {
         return value * currentUnit.toMillimeter;
     }
 
-
+    /**
+     * Main command processing loop.
+     * Reads user input, parses commands, and executes corresponding methods.
+     */
     public static void runCli() {
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {
@@ -135,6 +162,9 @@ public class Cli {
         }
     }
 
+    /**
+     * Displays a help message listing all available commands and their usage.
+     */
     private static void help() {
         System.out.println("Available commands:");
         System.out.println("  cube <size>                 - Create a cube");
@@ -150,7 +180,7 @@ public class Cli {
         System.out.println("  sketch_line <x1> <y1> <x2> <y2> - Add line to sketch");
         System.out.println("  sketch_circle <x> <y> <radius> - Add circle to sketch");
         System.out.println("  sketch_polygon <x> <y> <radius> <sides> - Add polygon (3-25 sides)");
-        System.out.println("  sketch_polygon <x1> <y1> <x2> <y2> ... <xn> <yn> - Add polygon from explicit points (at least 3 points)");
+        System.out.println("  sketch_polygon <x1> <y1> <x2> <y2> ... <xn> <yn> - Add polygon from explicit points (3-25 points)");
         System.out.println("  sketch_clear                - Clear sketch");
         System.out.println("  sketch_list                 - List all sketch entities");
         System.out.println("  export_dxf <filename>       - Export sketch to DXF");
@@ -158,15 +188,26 @@ public class Cli {
         System.out.println("  help (h), version (v), exit (e)");
     }
 
+    /**
+     * Prints the version information.
+     */
     private static void version() {
         System.out.println("CAD, version 1.0 (Beta)");
     }
 
+    /**
+     * Exits the application.
+     */
     private static void exit() {
         System.out.println("Exiting the CLI. Thanks for using it!");
         System.exit(0);
     }
 
+    /**
+     * Creates a cube with the specified size and configured subdivisions.
+     * 
+     * @param args Command arguments, expects size as second argument
+     */
     private static void createCube(String[] args) {
         if (args.length < 2) {
             System.out.println("Usage: cube <size>");
@@ -182,6 +223,11 @@ public class Cli {
         }
     }
 
+    /**
+     * Creates a sphere with the specified radius and configured subdivisions.
+     * 
+     * @param args Command arguments, expects radius as second argument
+     */
     private static void createSphere(String[] args) {
         if (args.length < 2) {
             System.out.println("Usage: sphere <radius>");
@@ -198,6 +244,11 @@ public class Cli {
         }
     }
 
+    /**
+     * Sets the number of subdivisions for cubes.
+     * 
+     * @param args Command arguments, expects count as second argument
+     */
     private static void setCubeDivisions(String[] args) {
         if (args.length < 2) {
             System.out.println("Usage: cube_div <count>");
@@ -216,6 +267,11 @@ public class Cli {
         }
     }
 
+    /**
+     * Sets latitude and longitude subdivisions for spheres.
+     * 
+     * @param args Command arguments, expects lat and lon as second and third arguments
+     */
     private static void setSphereDivisions(String[] args) {
         if (args.length < 3) {
             System.out.println("Usage: sphere_div <lat> <lon>");
@@ -236,6 +292,11 @@ public class Cli {
         }
     }
 
+    /**
+     * Saves the current geometry to an STL file.
+     * 
+     * @param args Command arguments, expects filename as second argument
+     */
     private static void saveFile(String[] args) {
         if (args.length < 2) {
             System.out.println("Usage: save <filename>");
@@ -249,11 +310,19 @@ public class Cli {
         }
     }
 
+    /**
+     * Clears all entities from the current sketch.
+     */
     private static void sketchClear() {
         sketch.clearSketch();
         System.out.println("Sketch cleared.");
     }
 
+    /**
+     * Exports the current sketch to a DXF file.
+     * 
+     * @param args Command arguments, expects filename as second argument
+     */
     private static void exportDxf(String[] args) {
         if (args.length < 2) {
             System.out.println("Usage: export_dxf <filename>");
@@ -268,52 +337,64 @@ public class Cli {
         }
     }
 
+    /**
+     * Adds a point entity to the sketch.
+     * 
+     * @param args Command arguments, expects x and y as second and third arguments
+     */
     private static void sketchPoint(String[] args) {
         if (args.length < 3) {
             System.out.println("Usage: sketch_point <x> <y>");
             return;
         }
-        String[] params = {
-            args[1],
-            args[2]
-        };
+        String[] params = { args[1], args[2] };
         int result = sketch.sketchPoint(params);
         if (result == 0) System.out.println("Point added to sketch.");
         else System.out.println("Failed to add point.");
     }
 
+    /**
+     * Adds a line entity to the sketch.
+     * 
+     * @param args Command arguments, expects x1, y1, x2, y2 as arguments 2-5
+     */
     private static void sketchLine(String[] args) {
         if (args.length < 5) {
             System.out.println("Usage: sketch_line <x1> <y1> <x2> <y2>");
             return;
         }
-        String[] params = {
-            args[1],
-            args[2],
-            args[3],
-            args[4]
-        };
+        String[] params = { args[1], args[2], args[3], args[4] };
         int result = sketch.sketchLine(params);
         if (result == 0) System.out.println("Line added to sketch.");
         else System.out.println("Failed to add line.");
     }
 
+    /**
+     * Adds a circle entity to the sketch.
+     * 
+     * @param args Command arguments, expects x, y, radius as arguments 2-4
+     */
     private static void sketchCircle(String[] args) {
         if (args.length < 4) {
             System.out.println("Usage: sketch_circle <x> <y> <radius>");
             return;
         }
-        String[] params = {
-            args[1],
-            args[2],
-            args[3]
-        };
+        String[] params = { args[1], args[2], args[3] };
         int result = sketch.sketchCircle(params);
         if (result == 0) System.out.println("Circle added to sketch.");
         else System.out.println("Failed to add circle.");
     }
 
+    /**
+     * Adds a polygon to the sketch.
+     * Supports two modes:
+     *  - Regular polygon defined by center (x,y), radius, and number of sides
+     *  - Polygon defined by explicit points (at least 3)
+     * 
+     * @param args Command arguments for polygon creation
+     */
     private static void sketchPolygon(String[] args) {
+        // Regular polygon mode: sketch_polygon <x> <y> <radius> <sides>
         if (args.length == 5) {
             try {
                 float x = Float.parseFloat(args[1]);
@@ -331,7 +412,9 @@ public class Cli {
             } catch (NumberFormatException e) {
                 System.out.println("Invalid numeric value in arguments.");
             }
-        } else if (args.length >= 7 && args.length % 2 == 1) {
+        } 
+        // Polygon from explicit points: sketch_polygon <x1> <y1> ... <xn> <yn>
+        else if (args.length >= 7 && args.length % 2 == 1) {
             try {
                 int pointCount = (args.length - 1) / 2;
                 if (pointCount < 3 || pointCount > 25) {
@@ -339,7 +422,7 @@ public class Cli {
                     return;
                 }
 
-                List < Sketch.PointEntity > points = new ArrayList < > ();
+                List<Sketch.PointEntity> points = new ArrayList<>();
                 for (int i = 1; i < args.length; i += 2) {
                     float px = Float.parseFloat(args[i]);
                     float py = Float.parseFloat(args[i + 1]);
@@ -352,18 +435,24 @@ public class Cli {
                 System.out.println("Invalid numeric value in polygon points.");
             }
         } else {
-            // Help message
             System.out.println("Usage:");
             System.out.println("  sketch_polygon <x> <y> <radius> <sides>           - Regular polygon (3 to 25 sides)");
             System.out.println("  sketch_polygon <x1> <y1> <x2> <y2> ... <xn> <yn>   - Polygon from explicit points (3 to 25 points)");
         }
     }
 
-
+    /**
+     * Lists all entities currently in the sketch.
+     */
     private static void sketchList() {
         sketch.listSketch();
     }
 
+    /**
+     * Loads an STL or DXF file.
+     * 
+     * @param args Command arguments, expects filename as second argument
+     */
     private static void loadFile(String[] args) {
         if (args.length < 2) {
             System.out.println("Usage: load <filename>");
@@ -388,13 +477,19 @@ public class Cli {
         }
     }
 
+    /**
+     * Sets the current measurement units.
+     * Supported units: mm, cm, m, in, ft
+     * 
+     * @param args Command arguments, expects unit as second argument
+     */
     private static void setUnits(String[] args) {
         if (args.length < 2) {
             System.out.println("Usage: units <mm|cm|m|in|ft>");
             return;
         }
         String unit = args[1].toLowerCase();
-        List < String > validUnits = List.of("mm", "cm", "m", "in", "ft");
+        List<String> validUnits = List.of("mm", "cm", "m", "in", "ft");
 
         if (!validUnits.contains(unit)) {
             System.out.println("Unsupported unit. Supported units: mm, cm, m, in, ft");
@@ -404,6 +499,4 @@ public class Cli {
         sketch.setUnits(unit);
         System.out.println("Units set to: " + unit);
     }
-
-
 }
