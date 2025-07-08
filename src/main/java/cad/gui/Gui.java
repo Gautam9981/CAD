@@ -6,7 +6,7 @@ import java.awt.event.*;
 import java.util.List;
 import cad.core.Geometry;
 import cad.core.Sketch;
-//import cad.gui.SketchCanvas;
+//import cad.gui.SketchCanvas; // This line should be commented out or removed as SketchCanvas is in the same package
 
 public class Gui extends JFrame {
     // === UI Components ===
@@ -37,8 +37,8 @@ public class Gui extends JFrame {
             System.err.println("Failed to initialize Look and Feel: " + ex);
         }
 
-        Sketch sketch = new Sketch();
-        canvas = new SketchCanvas(sketch);
+        Gui.sketch = new Sketch();
+        canvas = new SketchCanvas(Gui.sketch); // Pass the sketch instance to the canvas
 
         setTitle("CAD GUI");
         setSize(1920, 1080); // Full HD size
@@ -105,8 +105,6 @@ public class Gui extends JFrame {
         getContentPane().add(mainVerticalSplitPane, BorderLayout.CENTER);
     }
 
-    // ... (rest of your Gui class methods remain unchanged) ...
-
     // === Helper method: Add buttons and their actions ===
     private void addButtons(JPanel panel) {
         // General Commands
@@ -116,6 +114,7 @@ public class Gui extends JFrame {
         panel.add(new JSeparator()); // Visual separator
 
         // File Operations
+        // Modified to pass null if fileField is empty, so loadFile opens dialog
         addButton(panel, "Save File", e -> saveFile(new String[] { fileField.getText() }));
         addButton(panel, "Load File", e -> loadFile(new String[] { fileField.getText() }));
         addButton(panel, "Export DXF", e -> exportDXF(new String[] { fileField.getText() }));
@@ -408,11 +407,12 @@ public class Gui extends JFrame {
         }
     }
 
+    // Updated loadFile method for better integration with GUI and SketchCanvas
     private void loadFile(String[] args) {
         String filename = null;
 
+        // If no filename is provided via arguments (e.g., text field is empty), open file picker
         if (args.length < 1 || args[0].trim().isEmpty()) {
-            // No filename provided — open file picker dialog
             JFileChooser fileChooser = new JFileChooser();
             fileChooser.setDialogTitle("Load CAD File");
             int result = fileChooser.showOpenDialog(this); // Use 'this' for parent component
@@ -423,7 +423,7 @@ public class Gui extends JFrame {
                 return;
             }
         } else {
-            // Filename provided in args
+            // Filename provided in args (from text field)
             filename = args[0].trim();
         }
 
@@ -432,6 +432,8 @@ public class Gui extends JFrame {
             if (lowerFilename.endsWith(".stl")) {
                 Geometry.loadStl(filename);
                 appendOutput("STL file loaded: " + filename);
+                // If loading STL also affects the Sketch (e.g., you convert it back to 2D for editing),
+                // you would update the sketch object here. Otherwise, only repaint is needed for geometry.
             } else if (lowerFilename.endsWith(".dxf")) {
                 sketch.loadDXF(filename);
                 appendOutput("DXF file loaded: " + filename);
@@ -439,7 +441,8 @@ public class Gui extends JFrame {
                 appendOutput("Unsupported file format. Please use .stl or .dxf.");
                 return;
             }
-            canvas.repaint(); // Repaint canvas after loading new geometry/sketch
+            // Crucially, repaint the canvas to show the loaded data
+            canvas.repaint();
         } catch (Exception e) {
             appendOutput("Error loading file: " + e.getMessage());
         }
@@ -491,7 +494,7 @@ public class Gui extends JFrame {
             float y = Float.parseFloat(args[1]);
             sketch.addPoint(x, y);
             appendOutput("Point added to sketch: (" + x + ", " + y + ")");
-            canvas.repaint();
+            canvas.repaint(); // Repaint canvas after adding element
         } catch (NumberFormatException e) {
             appendOutput("Invalid coordinates. Please enter numbers for X and Y.");
         }
@@ -509,7 +512,7 @@ public class Gui extends JFrame {
             float y2 = Float.parseFloat(args[3]);
             sketch.addLine(x1, y1, x2, y2);
             appendOutput("Line added to sketch: (" + x1 + ", " + y1 + ") -> (" + x2 + ", " + y2 + ")");
-            canvas.repaint();
+            canvas.repaint(); // Repaint canvas after adding element
         } catch (NumberFormatException e) {
             appendOutput("Invalid coordinates. Please enter numbers for all coordinates.");
         }
@@ -526,7 +529,7 @@ public class Gui extends JFrame {
             float r = Float.parseFloat(args[2]);
             sketch.addCircle(x, y, r);
             appendOutput("Circle added to sketch: center (" + x + ", " + y + "), radius " + r);
-            canvas.repaint();
+            canvas.repaint(); // Repaint canvas after adding element
         } catch (NumberFormatException e) {
             appendOutput("Invalid input. Please enter numbers for X, Y, and Radius.");
         }
@@ -548,7 +551,7 @@ public class Gui extends JFrame {
             }
             sketch.sketchPolygon(x, y, r, sides);
             appendOutput("Polygon added: center (" + x + ", " + y + "), radius " + r + ", sides " + sides);
-            canvas.repaint();
+            canvas.repaint(); // Repaint canvas after adding element
         } catch (NumberFormatException e) {
             appendOutput("Invalid input. Please enter numbers for X, Y, Radius, and an integer for Sides.");
         }

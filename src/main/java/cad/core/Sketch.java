@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.FileReader;
 import java.io.BufferedReader;
-import java.awt.Graphics;
+import java.awt.Graphics; // Ensure this import is present if you use Graphics
 
 public class Sketch {
 
@@ -150,19 +150,19 @@ public class Sketch {
     }
 
     public List<String> listSketch() {
-    List<String> output = new ArrayList<>();
+        List<String> output = new ArrayList<>();
 
-    if (sketchEntities.isEmpty()) {
-        output.add("Sketch is empty.");
+        if (sketchEntities.isEmpty()) {
+            output.add("Sketch is empty.");
+            return output;
+        }
+
+        for (Entity e : sketchEntities) {
+            output.add(e.toString());
+        }
+
         return output;
     }
-
-    for (Entity e : sketchEntities) {
-        output.add(e.toString());
-    }
-
-    return output;
-   }
 
     private String units = "mm";
 
@@ -217,22 +217,20 @@ public class Sketch {
             out.println("ENTITIES");
 
             for (Entity e: sketchEntities) {
-                if (e instanceof PointEntity) {
-                    PointEntity p = (PointEntity) e;
+                if (e instanceof PointEntity p) {
                     out.println("0");
                     out.println("POINT");
                     out.println("8");
-                    out.println("0");
+                    out.println("0"); // Layer "0"
                     out.println("10");
                     out.println(p.x);
                     out.println("20");
                     out.println(p.y);
-                } else if (e instanceof Line) {
-                    Line l = (Line) e;
+                } else if (e instanceof Line l) {
                     out.println("0");
                     out.println("LINE");
                     out.println("8");
-                    out.println("0");
+                    out.println("0"); // Layer "0"
                     out.println("10");
                     out.println(l.x1);
                     out.println("20");
@@ -241,34 +239,32 @@ public class Sketch {
                     out.println(l.x2);
                     out.println("21");
                     out.println(l.y2);
-                } else if (e instanceof Circle) {
-                    Circle c = (Circle) e;
+                } else if (e instanceof Circle c) {
                     out.println("0");
                     out.println("CIRCLE");
                     out.println("8");
-                    out.println("0");
+                    out.println("0"); // Layer "0"
                     out.println("10");
                     out.println(c.x);
                     out.println("20");
                     out.println(c.y);
                     out.println("40");
                     out.println(c.r);
-                } else if (e instanceof Polygon) {
-                    Polygon poly = (Polygon) e;
+                } else if (e instanceof Polygon poly) {
                     out.println("0");
                     out.println("POLYLINE");
                     out.println("8");
-                    out.println("0");
-                    out.println("66");
+                    out.println("0"); // Layer "0"
+                    out.println("66"); // Entities follow (if vertices are separate)
                     out.println("1");
-                    out.println("70");
-                    out.println("1");
+                    out.println("70"); // Polyline flags (1 = closed)
+                    out.println("1"); // 1 for closed polyline (often 0 for open)
 
                     for (PointEntity p: poly.points) {
                         out.println("0");
                         out.println("VERTEX");
                         out.println("8");
-                        out.println("0");
+                        out.println("0"); // Layer "0"
                         out.println("10");
                         out.println(p.x);
                         out.println("20");
@@ -278,7 +274,7 @@ public class Sketch {
                     out.println("0");
                     out.println("SEQEND");
                     out.println("8");
-                    out.println("0");
+                    out.println("0"); // Layer "0" for SEQEND
                 }
             }
 
@@ -365,54 +361,68 @@ public class Sketch {
     }
 
     public void loadDXF(String filename) throws IOException {
-        clearSketch();
-        this.units = "unitless";
+        System.out.println("Attempting to load DXF file: " + filename);
+        java.io.File file = new java.io.File(filename);
+        System.out.println("Absolute path of file provided: " + file.getAbsolutePath());
+        if (!file.exists()) {
+            System.err.println("ERROR: File does not exist at path: " + file.getAbsolutePath());
+            throw new java.io.FileNotFoundException("DXF file not found: " + filename); // Throw exception to stop
+        }
+        if (!file.canRead()) {
+            System.err.println("ERROR: No read permission for file: " + file.getAbsolutePath());
+            throw new IOException("No read permission for DXF file: " + filename); // Throw exception to stop
+        }
 
+        clearSketch();
+        this.units = "unitless"; // Reset units before loading
+
+        // First pass: Read header for units
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
+            boolean inHeaderSection = false;
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
                 if (line.equalsIgnoreCase("0")) {
                     String nextLine = reader.readLine();
                     if (nextLine != null && nextLine.equalsIgnoreCase("SECTION")) {
-                        nextLine = reader.readLine();
+                        nextLine = reader.readLine(); // Group code 2
                         if (nextLine != null && nextLine.equalsIgnoreCase("2")) {
-                            nextLine = reader.readLine();
-                            if (nextLine != null && nextLine.equalsIgnoreCase("HEADER")) {
-                                while ((line = reader.readLine()) != null) {
-                                    line = line.trim();
-                                    if (line.equalsIgnoreCase("0")) {
-                                        nextLine = reader.readLine();
-                                        if (nextLine != null && nextLine.equalsIgnoreCase("ENDSEC")) {
-                                            break;
-                                        }
-                                    } else if (line.equalsIgnoreCase("9")) {
-                                        nextLine = reader.readLine();
-                                        if (nextLine != null && nextLine.equalsIgnoreCase("$INSUNITS")) {
-                                            reader.readLine();
-                                            String valueLine = reader.readLine();
-                                            if (valueLine != null) {
-                                                try {
-                                                    int code = Integer.parseInt(valueLine.trim());
-                                                    this.units = getUnitsFromDXFCode(code);
-                                                } catch (NumberFormatException e) {
-                                                    System.err.println("Warning: Invalid $INSUNITS code in DXF header. Using default units.");
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                break;
+                            String sectionName = reader.readLine();
+                            if (sectionName != null && sectionName.equalsIgnoreCase("HEADER")) {
+                                inHeaderSection = true;
+                            }
+                        }
+                    } else if (nextLine != null && nextLine.equalsIgnoreCase("ENDSEC") && inHeaderSection) {
+                        inHeaderSection = false;
+                        break; // Exit header parsing after ENDSEC
+                    }
+                } else if (inHeaderSection && line.equalsIgnoreCase("9")) {
+                    String varName = reader.readLine();
+                    if (varName != null && varName.equalsIgnoreCase("$INSUNITS")) {
+                        reader.readLine(); // Group code 70
+                        String valueLine = reader.readLine();
+                        if (valueLine != null) {
+                            try {
+                                int code = Integer.parseInt(valueLine.trim());
+                                this.units = getUnitsFromDXFCode(code);
+                                System.out.println("DXF Header Units: " + this.units + " (Code: " + code + ")");
+                            } catch (NumberFormatException e) {
+                                System.err.println("Warning: Invalid $INSUNITS code in DXF header. Using default units. Error: " + e.getMessage());
                             }
                         }
                     }
                 }
             }
+        } catch (IOException e) {
+            System.err.println("Error reading DXF header: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Re-throw to indicate failure
         }
 
         float scale = unitScaleFactor(units);
-        System.out.println("Loading DXF with units: " + units + " (scale factor: " + scale + ")");
+        System.out.println("Starting DXF entity parsing with units: " + units + " (scale factor: " + scale + ")");
 
+        // Second pass: Read entities
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
             String currentEntity = null;
@@ -421,131 +431,183 @@ public class Sketch {
             float tempVertexX = 0, tempVertexY = 0;
 
             boolean inEntitiesSection = false;
-            boolean inPolyline = false;
-            boolean inVertex = false;
-
-            String valueString = null;
+            boolean inPolylineEntity = false; // Renamed to avoid confusion with currentEntity="POLYLINE"
+            boolean waitingForVertexCoords = false; // New flag for vertex parsing state
 
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
+                // System.out.println("DBG: Processing line: '" + line + "'"); // Uncomment for detailed line-by-line debug
 
                 if (line.isEmpty()) continue;
 
                 if (line.equalsIgnoreCase("0")) {
-                    String entityType = reader.readLine();
-                    if (entityType == null) break;
-                    entityType = entityType.trim().toUpperCase();
+                    // This is a new entity or section start/end
+                    String entityTypeOrSection = reader.readLine();
+                    if (entityTypeOrSection == null) {
+                        System.err.println("ERROR: Unexpected EOF after group code 0.");
+                        break;
+                    }
+                    entityTypeOrSection = entityTypeOrSection.trim().toUpperCase();
+                    // System.out.println("DBG: Found 0, next is: " + entityTypeOrSection);
 
-                    if (entityType.equals("SECTION")) {
-                      //  String sectionNameCode = reader.readLine();
+                    // If we were parsing a non-POLYLINE entity, add it now
+                    if (currentEntity != null && !inPolylineEntity) {
+                        switch (currentEntity) {
+                            case "POINT":
+                                addEntity("POINT", x1, y1, 0, 0, 0, 0, 0, null);
+                                break;
+                            case "LINE":
+                                addEntity("LINE", x1, y1, x2, y2, 0, 0, 0, null);
+                                break;
+                            case "CIRCLE":
+                                addEntity("CIRCLE", 0, 0, 0, 0, cx, cy, radius, null);
+                                break;
+                            // POLYLINE handled by SEQEND
+                        }
+                        currentEntity = null; // Reset for the next entity
+                    }
+
+
+                    if (entityTypeOrSection.equals("SECTION")) {
+                        reader.readLine(); // Group code 2
                         String sectionName = reader.readLine();
                         if (sectionName != null && sectionName.equalsIgnoreCase("ENTITIES")) {
                             inEntitiesSection = true;
+                            // System.out.println("DBG: Entered ENTITIES section.");
                         } else {
-                            inEntitiesSection = false;
+                            inEntitiesSection = false; // Not the entities section, skip content
                         }
                         continue;
-                    } else if (entityType.equals("ENDSEC")) {
+                    } else if (entityTypeOrSection.equals("ENDSEC")) {
+                        // System.out.println("DBG: Exited current SECTION.");
                         inEntitiesSection = false;
                         continue;
-                    } else if (entityType.equals("EOF")) {
+                    } else if (entityTypeOrSection.equals("EOF")) {
+                        // System.out.println("DBG: Reached EOF.");
                         break;
                     }
 
-                    if (!inEntitiesSection) {
-                        continue;
-                    }
+                    if (inEntitiesSection) {
+                        currentEntity = entityTypeOrSection;
+                        // System.out.println("DBG: Current entity type: " + currentEntity);
 
-                    if (currentEntity != null && !inPolyline && !entityType.equals("VERTEX") && !entityType.equals("SEQEND")) {
-                        addEntity(
-                            currentEntity,
-                            x1 * scale, y1 * scale, x2 * scale, y2 * scale,
-                            cx * scale, cy * scale, radius * scale,
-                            null
-                        );
-                    }
+                        // Reset coordinates for new entity
+                        x1 = y1 = x2 = y2 = cx = cy = radius = 0;
 
-                    currentEntity = entityType;
-                    x1 = y1 = x2 = y2 = cx = cy = radius = 0;
-
-                    if (currentEntity.equals("POLYLINE")) {
-                        inPolyline = true;
-                        polyPoints = new ArrayList<>();
-                    } else if (currentEntity.equals("VERTEX") && inPolyline) {
-                        inVertex = true;
-                        tempVertexX = 0;
-                        tempVertexY = 0;
-                    } else if (currentEntity.equals("SEQEND") && inPolyline) {
-                        if (polyPoints != null && polyPoints.size() >= 3) {
-                            addEntity("POLYLINE", 0, 0, 0, 0, 0, 0, 0, scalePoints(polyPoints, scale));
+                        if (currentEntity.equals("POLYLINE")) {
+                            inPolylineEntity = true;
+                            polyPoints = new ArrayList<>();
+                            // System.out.println("DBG: Started POLYLINE parsing.");
+                        } else if (currentEntity.equals("VERTEX")) {
+                            if (!inPolylineEntity) {
+                                System.err.println("Warning: Encountered VERTEX outside of POLYLINE. Skipping.");
+                                currentEntity = null; // Treat as invalid entity
+                                continue;
+                            }
+                            waitingForVertexCoords = true;
+                            tempVertexX = 0;
+                            tempVertexY = 0;
+                            // System.out.println("DBG: Started VERTEX parsing.");
+                        } else if (currentEntity.equals("SEQEND")) {
+                            if (inPolylineEntity && polyPoints != null && polyPoints.size() >= 3) {
+                                addEntity("POLYLINE", 0, 0, 0, 0, 0, 0, 0, scalePoints(polyPoints, scale));
+                                // System.out.println("DBG: Added POLYLINE with " + polyPoints.size() + " points.");
+                            } else {
+                                System.err.println("Warning: Invalid or empty POLYLINE before SEQEND. Skipping.");
+                            }
+                            inPolylineEntity = false;
+                            polyPoints = null;
+                            currentEntity = null; // Clear entity state
+                            waitingForVertexCoords = false;
+                            // System.out.println("DBG: Ended POLYLINE parsing (SEQEND).");
                         }
-                        inPolyline = false;
-                        polyPoints = null;
-                        currentEntity = null;
                     }
 
-                } else if (inEntitiesSection) {
+                } else if (inEntitiesSection && currentEntity != null) {
                     int groupCode = 0;
-
+                    String valueString = null;
                     try {
                         groupCode = Integer.parseInt(line);
                         valueString = reader.readLine();
-                        if (valueString == null) break;
+                        if (valueString == null) {
+                            System.err.println("ERROR: Unexpected EOF after group code " + groupCode + " for entity " + currentEntity);
+                            break;
+                        }
                         valueString = valueString.trim();
 
                         switch (groupCode) {
-                            case 10:
-                                if (inVertex && inPolyline) {
-                                    tempVertexX = Float.parseFloat(valueString);
-                                } else {
-                                    if ("POINT".equals(currentEntity)) x1 = Float.parseFloat(valueString);
-                                    else if ("LINE".equals(currentEntity)) x1 = Float.parseFloat(valueString);
-                                    else if ("CIRCLE".equals(currentEntity)) cx = Float.parseFloat(valueString);
-                                }
+                            case 10: // X coordinate for point, start of line, center of circle, or vertex
+                                if (waitingForVertexCoords) tempVertexX = Float.parseFloat(valueString);
+                                else if ("POINT".equals(currentEntity)) x1 = Float.parseFloat(valueString);
+                                else if ("LINE".equals(currentEntity)) x1 = Float.parseFloat(valueString);
+                                else if ("CIRCLE".equals(currentEntity)) cx = Float.parseFloat(valueString);
                                 break;
-                            case 20:
-                                if (inVertex && inPolyline) {
+                            case 20: // Y coordinate
+                                if (waitingForVertexCoords) {
                                     tempVertexY = Float.parseFloat(valueString);
-                                    polyPoints.add(new PointEntity(tempVertexX, tempVertexY));
-                                    inVertex = false;
-                                } else {
-                                    if ("POINT".equals(currentEntity)) y1 = Float.parseFloat(valueString);
-                                    else if ("LINE".equals(currentEntity)) y1 = Float.parseFloat(valueString);
-                                    else if ("CIRCLE".equals(currentEntity)) cy = Float.parseFloat(valueString);
-                                }
+                                    if (polyPoints != null) {
+                                        polyPoints.add(new PointEntity(tempVertexX, tempVertexY));
+                                        // System.out.println("DBG: Added vertex (" + tempVertexX + ", " + tempVertexY + ") to polyline.");
+                                    }
+                                    waitingForVertexCoords = false; // Vertex complete
+                                } else if ("POINT".equals(currentEntity)) y1 = Float.parseFloat(valueString);
+                                else if ("LINE".equals(currentEntity)) y1 = Float.parseFloat(valueString);
+                                else if ("CIRCLE".equals(currentEntity)) cy = Float.parseFloat(valueString);
                                 break;
-                            case 11:
+                            case 11: // Second X coordinate for line
                                 if ("LINE".equals(currentEntity)) x2 = Float.parseFloat(valueString);
                                 break;
-                            case 21:
+                            case 21: // Second Y coordinate for line
                                 if ("LINE".equals(currentEntity)) y2 = Float.parseFloat(valueString);
                                 break;
-                            case 40:
+                            case 40: // Radius for circle
                                 if ("CIRCLE".equals(currentEntity)) radius = Float.parseFloat(valueString);
                                 break;
-                            case 70:
+                            case 66: // "Entities follow" for polyline
+                            case 70: // Polyline flags
+                                // Handled by state changes, no direct value assignment needed for geometry
+                                break;
+                            case 8: // Layer name (usually "0") - we don't store it, just consume the value
+                                // valueString contains the layer name, consume it
                                 break;
                             default:
+                                // System.out.println("DBG: Unhandled group code: " + groupCode + " for entity: " + currentEntity);
                                 break;
                         }
                     } catch (NumberFormatException e) {
-                        System.err.println("Warning: Invalid number format encountered. Group code line: '" + line + "', Value line: '" + valueString + "'. Error: " + e.getMessage());
+                        System.err.println("ERROR: Invalid number format for group code: '" + groupCode + "', value: '" + valueString + "' for entity: " + currentEntity + ". " + e.getMessage());
+                        e.printStackTrace();
+                        // Depending on severity, you might want to break or continue to try parsing next entity
+                        // For now, we continue to try parsing the next line, but the current entity might be incomplete
+                        // If this happens frequently, you might need more robust error recovery.
                     }
                 }
-            }
+            } // End while loop
 
-            if (currentEntity != null && !inPolyline) {
-                addEntity(
-                    currentEntity,
-                    x1 * scale, y1 * scale, x2 * scale, y2 * scale,
-                    cx * scale, cy * scale, radius * scale,
-                    null
-                );
+            // After loop, if there's a pending non-POLYLINE entity
+            if (currentEntity != null && !inPolylineEntity) {
+                switch (currentEntity) {
+                    case "POINT":
+                        addEntity("POINT", x1, y1, 0, 0, 0, 0, 0, null);
+                        break;
+                    case "LINE":
+                        addEntity("LINE", x1, y1, x2, y2, 0, 0, 0, null);
+                        break;
+                    case "CIRCLE":
+                        addEntity("CIRCLE", 0, 0, 0, 0, cx, cy, radius, null);
+                        break;
+                }
             }
+        } catch (IOException e) {
+            System.err.println("Error parsing DXF entities: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Re-throw to indicate failure
         }
 
-        System.out.println("DXF loaded with units: " + units + " (scale factor applied: " + scale + ")");
+        System.out.println("DXF loaded successfully with units: " + units + " (scale factor applied: " + scale + ")");
+        System.out.println("Total entities loaded: " + sketchEntities.size()); // Final count
     }
+
 
     private float unitScaleFactor(String units) {
         return switch (units) {
@@ -554,7 +616,7 @@ public class Sketch {
             case "mm" -> 1.0f;
             case "cm" -> 10.0f;
             case "m" -> 1000.0f;
-            default -> 1.0f;
+            default -> 1.0f; // Default to 1.0 if unitless or unknown
         };
     }
 
@@ -567,26 +629,34 @@ public class Sketch {
     }
 
     private void addEntity(String entityType, float x1, float y1, float x2, float y2,
-        float cx, float cy, float radius, List < PointEntity > polyPoints) {
+                           float cx, float cy, float radius, List < PointEntity > polyPoints) {
+        // Apply scaling *before* adding the entity to the sketchEntities list
+        float scale = unitScaleFactor(this.units); // Get the current unit scale factor
+
         switch (entityType) {
             case "POINT":
-                this.addPoint(x1, y1);
+                this.addPoint(x1 * scale, y1 * scale);
+                System.out.println("Loaded: Point (scaled)");
                 break;
             case "LINE":
-                this.addLine(x1, y1, x2, y2);
+                this.addLine(x1 * scale, y1 * scale, x2 * scale, y2 * scale);
+                System.out.println("Loaded: Line (scaled)");
                 break;
             case "CIRCLE":
-                this.addCircle(cx, cy, radius);
+                this.addCircle(cx * scale, cy * scale, radius * scale);
+                System.out.println("Loaded: Circle (scaled)");
                 break;
             case "POLYLINE":
+                // polyPoints are already scaled in the loadDXF method if they come from there
                 if (polyPoints != null && polyPoints.size() >= 3) {
-                    this.addPolygon(polyPoints);
+                    this.addPolygon(polyPoints); // addPolygon handles its own validation
+                    System.out.println("Loaded: Polygon with " + polyPoints.size() + " points (scaled)");
                 } else {
-                    System.err.println("Warning: Skipping invalid polygon with less than 3 points.");
+                    System.err.println("Warning: Skipping invalid polygon with less than 3 points during addEntity call.");
                 }
                 break;
             default:
-                System.out.println("Unknown entity type encountered: " + entityType);
+                System.out.println("Warning: Unknown entity type encountered during addEntity: " + entityType);
                 break;
         }
     }
@@ -622,7 +692,7 @@ public class Sketch {
                     minX = Math.min(minX, Math.min(l.x1, l.x2));
                     maxX = Math.max(maxX, Math.max(l.x1, l.x2));
                     minY = Math.min(minY, Math.min(l.y1, l.y2));
-                    maxY = Math.max(maxY, l.y2);
+                    maxY = Math.max(maxY, Math.max(l.y1, l.y2)); // Fixed bug: was maxY = Math.max(maxY, l.y2);
                 }
             } else if (e instanceof Circle c) {
                 if (firstEntity) {
@@ -651,27 +721,23 @@ public class Sketch {
             }
         }
 
+        // If after checking all entities, firstEntity is still true, it means sketchEntities was empty,
+        // or contained only invalid/unhandled entity types for bounding box calculation.
+        // This block should ideally not be needed if the loop correctly calculates bounds for valid entities.
         if (firstEntity) {
+            // This part of your original code suggests a fallback if no bounds were found.
+            // It might be better to ensure min/max are correctly initialized or throw an error.
+            // For now, retaining a simplified version if the sketch is truly empty.
             if (!sketchEntities.isEmpty()) {
-                Entity first = sketchEntities.get(0);
-                if (first instanceof PointEntity p) {
-                    minX = p.x - 10; maxX = p.x + 10;
-                    minY = p.y - 10; maxY = p.y + 10;
-                } else if (first instanceof Line l) {
-                    minX = Math.min(l.x1, l.x2) - 10; maxX = Math.max(l.x1, l.x2) + 10;
-                    minY = Math.min(l.y1, l.y2) - 10; maxY = Math.max(l.y1, l.y2) + 10;
-                } else if (first instanceof Circle c) {
-                    minX = c.x - c.r - 10; maxX = c.x + c.r + 10;
-                    minY = c.y - c.r - 10; maxY = c.y + c.r + 10;
-                } else if (first instanceof Polygon poly && !poly.points.isEmpty()) {
-                    PointEntity p = poly.points.get(0);
-                    minX = p.x - 10; maxX = p.x + 10;
-                    minY = p.y - 10; maxY = p.y + 10;
-                }
+                // If there are entities but bounds couldn't be calculated, it's an edge case.
+                // You might default to a small arbitrary range.
+                minX = -10; maxX = 10;
+                minY = -10; maxY = 10;
             } else {
-                return;
+                return; // Nothing to draw
             }
         }
+
 
         int canvasWidth = 800;
         int canvasHeight = 800;

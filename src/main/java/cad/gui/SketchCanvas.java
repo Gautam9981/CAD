@@ -2,7 +2,7 @@ package cad.gui;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.IOException;
+//import java.io.IOException;
 import cad.core.Sketch;
 
 /**
@@ -47,7 +47,7 @@ public class SketchCanvas extends JPanel {
      * Main method to launch the Sketch viewer application.
      * Opens a file chooser dialog to load a DXF file, then displays it.
      */
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
         Sketch sketch = new Sketch();
 
         // Open file chooser dialog to select a DXF file
@@ -83,4 +83,5 @@ public class SketchCanvas extends JPanel {
         frame.setLocationRelativeTo(null);  // Center on screen
         frame.setVisible(true);
     }
+*/
 }
