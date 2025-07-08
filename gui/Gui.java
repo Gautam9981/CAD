@@ -6,8 +6,6 @@ import java.awt.event.*;
 import core.Sketch;
 import core.Geometry;
 import java.util.List;
-import java.util.ArrayList;
-import gui.SketchCanvas;
 
 public class Gui extends JFrame {
     // === UI Components ===
