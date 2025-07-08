@@ -6,7 +6,7 @@ import java.awt.event.*;
 import java.util.List;
 import cad.core.Geometry;
 import cad.core.Sketch;
-//import cad.gui.SketchCanvas; // This line should be commented out or removed as SketchCanvas is in the same package
+import com.formdev.flatlaf.FlatLightLaf;
 
 public class Gui extends JFrame {
     // === UI Components ===
@@ -32,9 +32,15 @@ public class Gui extends JFrame {
     public Gui() {
         // Set the Look and Feel FIRST for a modern appearance
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            // Try FlatLaf first
+            UIManager.setLookAndFeel(new FlatLightLaf());
         } catch (Exception ex) {
-            System.err.println("Failed to initialize Look and Feel: " + ex);
+            System.err.println("Failed to initialize FlatLaf: " + ex);
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception ex2) {
+                System.err.println("Failed to initialize System Look and Feel: " + ex2);
+            }
         }
 
         Gui.sketch = new Sketch();
