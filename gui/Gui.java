@@ -4,45 +4,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
-
-// Dummy core classes for compilation purposes.
-// Replace these with your actual core.Sketch and core.Geometry implementations.
-class Sketch {
-    public void clearSketch() {}
-    public List<String> listSketch() { return List.of("Example Line (0,0)-(10,10)", "Example Circle (5,5) R=2"); }
-    public void addPoint(float x, float y) {}
-    public void addLine(float x1, float y1, float x2, float y2) {}
-    public void addCircle(float x, float y, float r) {}
-    public void sketchPolygon(float x, float y, float r, int sides) {}
-    public void loadDXF(String filename) throws Exception {
-        if (!filename.endsWith(".dxf")) throw new IllegalArgumentException("Not a DXF file.");
-        // Simulate loading
-    }
-    public void exportSketchToDXF(String filename) throws Exception {
-        if (!filename.endsWith(".dxf")) throw new IllegalArgumentException("Not a DXF file.");
-        // Simulate exporting
-    }
-    public void setUnits(String unit) {}
-}
-
-class Geometry {
-    public static void createCube(float size, int divisions) throws IllegalArgumentException {
-        if (size <= 0) throw new IllegalArgumentException("Cube size must be positive.");
-        // Simulate cube creation
-    }
-    public static void createSphere(float radius, int maxDiv) throws IllegalArgumentException {
-        if (radius <= 0) throw new IllegalArgumentException("Sphere radius must be positive.");
-        // Simulate sphere creation
-    }
-    public static void saveStl(String filename) throws Exception {
-        if (!filename.endsWith(".stl")) throw new IllegalArgumentException("Not an STL file.");
-        // Simulate STL saving
-    }
-    public static void loadStl(String filename) throws Exception {
-        if (!filename.endsWith(".stl")) throw new IllegalArgumentException("Not an STL file.");
-        // Simulate STL loading
-    }
-}
+import core.Geometry;
+import core.Sketch;
 
 public class Gui extends JFrame {
     // === UI Components ===
@@ -78,7 +41,6 @@ public class Gui extends JFrame {
 
         sketch = new Sketch();
         canvas = new SketchCanvas(sketch);
-        canvas.setPreferredSize(new Dimension(800, 800)); // Maintain preferred size for canvas
 
         setTitle("CAD GUI");
         setSize(1920, 1080); // Full HD size
@@ -91,7 +53,8 @@ public class Gui extends JFrame {
         outputArea.setFont(new Font("Monospaced", Font.PLAIN, 12)); // Use a monospaced font for console output
         JScrollPane scrollPane = new JScrollPane(outputArea);
         scrollPane.setBorder(BorderFactory.createTitledBorder("Console Output")); // Add a titled border
-        scrollPane.setPreferredSize(new Dimension(0, 150)); // Give output area a fixed height
+        // Removed preferred size here, JSplitPane will manage it
+
 
         // --- Command buttons panel (vertical list of buttons) ---
         JPanel commandPanel = new JPanel();
@@ -110,24 +73,40 @@ public class Gui extends JFrame {
         initializeInputFields(); // Initialize all JTextFields
         addInputFields(inputPanel); // Add labeled inputs using GridBagLayout
 
-        // --- Top Control Panel (Commands + Inputs) ---
+        // --- Left Control Panel (Commands + Inputs) ---
         // Combines command buttons and input fields side by side
-        JPanel controlPanel = new JPanel(new BorderLayout(10, 0)); // Add horizontal gap between components
-        controlPanel.add(commandScrollPane, BorderLayout.WEST);
-        controlPanel.add(inputPanel, BorderLayout.CENTER);
-        controlPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Add padding around the control panel
+        JPanel leftControlPanel = new JPanel(new BorderLayout(10, 0)); // Add horizontal gap between components
+        leftControlPanel.add(commandScrollPane, BorderLayout.WEST);
+        leftControlPanel.add(inputPanel, BorderLayout.CENTER);
+        leftControlPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Add padding around the control panel
 
-        // --- Main Content Panel (Canvas + Output) ---
-        // Combines drawing canvas and console output
-        JPanel mainContentPanel = new JPanel(new BorderLayout(0, 10)); // Add vertical gap between components
-        mainContentPanel.add(canvas, BorderLayout.CENTER);
-        mainContentPanel.add(scrollPane, BorderLayout.SOUTH);
-        mainContentPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Add padding around canvas/output
+        // --- Main Content Horizontal Split Pane ---
+        // Left side will have the combined command/input panels
+        // Right side will have the canvas
+        JSplitPane mainHorizontalSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, leftControlPanel, canvas);
+        mainHorizontalSplitPane.setResizeWeight(0.7); // Give leftControlPanel more space initially (e.g., 70% for controls, 30% for canvas)
+        mainHorizontalSplitPane.setOneTouchExpandable(true); // Adds a quick expand/collapse button
+        // Set initial divider location on component visibility
+        SwingUtilities.invokeLater(() -> {
+            mainHorizontalSplitPane.setDividerLocation(mainHorizontalSplitPane.getWidth() * 2 / 3);
+        });
 
-        // --- Add panels to the frame ---
+
+        // --- Vertical Split Pane for Main Content and Console ---
+        // Top component is the mainHorizontalSplitPane
+        // Bottom component is the console output scrollPane
+        JSplitPane mainVerticalSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, mainHorizontalSplitPane, scrollPane);
+        mainVerticalSplitPane.setResizeWeight(0.8); // Give mainHorizontalSplitPane more space (e.g., 80% for drawing/controls, 20% for console)
+        mainVerticalSplitPane.setOneTouchExpandable(true); // Adds a quick expand/collapse button
+        // Set initial divider location on component visibility
+        SwingUtilities.invokeLater(() -> {
+            mainVerticalSplitPane.setDividerLocation(mainVerticalSplitPane.getHeight() - 150); // Set console to initial 150px height
+        });
+
+
+        // --- Add the main vertical split pane to the frame ---
         getContentPane().setLayout(new BorderLayout());
-        getContentPane().add(controlPanel, BorderLayout.NORTH);
-        getContentPane().add(mainContentPanel, BorderLayout.CENTER);
+        getContentPane().add(mainVerticalSplitPane, BorderLayout.CENTER);
     }
 
     // === Helper method: Add buttons and their actions ===
@@ -138,18 +117,18 @@ public class Gui extends JFrame {
         addButton(panel, "Exit", e -> System.exit(0));
         panel.add(new JSeparator()); // Visual separator
 
+                // File Operations
+        addButton(panel, "Save File", e -> saveFile(new String[] { fileField.getText() }));
+        addButton(panel, "Load File", e -> loadFile(new String[] { fileField.getText() }));
+        addButton(panel, "Export DXF", e -> exportDXF(new String[] { fileField.getText() }));
+        panel.add(new JSeparator());
+
         // 3D Model Commands
         addButton(panel, "Create Cube", e -> createCube(new String[] { cubeSizeField.getText() }));
         addButton(panel, "Set Cube Div", e -> setCubeDivisions(new String[] { cubeSizeField.getText() }));
         panel.add(new JSeparator());
         addButton(panel, "Create Sphere", e -> createSphere(new String[] { sphereRadiusField.getText() }));
         addButton(panel, "Set Sphere Div", e -> setSphereDivisions(new String[] { latField.getText(), lonField.getText() }));
-        panel.add(new JSeparator());
-
-        // File Operations
-        addButton(panel, "Save File", e -> saveFile(new String[] { fileField.getText() }));
-        addButton(panel, "Load File", e -> loadFile(new String[] { fileField.getText() }));
-        addButton(panel, "Export DXF", e -> exportDXF(new String[] { fileField.getText() }));
         panel.add(new JSeparator());
 
         // 2D Sketching Commands
@@ -199,6 +178,22 @@ public class Gui extends JFrame {
 
         int row = 0;
 
+        
+        // Group File Operations
+        addSectionHeader(inputPanel, "File Operations", row++);
+
+        gbc.gridy = row++;
+        gbc.gridx = 0; inputPanel.add(new JLabel("File Name:"), gbc);
+        gbc.gridx = 1; inputPanel.add(fileField, gbc);
+
+        // Separator
+        gbc.gridy = row++;
+        gbc.gridx = 0;
+        gbc.gridwidth = 2;
+        inputPanel.add(new JSeparator(), gbc);
+        gbc.gridwidth = 1;
+
+
         // Group 3D Object Parameters
         addSectionHeader(inputPanel, "3D Object Parameters", row++);
 
@@ -224,20 +219,6 @@ public class Gui extends JFrame {
         gbc.gridwidth = 2; // Span across two columns
         inputPanel.add(new JSeparator(), gbc);
         gbc.gridwidth = 1; // Reset gridwidth
-
-        // Group File Operations
-        addSectionHeader(inputPanel, "File Operations", row++);
-
-        gbc.gridy = row++;
-        gbc.gridx = 0; inputPanel.add(new JLabel("File Name:"), gbc);
-        gbc.gridx = 1; inputPanel.add(fileField, gbc);
-
-        // Separator
-        gbc.gridy = row++;
-        gbc.gridx = 0;
-        gbc.gridwidth = 2;
-        inputPanel.add(new JSeparator(), gbc);
-        gbc.gridwidth = 1;
 
         // Group Sketching Parameters
         addSectionHeader(inputPanel, "2D Sketching Parameters", row++);
@@ -333,17 +314,17 @@ public class Gui extends JFrame {
 
     private static void help() {
         appendOutput("Available commands:");
-        appendOutput("  cube <size>");
-        appendOutput("  sphere <radius>");
-        appendOutput("  save <filename>");
-        appendOutput("  load <filename>");
-        appendOutput("  cube_div <count>");
-        appendOutput("  sphere_div <lat> <lon>");
-        appendOutput("  sketch_point <x> <y>");
-        appendOutput("  sketch_line <x1> <y1> <x2> <y2>");
-        appendOutput("  sketch_circle <x> <y> <r>");
-        appendOutput("  sketch_polygon <x> <y> <radius> <sides>");
-        appendOutput("  export_dxf <filename>");
+        appendOutput("  cube <size>");
+        appendOutput("  sphere <radius>");
+        appendOutput("  save <filename>");
+        appendOutput("  load <filename>");
+        appendOutput("  cube_div <count>");
+        appendOutput("  sphere_div <lat> <lon>");
+        appendOutput("  sketch_point <x> <y>");
+        appendOutput("  sketch_line <x1> <y1> <x2> <y2>");
+        appendOutput("  sketch_circle <x> <y> <r>");
+        appendOutput("  sketch_polygon <x> <y> <radius> <sides>");
+        appendOutput("  export_dxf <filename>");
     }
 
     private static void createCube(String[] args) {
@@ -499,7 +480,7 @@ public class Gui extends JFrame {
         } else {
             appendOutput("Sketch contents:");
             for (String item : items) {
-                appendOutput("  " + item); // Indent list items for readability
+                appendOutput("  " + item); // Indent list items for readability
             }
         }
     }
@@ -577,35 +558,11 @@ public class Gui extends JFrame {
         }
     }
 
-    // Dummy SketchCanvas class for compilation.
-    // Replace this with your actual gui.SketchCanvas implementation.
-    class SketchCanvas extends JPanel {
-        private Sketch sketch;
-        public SketchCanvas(Sketch sketch) {
-            this.sketch = sketch;
-            setBorder(BorderFactory.createLineBorder(Color.GRAY, 2)); // Add a border to the canvas
-            setBackground(Color.WHITE); // Set a background color
-        }
-
-        @Override
-        protected void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            // Basic drawing instruction for demonstration
-            g.setColor(Color.LIGHT_GRAY);
-            g.drawString("CAD Drawing Area (Contents from Sketch object will be rendered here)", getWidth()/2 - 200, getHeight()/2);
-            // In a real application, you would iterate through sketch.getElements() and draw them
-        }
-    }
-
     // === Main method to start the app ===
     public static void launch() {
         SwingUtilities.invokeLater(() -> {
             Gui gui = new Gui();
             gui.setVisible(true);
         });
-    }
-
-    public static void main(String[] args) {
-        launch();
     }
 }
