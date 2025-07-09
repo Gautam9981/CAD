@@ -60,6 +60,14 @@ Day 15 (7/1/25)
 
 Now that sketch will show up in the GUI, once it is loaded. It is a very basic pane, I will include more functionality later on. I have also created a .exe file of the application, using launch4j (.jar, then .exe). I also created a .tar.gz file for MacOS and Linux Users, so that they can run the files using a run script (in .sh). Unless you are a developer, please ignore the compilation.txt instructions 
 
+Day 16 (7/7/25)
+
+We finished refactoring and adding comments, as necessary
+
+Day 17 (7/8/25)
+
+I was able to set up the application such that it can also load .stl files as well, and allowing the manipulation of the view using the mouse and the keyboard
+
 Instructions for Running the program:
 
 For Windows: 
