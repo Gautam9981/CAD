@@ -31,6 +31,53 @@ public class Geometry {
     private static List<float[]> extrudedTriangles = new ArrayList<>(); // Extruded geometry storage
 
     /**
+     * Stores triangles loaded from the last STL file. Each float[9] is a triangle (3 vertices x 3 coords).
+     */
+    private static List<float[]> loadedStlTriangles = new ArrayList<>();
+
+    /**
+     * Returns the triangles loaded from the last STL file.
+     * Used by the viewer to render STL geometry.
+     * @return List of float[9] triangles
+     */
+    public static List<float[]> getLoadedStlTriangles() {
+        return loadedStlTriangles;
+    }
+
+    /**
+     * Loads an STL file and stores its triangles for rendering.
+     * Each triangle is parsed and added to loadedStlTriangles.
+     * @param filename STL file to read.
+     * @throws IOException if file reading fails.
+     */
+    public static void loadStl(String filename) throws IOException {
+        loadedStlTriangles.clear();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            String line;
+            int triangleCount = 0;
+            while ((line = reader.readLine()) != null) {
+                line = line.trim().toLowerCase();
+                if (line.startsWith("facet normal")) {
+                    reader.readLine();  // Skip "outer loop"
+                    float[] tri = new float[9];
+                    for (int i = 0; i < 3; i++) {
+                        String vertexLine = reader.readLine().trim();
+                        String[] vertexParts = vertexLine.split("\\s+");
+                        tri[i * 3] = Float.parseFloat(vertexParts[1]);
+                        tri[i * 3 + 1] = Float.parseFloat(vertexParts[2]);
+                        tri[i * 3 + 2] = Float.parseFloat(vertexParts[3]);
+                    }
+                    loadedStlTriangles.add(tri);
+                    reader.readLine(); // Skip "endloop"
+                    reader.readLine(); // Skip "endfacet"
+                    triangleCount++;
+                }
+            }
+            System.out.println("Finished reading STL. Triangles read: " + triangleCount);
+        }
+    }
+
+    /**
      * Create a cube with specified size and subdivisions.
      *
      * @param size      The size of the cube's edge.
@@ -289,45 +336,5 @@ public class Geometry {
         out.printf("      vertex %f %f %f%n", cx, cy, cz);
         out.println("    endloop");
         out.println("  endfacet");
-    }
-
-    /**
-     * Load an STL file and print its vertices to the console.
-     * This is a simple parser that reads vertices from facets.
-     *
-     * @param filename STL file to read.
-     * @throws IOException if file reading fails.
-     */
-    public static void loadStl(String filename) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-            String line;
-            int triangleCount = 0;
-
-            while ((line = reader.readLine()) != null) {
-                line = line.trim().toLowerCase();
-
-                // Detect facet start
-                if (line.startsWith("facet normal")) {
-                    reader.readLine();  // Skip "outer loop"
-
-                    // Read and print 3 vertices
-                    for (int i = 0; i < 3; i++) {
-                        String vertexLine = reader.readLine().trim();
-                        String[] vertexParts = vertexLine.split("\\s+");
-                        float x = Float.parseFloat(vertexParts[1]);
-                        float y = Float.parseFloat(vertexParts[2]);
-                        float z = Float.parseFloat(vertexParts[3]);
-
-                        System.out.printf("Vertex %d: (%.3f, %.3f, %.3f)%n", i + 1, x, y, z);
-                    }
-
-                    reader.readLine(); // Skip "endloop"
-                    reader.readLine(); // Skip "endfacet"
-                    triangleCount++;
-                }
-            }
-
-            System.out.println("Finished reading STL. Triangles read: " + triangleCount);
-        }
     }
 }

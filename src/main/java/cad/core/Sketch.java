@@ -661,7 +661,14 @@ public class Sketch {
         }
     }
 
+    /**
+     * Draws all entities in the sketch onto the provided Graphics context.
+     * Handles scaling and centering so the sketch fits the canvas.
+     *
+     * @param g The Graphics context to draw on (usually from a JPanel).
+     */
     public void draw(Graphics g) {
+        // If there are no entities, nothing to draw
         if (sketchEntities.isEmpty()) {
             return;
         }
@@ -671,6 +678,7 @@ public class Sketch {
 
         boolean firstEntity = true;
 
+        // Compute bounding box of all entities for scaling
         for (Entity e: sketchEntities) {
             if (e instanceof PointEntity p) {
                 if (firstEntity) {
@@ -723,21 +731,14 @@ public class Sketch {
 
         // If after checking all entities, firstEntity is still true, it means sketchEntities was empty,
         // or contained only invalid/unhandled entity types for bounding box calculation.
-        // This block should ideally not be needed if the loop correctly calculates bounds for valid entities.
         if (firstEntity) {
-            // This part of your original code suggests a fallback if no bounds were found.
-            // It might be better to ensure min/max are correctly initialized or throw an error.
-            // For now, retaining a simplified version if the sketch is truly empty.
             if (!sketchEntities.isEmpty()) {
-                // If there are entities but bounds couldn't be calculated, it's an edge case.
-                // You might default to a small arbitrary range.
                 minX = -10; maxX = 10;
                 minY = -10; maxY = 10;
             } else {
-                return; // Nothing to draw
+                return;
             }
         }
-
 
         int canvasWidth = 800;
         int canvasHeight = 800;
@@ -766,6 +767,7 @@ public class Sketch {
         float offsetX = (canvasWidth - sketchWidth * scale) / 2 - minX * scale;
         float offsetY = (canvasHeight - sketchHeight * scale) / 2 - minY * scale;
 
+        // Draw each entity using helper methods
         for (Entity e: sketchEntities) {
             if (e instanceof PointEntity p) {
                 drawPoint(g, p, offsetX, offsetY, scale);
@@ -779,6 +781,9 @@ public class Sketch {
         }
     }
 
+    /**
+     * Draws a point entity as a small filled oval.
+     */
     private void drawPoint(Graphics g, PointEntity p, float offsetX, float offsetY, float scale) {
         int x = (int)(p.x * scale + offsetX);
         int y = (int)(p.y * scale + offsetY);
@@ -786,6 +791,9 @@ public class Sketch {
         g.fillOval(x - size / 2, y - size / 2, size, size);
     }
 
+    /**
+     * Draws a line entity between two points.
+     */
     private void drawLine(Graphics g, Line l, float offsetX, float offsetY, float scale) {
         int x1 = (int)(l.x1 * scale + offsetX);
         int y1 = (int)(l.y1 * scale + offsetY);
@@ -794,6 +802,9 @@ public class Sketch {
         g.drawLine(x1, y1, x2, y2);
     }
 
+    /**
+     * Draws a circle entity as an oval.
+     */
     private void drawCircle(Graphics g, Circle c, float offsetX, float offsetY, float scale) {
         int x = (int)(c.x * scale + offsetX);
         int y = (int)(c.y * scale + offsetY);
@@ -801,6 +812,9 @@ public class Sketch {
         g.drawOval(x - r, y - r, 2 * r, 2 * r);
     }
 
+    /**
+     * Draws a polygon entity by connecting its points.
+     */
     private void drawPolygon(Graphics g, Polygon poly, float offsetX, float offsetY, float scale) {
         int n = poly.points.size();
         int[] xPoints = new int[n];

@@ -436,18 +436,24 @@ public class Gui extends JFrame {
         String lowerFilename = filename.toLowerCase();
         try {
             if (lowerFilename.endsWith(".stl")) {
+                // Load STL file and store triangles in Geometry
                 Geometry.loadStl(filename);
                 appendOutput("STL file loaded: " + filename);
-                // If loading STL also affects the Sketch (e.g., you convert it back to 2D for editing),
-                // you would update the sketch object here. Otherwise, only repaint is needed for geometry.
+                // Show STL geometry in the canvas (enables 3D navigation)
+                canvas.setStlTriangles(Geometry.getLoadedStlTriangles());
+                // Request focus so keyboard navigation works immediately
+                canvas.requestFocusInWindow();
             } else if (lowerFilename.endsWith(".dxf")) {
+                // Load DXF file into the sketch object
                 sketch.loadDXF(filename);
                 appendOutput("DXF file loaded: " + filename);
+                // Switch canvas to sketch (2D) view
+                canvas.showSketch();
             } else {
                 appendOutput("Unsupported file format. Please use .stl or .dxf.");
                 return;
             }
-            // Crucially, repaint the canvas to show the loaded data
+            // Repaint the canvas to show the loaded data (STL or sketch)
             canvas.repaint();
         } catch (Exception e) {
             appendOutput("Error loading file: " + e.getMessage());
@@ -524,6 +530,11 @@ public class Gui extends JFrame {
         }
     }
 
+    /**
+     * Adds a circle to the current sketch using the provided arguments.
+     * Expects args: [x, y, radius].
+     * Repaints the canvas after adding.
+     */
     private void sketchCircle(String[] args) {
         if (args.length < 3 || args[0].trim().isEmpty() || args[1].trim().isEmpty() || args[2].trim().isEmpty()) {
             appendOutput("Usage: sketch_circle <x> <y> <radius>");
@@ -541,6 +552,11 @@ public class Gui extends JFrame {
         }
     }
 
+    /**
+     * Adds a regular polygon to the current sketch using the provided arguments.
+     * Expects args: [x, y, radius, sides].
+     * Sides must be between 3 and 25. Repaints the canvas after adding.
+     */
     private void sketchPolygon(String[] args) {
         if (args.length < 4 || args[0].trim().isEmpty() || args[1].trim().isEmpty() || args[2].trim().isEmpty() || args[3].trim().isEmpty()) {
             appendOutput("Usage: sketch_polygon <x> <y> <radius> <sides>");
@@ -563,7 +579,9 @@ public class Gui extends JFrame {
         }
     }
 
-    // === Main method to start the app ===
+    /**
+     * Launches the CAD GUI application on the Swing event dispatch thread.
+     */
     public static void launch() {
         SwingUtilities.invokeLater(() -> {
             Gui gui = new Gui();
