@@ -120,7 +120,7 @@ To Launch the App:
 
 That's it!
 
-🛠 Troubleshooting:
+Troubleshooting:
 ------------------------------
 - If the app doesn't start:
   → Ensure Java is installed.
