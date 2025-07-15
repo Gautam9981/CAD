@@ -104,16 +104,14 @@ https://jogamp.org/deployment/jogamp-current/archive/jogamp-all-platforms.7z
 (Use 7-Zip to extract them)
 
 Folder Structure:
-------------------------------
 SketchApp/
 ├── SketchApp.exe
-├── SketchApp.jar
 └── lib/
     ├── jogl-all.jar
     ├── gluegen-rt.jar
     ├── jogl_desktop.dll
     ├── gluegen-rt.dll
-    └── (other required .dlls)
+    └── (other native DLLs)
 
 To Launch the App:
 ------------------------------
