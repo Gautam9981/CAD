@@ -328,7 +328,7 @@ public class Gui extends JFrame {
         appendOutput("   export_dxf <filename>");
     }
 
-    private static void createCube(String[] args) {
+    private void createCube(String[] args) {
         if (args.length < 1 || args[0].trim().isEmpty()) {
             appendOutput("Usage: cube <size>");
             return;
@@ -337,6 +337,11 @@ public class Gui extends JFrame {
             float size = Float.parseFloat(args[0]);
             Geometry.createCube(size, cubeDivisions);
             appendOutput("Cube created with size " + size);
+            // New change: After creating the cube, retrieve its triangular data
+            // from the Geometry class and pass it to the SketchCanvas for 3D rendering.
+            canvas.setStlTriangles(Geometry.getLoadedStlTriangles());
+            // Request focus on the canvas to enable immediate 3D navigation (mouse/keyboard).
+            canvas.requestFocusInWindow();
         } catch (NumberFormatException e) {
             appendOutput("Invalid size value. Please enter a number.");
         } catch (IllegalArgumentException e) {
@@ -344,7 +349,7 @@ public class Gui extends JFrame {
         }
     }
 
-    private static void createSphere(String[] args) {
+    private void createSphere(String[] args) {
         if (args.length < 1 || args[0].trim().isEmpty()) {
             appendOutput("Usage: sphere <radius>");
             return;
@@ -354,6 +359,11 @@ public class Gui extends JFrame {
             int maxDiv = Math.max(sphereLatDiv, sphereLonDiv); // Using class static fields
             Geometry.createSphere(radius, maxDiv);
             appendOutput("Sphere created with radius " + radius);
+            // New change: After creating the sphere, retrieve its triangular data
+            // from the Geometry class and pass it to the SketchCanvas for 3D rendering.
+            canvas.setStlTriangles(Geometry.getLoadedStlTriangles());
+            // Request focus on the canvas to enable immediate 3D navigation (mouse/keyboard).
+            canvas.requestFocusInWindow();
         } catch (NumberFormatException e) {
             appendOutput("Invalid radius value. Please enter a number.");
         } catch (IllegalArgumentException e) {

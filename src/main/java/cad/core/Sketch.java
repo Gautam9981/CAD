@@ -1,5 +1,6 @@
 package cad.core;
 
+import com.jogamp.opengl.GL2;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.FileWriter;
@@ -7,10 +8,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.FileReader;
 import java.io.BufferedReader;
-import java.awt.Graphics; // Ensure this import is present if you use Graphics
+// import java.awt.Graphics; // No longer directly used for OpenGL drawing
 
 public class Sketch {
 
+    /**
+     * Enum for different types of sketch entities.
+     */
     public enum TypeSketch {
         POINT,
         LINE,
@@ -18,10 +22,16 @@ public class Sketch {
         POLYGON
     }
 
+    /**
+     * Abstract base class for all sketch entities.
+     */
     public static abstract class Entity {
         TypeSketch type;
     }
 
+    /**
+     * Represents a point in the 2D sketch.
+     */
     public static class PointEntity extends Entity {
         float x, y;
         public PointEntity(float x, float y) {
@@ -35,6 +45,9 @@ public class Sketch {
         }
     }
 
+    /**
+     * Represents a line segment in the 2D sketch.
+     */
     public static class Line extends Entity {
         float x1, y1, x2, y2;
         public Line(float x1, float y1, float x2, float y2) {
@@ -49,6 +62,9 @@ public class Sketch {
         }
     }
 
+    /**
+     * Represents a circle in the 2D sketch.
+     */
     public static class Circle extends Entity {
         float x, y, r;
         public Circle(float x, float y, float r) {
@@ -62,6 +78,9 @@ public class Sketch {
         }
     }
 
+    /**
+     * Represents a closed polygon in the 2D sketch, defined by a list of points.
+     */
     public static class Polygon extends Entity {
         List < PointEntity > points;
         public Polygon(List < PointEntity > points) {
@@ -83,6 +102,12 @@ public class Sketch {
     private static final int MAX_SKETCH_ENTITIES = 1000;
     private final List < Entity > sketchEntities = new ArrayList < > ();
 
+    /**
+     * Adds a point entity to the sketch.
+     * @param x X-coordinate of the point.
+     * @param y Y-coordinate of the point.
+     * @return 0 on success, 1 if sketch buffer is full.
+     */
     public int addPoint(float x, float y) {
         if (sketchEntities.size() >= MAX_SKETCH_ENTITIES) {
             System.out.println("Sketch buffer full");
@@ -92,6 +117,14 @@ public class Sketch {
         return 0;
     }
 
+    /**
+     * Adds a line entity to the sketch.
+     * @param x1 X-coordinate of the start point.
+     * @param y1 Y-coordinate of the start point.
+     * @param x2 X-coordinate of the end point.
+     * @param y2 Y-coordinate of the end point.
+     * @return 0 on success, 1 if sketch buffer is full.
+     */
     public int addLine(float x1, float y1, float x2, float y2) {
         if (sketchEntities.size() >= MAX_SKETCH_ENTITIES) {
             System.out.println("Sketch buffer full");
@@ -101,6 +134,13 @@ public class Sketch {
         return 0;
     }
 
+    /**
+     * Adds a circle entity to the sketch.
+     * @param x X-coordinate of the center.
+     * @param y Y-coordinate of the center.
+     * @param r Radius of the circle.
+     * @return 0 on success, 1 if sketch buffer is full.
+     */
     public int addCircle(float x, float y, float r) {
         if (sketchEntities.size() >= MAX_SKETCH_ENTITIES) {
             System.out.println("Sketch buffer full");
@@ -110,6 +150,11 @@ public class Sketch {
         return 0;
     }
 
+    /**
+     * Adds a polygon entity to the sketch from a list of points.
+     * @param points List of PointEntity forming the polygon.
+     * @return 0 on success, 1 if sketch buffer is full or invalid points.
+     */
     public int addPolygon(List < PointEntity > points) {
         if (sketchEntities.size() >= MAX_SKETCH_ENTITIES) {
             System.out.println("Sketch buffer full");
@@ -124,6 +169,14 @@ public class Sketch {
         }
     }
 
+    /**
+     * Adds an N-sided regular polygon to the sketch.
+     * @param centerX X-coordinate of the polygon's center.
+     * @param centerY Y-coordinate of the polygon's center.
+     * @param radius Radius of the circumcircle.
+     * @param sides Number of sides (3-25).
+     * @return 0 on success, 1 on error.
+     */
     public int addNSidedPolygon(float centerX, float centerY, float radius, int sides) {
         if (sides < 3 || sides > 25) {
             System.out.println("Polygon must have between 3 and 25 sides.");
@@ -145,10 +198,17 @@ public class Sketch {
         return addPolygon(points);
     }
 
+    /**
+     * Clears all entities from the sketch.
+     */
     public void clearSketch() {
         sketchEntities.clear();
     }
 
+    /**
+     * Returns a list of string representations of all entities in the sketch.
+     * @return List of strings describing each sketch entity.
+     */
     public List<String> listSketch() {
         List<String> output = new ArrayList<>();
 
@@ -166,14 +226,27 @@ public class Sketch {
 
     private String units = "mm";
 
+    /**
+     * Sets the units for the sketch.
+     * @param units String representing the units (e.g., "mm", "in").
+     */
     public void setUnits(String units) {
         this.units = units.toLowerCase();
     }
 
+    /**
+     * Gets the current units of the sketch.
+     * @return Current units string.
+     */
     public String getUnits() {
         return this.units;
     }
 
+    /**
+     * Converts a unit string to its corresponding DXF unit code.
+     * @param unitStr The unit string.
+     * @return The DXF unit code.
+     */
     private int getDXFUnitCode(String unitStr) {
         return switch (unitStr.toLowerCase()) {
             case "in", "inch", "inches" -> 1;
@@ -181,10 +254,15 @@ public class Sketch {
             case "mm", "millimeter", "millimeters" -> 4;
             case "cm", "centimeter", "centimeters" -> 5;
             case "m", "meter", "meters" -> 6;
-            default -> 0;
+            default -> 0; // Unitless
         };
     }
 
+    /**
+     * Converts a DXF unit code to its corresponding unit string.
+     * @param code The DXF unit code.
+     * @return The unit string.
+     */
     private static String getUnitsFromDXFCode(int code) {
         return switch (code) {
             case 1 -> "in";
@@ -196,6 +274,12 @@ public class Sketch {
         };
     }
 
+    /**
+     * Exports the current sketch to a DXF file.
+     * It writes HEADER and ENTITIES sections, including unit information.
+     *
+     * @param filename Path to the output DXF file.
+     */
     public void exportSketchToDXF(String filename) {
         try (PrintWriter out = new PrintWriter(new FileWriter(filename))) {
             out.println("0");
@@ -204,7 +288,7 @@ public class Sketch {
             out.println("HEADER");
 
             out.println("9");
-            out.println("$INSUNITS");
+            out.println("$INSUNITS"); // Insertion units system
             out.println("70");
             out.println(getDXFUnitCode(this.units));
 
@@ -255,10 +339,10 @@ public class Sketch {
                     out.println("POLYLINE");
                     out.println("8");
                     out.println("0"); // Layer "0"
-                    out.println("66"); // Entities follow (if vertices are separate)
+                    out.println("66"); // Entities follow (for old-style polylines)
                     out.println("1");
-                    out.println("70"); // Polyline flags (1 = closed)
-                    out.println("1"); // 1 for closed polyline (often 0 for open)
+                    out.println("70"); // Polyline flags
+                    out.println("1"); // Flag 1 for closed polyline (if appropriate, 0 for open)
 
                     for (PointEntity p: poly.points) {
                         out.println("0");
@@ -272,7 +356,7 @@ public class Sketch {
                     }
 
                     out.println("0");
-                    out.println("SEQEND");
+                    out.println("SEQEND"); // Marks the end of polyline vertices
                     out.println("8");
                     out.println("0"); // Layer "0" for SEQEND
                 }
@@ -289,6 +373,11 @@ public class Sketch {
         }
     }
 
+    /**
+     * Parses parameters for adding a point from command-line like input.
+     * @param params String array of parameters (x, y).
+     * @return 0 on success, 1 on error.
+     */
     public int sketchPoint(String[] params) {
         if (params.length < 2) {
             System.out.println("Usage: point x y");
@@ -304,6 +393,11 @@ public class Sketch {
         }
     }
 
+    /**
+     * Parses parameters for adding a line from command-line like input.
+     * @param params String array of parameters (x1, y1, x2, y2).
+     * @return 0 on success, 1 on error.
+     */
     public int sketchLine(String[] params) {
         if (params.length < 4) {
             System.out.println("Usage: line x1 y1 x2 y2");
@@ -321,6 +415,11 @@ public class Sketch {
         }
     }
 
+    /**
+     * Parses parameters for adding a circle from command-line like input.
+     * @param params String array of parameters (x, y, r).
+     * @return 0 on success, 1 on error.
+     */
     public int sketchCircle(String[] params) {
         if (params.length < 3) {
             System.out.println("Usage: circle x y r");
@@ -337,6 +436,15 @@ public class Sketch {
         }
     }
 
+    /**
+     * Adds an N-sided polygon to the sketch based on provided parameters.
+     * This method directly accepts float coordinates and int sides.
+     * @param x X-coordinate of the center.
+     * @param y Y-coordinate of the center.
+     * @param radius Radius of the circumcircle.
+     * @param sides Number of sides (3-25).
+     * @return 0 on success, 1 on error.
+     */
     public int sketchPolygon(float x, float y, float radius, int sides) {
         if (sides < 3 || sides > 25) {
             System.out.println("Polygon must have between 3 and 25 sides.");
@@ -360,17 +468,25 @@ public class Sketch {
         return addPolygon(points);
     }
 
+    /**
+     * Loads a DXF file, parses its header for units, and then its ENTITIES section
+     * to populate the sketch with points, lines, circles, and polylines.
+     * Includes robust error handling and unit scaling.
+     *
+     * @param filename Path to the DXF file to load.
+     * @throws IOException if file reading fails.
+     */
     public void loadDXF(String filename) throws IOException {
         System.out.println("Attempting to load DXF file: " + filename);
         java.io.File file = new java.io.File(filename);
         System.out.println("Absolute path of file provided: " + file.getAbsolutePath());
         if (!file.exists()) {
             System.err.println("ERROR: File does not exist at path: " + file.getAbsolutePath());
-            throw new java.io.FileNotFoundException("DXF file not found: " + filename); // Throw exception to stop
+            throw new java.io.FileNotFoundException("DXF file not found: " + filename);
         }
         if (!file.canRead()) {
             System.err.println("ERROR: No read permission for file: " + file.getAbsolutePath());
-            throw new IOException("No read permission for DXF file: " + filename); // Throw exception to stop
+            throw new IOException("No read permission for DXF file: " + filename);
         }
 
         clearSketch();
@@ -431,12 +547,11 @@ public class Sketch {
             float tempVertexX = 0, tempVertexY = 0;
 
             boolean inEntitiesSection = false;
-            boolean inPolylineEntity = false; // Renamed to avoid confusion with currentEntity="POLYLINE"
-            boolean waitingForVertexCoords = false; // New flag for vertex parsing state
+            boolean inPolylineEntity = false; // Flag to track if we are currently parsing a POLYLINE's vertices
+            boolean waitingForVertexCoords = false; // Flag to indicate that the next 10/20 group codes are for a vertex
 
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
-                // System.out.println("DBG: Processing line: '" + line + "'"); // Uncomment for detailed line-by-line debug
 
                 if (line.isEmpty()) continue;
 
@@ -448,10 +563,9 @@ public class Sketch {
                         break;
                     }
                     entityTypeOrSection = entityTypeOrSection.trim().toUpperCase();
-                    // System.out.println("DBG: Found 0, next is: " + entityTypeOrSection);
 
-                    // If we were parsing a non-POLYLINE entity, add it now
-                    if (currentEntity != null && !inPolylineEntity) {
+                    // If we were parsing a non-POLYLINE entity, add it now before processing the new one
+                    if (currentEntity != null && !inPolylineEntity && !currentEntity.equals("VERTEX")) { // Exclude VERTEX as it's part of POLYLINE
                         switch (currentEntity) {
                             case "POINT":
                                 addEntity("POINT", x1, y1, 0, 0, 0, 0, 0, null);
@@ -462,367 +576,262 @@ public class Sketch {
                             case "CIRCLE":
                                 addEntity("CIRCLE", 0, 0, 0, 0, cx, cy, radius, null);
                                 break;
-                            // POLYLINE handled by SEQEND
+                            // POLYLINE and VERTEX are handled by SEQEND or when currentEntity changes
                         }
                         currentEntity = null; // Reset for the next entity
                     }
-
 
                     if (entityTypeOrSection.equals("SECTION")) {
                         reader.readLine(); // Group code 2
                         String sectionName = reader.readLine();
                         if (sectionName != null && sectionName.equalsIgnoreCase("ENTITIES")) {
                             inEntitiesSection = true;
-                            // System.out.println("DBG: Entered ENTITIES section.");
                         } else {
                             inEntitiesSection = false; // Not the entities section, skip content
                         }
                         continue;
                     } else if (entityTypeOrSection.equals("ENDSEC")) {
-                        // System.out.println("DBG: Exited current SECTION.");
-                        inEntitiesSection = false;
+                        if (inPolylineEntity && polyPoints != null) { // Ensure any ongoing polyline is added
+                            addPolygon(polyPoints);
+                            polyPoints = null;
+                            inPolylineEntity = false;
+                        }
+                        inEntitiesSection = false; // Exit entities section
                         continue;
                     } else if (entityTypeOrSection.equals("EOF")) {
-                        // System.out.println("DBG: Reached EOF.");
-                        break;
+                        // Handle any last entity before EOF
+                         if (currentEntity != null && !inPolylineEntity && !currentEntity.equals("VERTEX")) {
+                            switch (currentEntity) {
+                                case "POINT": addEntity("POINT", x1, y1, 0, 0, 0, 0, 0, null); break;
+                                case "LINE": addEntity("LINE", x1, y1, x2, y2, 0, 0, 0, null); break;
+                                case "CIRCLE": addEntity("CIRCLE", 0, 0, 0, 0, cx, cy, radius, null); break;
+                            }
+                        }
+                        break; // End of file
                     }
 
                     if (inEntitiesSection) {
-                        currentEntity = entityTypeOrSection;
-                        // System.out.println("DBG: Current entity type: " + currentEntity);
-
+                        currentEntity = entityTypeOrSection; // Set the type of the new entity
                         // Reset coordinates for new entity
                         x1 = y1 = x2 = y2 = cx = cy = radius = 0;
 
                         if (currentEntity.equals("POLYLINE")) {
                             inPolylineEntity = true;
-                            polyPoints = new ArrayList<>();
-                            // System.out.println("DBG: Started POLYLINE parsing.");
+                            polyPoints = new ArrayList<>(); // Initialize points list for this polyline
+                            // Consume the next group codes for POLYLINE if any (e.g., 66, 70)
+                            // Loop continues to read properties of POLYLINE or its VERTEX entities
                         } else if (currentEntity.equals("VERTEX")) {
+                            // This VERTEX is encountered directly, likely part of an already active POLYLINE
                             if (!inPolylineEntity) {
-                                System.err.println("Warning: Encountered VERTEX outside of POLYLINE. Skipping.");
-                                currentEntity = null; // Treat as invalid entity
-                                continue;
-                            }
-                            waitingForVertexCoords = true;
-                            tempVertexX = 0;
-                            tempVertexY = 0;
-                            // System.out.println("DBG: Started VERTEX parsing.");
-                        } else if (currentEntity.equals("SEQEND")) {
-                            if (inPolylineEntity && polyPoints != null && polyPoints.size() >= 3) {
-                                addEntity("POLYLINE", 0, 0, 0, 0, 0, 0, 0, scalePoints(polyPoints, scale));
-                                // System.out.println("DBG: Added POLYLINE with " + polyPoints.size() + " points.");
+                                System.err.println("Warning: Found VERTEX entity outside of POLYLINE. Skipping.");
+                                currentEntity = null; // Ignore this stray VERTEX
                             } else {
-                                System.err.println("Warning: Invalid or empty POLYLINE before SEQEND. Skipping.");
+                                waitingForVertexCoords = true; // Set flag to expect 10, 20
                             }
-                            inPolylineEntity = false;
-                            polyPoints = null;
-                            currentEntity = null; // Clear entity state
-                            waitingForVertexCoords = false;
-                            // System.out.println("DBG: Ended POLYLINE parsing (SEQEND).");
+                        } else if (currentEntity.equals("SEQEND")) {
+                            // End of POLYLINE sequence
+                            if (inPolylineEntity && polyPoints != null) {
+                                addPolygon(polyPoints); // Add the accumulated polygon
+                                // System.out.println("DBG: Finished POLYLINE, added " + polyPoints.size() + " points.");
+                            } else {
+                                System.err.println("Warning: SEQEND encountered without active POLYLINE.");
+                            }
+                            polyPoints = null; // Clear for next polyline
+                            inPolylineEntity = false; // Exit polyline parsing state
+                            currentEntity = null; // Reset to expect next main entity
+                            reader.readLine(); // Consume the next group code (usually 8 for layer)
                         }
                     }
+                    continue; // Skip to next line after processing a '0' group code
+                }
 
-                } else if (inEntitiesSection && currentEntity != null) {
-                    int groupCode = 0;
-                    String valueString = null;
+                // If we are inside an entity definition (not a '0' group code line)
+                if (currentEntity != null && inEntitiesSection) {
+                    String valueLine = null;
                     try {
-                        groupCode = Integer.parseInt(line);
-                        valueString = reader.readLine();
-                        if (valueString == null) {
-                            System.err.println("ERROR: Unexpected EOF after group code " + groupCode + " for entity " + currentEntity);
+                        int groupCode = Integer.parseInt(line);
+                        valueLine = reader.readLine();
+                        if (valueLine == null) {
+                            System.err.println("ERROR: Unexpected EOF after group code " + groupCode);
                             break;
                         }
-                        valueString = valueString.trim();
+                        valueLine = valueLine.trim();
 
                         switch (groupCode) {
-                            case 10: // X coordinate for point, start of line, center of circle, or vertex
-                                if (waitingForVertexCoords) tempVertexX = Float.parseFloat(valueString);
-                                else if ("POINT".equals(currentEntity)) x1 = Float.parseFloat(valueString);
-                                else if ("LINE".equals(currentEntity)) x1 = Float.parseFloat(valueString);
-                                else if ("CIRCLE".equals(currentEntity)) cx = Float.parseFloat(valueString);
+                            case 10: // X coordinate of start point (POINT, LINE) or center (CIRCLE) or vertex (VERTEX)
+                                if (currentEntity.equals("VERTEX") && waitingForVertexCoords) {
+                                    tempVertexX = Float.parseFloat(valueLine) * scale;
+                                } else {
+                                    if (currentEntity.equals("POINT") || currentEntity.equals("LINE")) x1 = Float.parseFloat(valueLine) * scale;
+                                    else if (currentEntity.equals("CIRCLE")) cx = Float.parseFloat(valueLine) * scale;
+                                }
                                 break;
-                            case 20: // Y coordinate
-                                if (waitingForVertexCoords) {
-                                    tempVertexY = Float.parseFloat(valueString);
+                            case 20: // Y coordinate of start point (POINT, LINE) or center (CIRCLE) or vertex (VERTEX)
+                                if (currentEntity.equals("VERTEX") && waitingForVertexCoords) {
+                                    tempVertexY = Float.parseFloat(valueLine) * scale;
+                                    // If we have both X and Y for a vertex, add it to the polyline
                                     if (polyPoints != null) {
                                         polyPoints.add(new PointEntity(tempVertexX, tempVertexY));
-                                        // System.out.println("DBG: Added vertex (" + tempVertexX + ", " + tempVertexY + ") to polyline.");
                                     }
-                                    waitingForVertexCoords = false; // Vertex complete
-                                } else if ("POINT".equals(currentEntity)) y1 = Float.parseFloat(valueString);
-                                else if ("LINE".equals(currentEntity)) y1 = Float.parseFloat(valueString);
-                                else if ("CIRCLE".equals(currentEntity)) cy = Float.parseFloat(valueString);
+                                    waitingForVertexCoords = false; // Reset for next vertex
+                                } else {
+                                    if (currentEntity.equals("POINT") || currentEntity.equals("LINE")) y1 = Float.parseFloat(valueLine) * scale;
+                                    else if (currentEntity.equals("CIRCLE")) cy = Float.parseFloat(valueLine) * scale;
+                                }
                                 break;
-                            case 11: // Second X coordinate for line
-                                if ("LINE".equals(currentEntity)) x2 = Float.parseFloat(valueString);
+                            case 11: // X coordinate of end point (LINE)
+                                if (currentEntity.equals("LINE")) x2 = Float.parseFloat(valueLine) * scale;
                                 break;
-                            case 21: // Second Y coordinate for line
-                                if ("LINE".equals(currentEntity)) y2 = Float.parseFloat(valueString);
+                            case 21: // Y coordinate of end point (LINE)
+                                if (currentEntity.equals("LINE")) y2 = Float.parseFloat(valueLine) * scale;
                                 break;
-                            case 40: // Radius for circle
-                                if ("CIRCLE".equals(currentEntity)) radius = Float.parseFloat(valueString);
+                            case 40: // Radius (CIRCLE) or sometimes thickness for other entities, or start/end width for POLYLINE
+                                if (currentEntity.equals("CIRCLE")) radius = Float.parseFloat(valueLine) * scale;
                                 break;
-                            case 66: // "Entities follow" for polyline
-                            case 70: // Polyline flags
-                                // Handled by state changes, no direct value assignment needed for geometry
-                                break;
-                            case 8: // Layer name (usually "0") - we don't store it, just consume the value
-                                // valueString contains the layer name, consume it
+                            case 8: // Layer name (usually '0') - consume
+                            case 6: // Linetype name - consume
+                            case 62: // Color number - consume
+                            case 39: // Thickness - consume
+                            case 70: // Polyline flags (e.g., 1 for closed) - consume
+                            case 66: // Entities follow (for old POLYLINEs) - consume
+                                // These are common group codes to consume
                                 break;
                             default:
-                                // System.out.println("DBG: Unhandled group code: " + groupCode + " for entity: " + currentEntity);
-                                break;
+                                // System.out.println("DBG: Skipping unsupported group code: " + groupCode);
+                                break; // Skip unsupported group codes
                         }
                     } catch (NumberFormatException e) {
-                        System.err.println("ERROR: Invalid number format for group code: '" + groupCode + "', value: '" + valueString + "' for entity: " + currentEntity + ". " + e.getMessage());
+                        System.err.println("Warning: Invalid number format for DXF value near group code: " + line + ", value: " + valueLine + ". Error: " + e.getMessage());
+                    } catch (Exception e) {
+                        System.err.println("Error parsing DXF line '" + line + "': " + e.getMessage());
                         e.printStackTrace();
-                        // Depending on severity, you might want to break or continue to try parsing next entity
-                        // For now, we continue to try parsing the next line, but the current entity might be incomplete
-                        // If this happens frequently, you might need more robust error recovery.
+                        break; // Stop parsing on critical error
                     }
                 }
-            } // End while loop
+            } // end of while (line = reader.readLine()) != null
 
-            // After loop, if there's a pending non-POLYLINE entity
-            if (currentEntity != null && !inPolylineEntity) {
+            // After loop, if there was an active non-polyline entity
+            if (currentEntity != null && !inPolylineEntity && !currentEntity.equals("VERTEX")) {
                 switch (currentEntity) {
-                    case "POINT":
-                        addEntity("POINT", x1, y1, 0, 0, 0, 0, 0, null);
-                        break;
-                    case "LINE":
-                        addEntity("LINE", x1, y1, x2, y2, 0, 0, 0, null);
-                        break;
-                    case "CIRCLE":
-                        addEntity("CIRCLE", 0, 0, 0, 0, cx, cy, radius, null);
-                        break;
+                    case "POINT": addEntity("POINT", x1, y1, 0, 0, 0, 0, 0, null); break;
+                    case "LINE": addEntity("LINE", x1, y1, x2, y2, 0, 0, 0, null); break;
+                    case "CIRCLE": addEntity("CIRCLE", 0, 0, 0, 0, cx, cy, radius, null); break;
                 }
             }
+            // Also, if a polyline was active but didn't end with SEQEND (malformed file)
+            if (inPolylineEntity && polyPoints != null && !polyPoints.isEmpty()) {
+                System.err.println("Warning: POLYLINE did not end with SEQEND. Adding partially parsed polyline.");
+                addPolygon(polyPoints);
+            }
+
         } catch (IOException e) {
-            System.err.println("Error parsing DXF entities: " + e.getMessage());
+            System.err.println("Error reading DXF entities: " + e.getMessage());
             e.printStackTrace();
             throw e; // Re-throw to indicate failure
         }
-
-        System.out.println("DXF loaded successfully with units: " + units + " (scale factor applied: " + scale + ")");
-        System.out.println("Total entities loaded: " + sketchEntities.size()); // Final count
+        System.out.println("Finished loading DXF. Entities loaded: " + sketchEntities.size());
     }
 
+    /**
+     * Helper method to add parsed entities to the sketchEntities list.
+     * Used by `loadDXF` to centralize entity creation.
+     * @param type The type of entity as a string ("POINT", "LINE", "CIRCLE", "POLYLINE").
+     * @param x1 Start X-coordinate or Point X.
+     * @param y1 Start Y-coordinate or Point Y.
+     * @param x2 End X-coordinate (for Line).
+     * @param y2 End Y-coordinate (for Line).
+     * @param cx Center X-coordinate (for Circle).
+     * @param cy Center Y-coordinate (for Circle).
+     * @param radius Radius (for Circle).
+     * @param polyPoints List of points for a Polygon (null for other types).
+     */
+    private void addEntity(String type, float x1, float y1, float x2, float y2, float cx, float cy, float radius, List<PointEntity> polyPoints) {
+        switch (type) {
+            case "POINT":
+                addPoint(x1, y1);
+                break;
+            case "LINE":
+                addLine(x1, y1, x2, y2);
+                break;
+            case "CIRCLE":
+                addCircle(cx, cy, radius);
+                break;
+            case "POLYLINE": // This case handles the final addition of the polygon after all vertices are parsed
+                if (polyPoints != null) {
+                    addPolygon(polyPoints);
+                }
+                break;
+            // VERTEX and SEQEND are control entities for POLYLINE, not standalone entities to be added here.
+            default:
+                System.out.println("Unsupported DXF entity type for adding: " + type);
+        }
+    }
 
-    private float unitScaleFactor(String units) {
-        return switch (units) {
-            case "in" -> 25.4f;
-            case "ft" -> 304.8f;
+    /**
+     * Provides a scaling factor to convert DXF units to an internal standard unit (e.g., millimeters).
+     * @param unitStr The unit string from DXF header.
+     * @return The conversion factor.
+     */
+    private float unitScaleFactor(String unitStr) {
+        // Define your internal base unit, e.g., millimeters.
+        // Convert all DXF units to your internal unit.
+        return switch (unitStr.toLowerCase()) {
+            case "in" -> 25.4f; // 1 inch = 25.4 mm
+            case "ft" -> 304.8f; // 1 foot = 304.8 mm
             case "mm" -> 1.0f;
-            case "cm" -> 10.0f;
-            case "m" -> 1000.0f;
-            default -> 1.0f; // Default to 1.0 if unitless or unknown
+            case "cm" -> 10.0f; // 1 cm = 10 mm
+            case "m" -> 1000.0f; // 1 m = 1000 mm
+            default -> 1.0f; // Unitless or unknown, assume 1:1
         };
     }
 
-    private List < PointEntity > scalePoints(List < PointEntity > points, float scale) {
-        List < PointEntity > scaled = new ArrayList < > ();
-        for (PointEntity p: points) {
-            scaled.add(new PointEntity(p.x * scale, p.y * scale));
-        }
-        return scaled;
-    }
-
-    private void addEntity(String entityType, float x1, float y1, float x2, float y2,
-                           float cx, float cy, float radius, List < PointEntity > polyPoints) {
-        // Apply scaling *before* adding the entity to the sketchEntities list
-        float scale = unitScaleFactor(this.units); // Get the current unit scale factor
-
-        switch (entityType) {
-            case "POINT":
-                this.addPoint(x1 * scale, y1 * scale);
-                System.out.println("Loaded: Point (scaled)");
-                break;
-            case "LINE":
-                this.addLine(x1 * scale, y1 * scale, x2 * scale, y2 * scale);
-                System.out.println("Loaded: Line (scaled)");
-                break;
-            case "CIRCLE":
-                this.addCircle(cx * scale, cy * scale, radius * scale);
-                System.out.println("Loaded: Circle (scaled)");
-                break;
-            case "POLYLINE":
-                // polyPoints are already scaled in the loadDXF method if they come from there
-                if (polyPoints != null && polyPoints.size() >= 3) {
-                    this.addPolygon(polyPoints); // addPolygon handles its own validation
-                    System.out.println("Loaded: Polygon with " + polyPoints.size() + " points (scaled)");
-                } else {
-                    System.err.println("Warning: Skipping invalid polygon with less than 3 points during addEntity call.");
-                }
-                break;
-            default:
-                System.out.println("Warning: Unknown entity type encountered during addEntity: " + entityType);
-                break;
-        }
-    }
-
     /**
-     * Draws all entities in the sketch onto the provided Graphics context.
-     * Handles scaling and centering so the sketch fits the canvas.
+     * Renders all entities in the sketch using OpenGL.
+     * This method is designed to be called by JOGLCadCanvas's `display` method
+     * when the 2D sketch view is active. It iterates through the `sketchEntities`
+     * list and uses OpenGL primitives to draw each type of entity.
      *
-     * @param g The Graphics context to draw on (usually from a JPanel).
+     * @param gl The GL2 object (OpenGL context) used for drawing.
      */
-    public void draw(Graphics g) {
-        // If there are no entities, nothing to draw
-        if (sketchEntities.isEmpty()) {
-            return;
-        }
-
-        float minX = Float.MAX_VALUE, maxX = Float.MIN_VALUE;
-        float minY = Float.MAX_VALUE, maxY = Float.MIN_VALUE;
-
-        boolean firstEntity = true;
-
-        // Compute bounding box of all entities for scaling
-        for (Entity e: sketchEntities) {
-            if (e instanceof PointEntity p) {
-                if (firstEntity) {
-                    minX = p.x; maxX = p.x;
-                    minY = p.y; maxY = p.y;
-                    firstEntity = false;
-                } else {
-                    minX = Math.min(minX, p.x);
-                    maxX = Math.max(maxX, p.x);
-                    minY = Math.min(minY, p.y);
-                    maxY = Math.max(maxY, p.y);
-                }
-            } else if (e instanceof Line l) {
-                if (firstEntity) {
-                    minX = Math.min(l.x1, l.x2); maxX = Math.max(l.x1, l.x2);
-                    minY = Math.min(l.y1, l.y2); maxY = Math.max(l.y1, l.y2);
-                    firstEntity = false;
-                } else {
-                    minX = Math.min(minX, Math.min(l.x1, l.x2));
-                    maxX = Math.max(maxX, Math.max(l.x1, l.x2));
-                    minY = Math.min(minY, Math.min(l.y1, l.y2));
-                    maxY = Math.max(maxY, Math.max(l.y1, l.y2)); // Fixed bug: was maxY = Math.max(maxY, l.y2);
-                }
-            } else if (e instanceof Circle c) {
-                if (firstEntity) {
-                    minX = c.x - c.r; maxX = c.x + c.r;
-                    minY = c.y - c.r; maxY = c.y + c.r;
-                    firstEntity = false;
-                } else {
-                    minX = Math.min(minX, c.x - c.r);
-                    maxX = Math.max(maxX, c.x + c.r);
-                    minY = Math.min(minY, c.y - c.r);
-                    maxY = Math.max(maxY, c.y + c.r);
-                }
-            } else if (e instanceof Polygon poly) {
-                for (PointEntity p: poly.points) {
-                    if (firstEntity) {
-                        minX = p.x; maxX = p.x;
-                        minY = p.y; maxY = p.y;
-                        firstEntity = false;
-                    } else {
-                        minX = Math.min(minX, p.x);
-                        maxX = Math.max(maxX, p.x);
-                        minY = Math.min(minY, p.y);
-                        maxY = Math.max(maxY, p.y);
+    public void draw(GL2 gl) {
+        // Iterate through all sketch entities and draw them
+        for (Entity e : sketchEntities) {
+            switch (e.type) {
+                case POINT:
+                    PointEntity p = (PointEntity) e;
+                    gl.glPointSize(5.0f); // Make points visible
+                    gl.glBegin(GL2.GL_POINTS);
+                    gl.glVertex2f(p.x, p.y);
+                    gl.glEnd();
+                    break;
+                case LINE:
+                    Line l = (Line) e;
+                    gl.glBegin(GL2.GL_LINES);
+                    gl.glVertex2f(l.x1, l.y1);
+                    gl.glVertex2f(l.x2, l.y2);
+                    gl.glEnd();
+                    break;
+                case CIRCLE:
+                    Circle c = (Circle) e;
+                    gl.glBegin(GL2.GL_LINE_LOOP);
+                    int segments = 50; // Resolution of the circle
+                    for (int i = 0; i < segments; i++) {
+                        double angle = 2.0 * Math.PI * i / segments;
+                        float x = c.x + c.r * (float) Math.cos(angle);
+                        float y = c.y + c.r * (float) Math.sin(angle);
+                        gl.glVertex2f(x, y);
                     }
-                }
+                    gl.glEnd();
+                    break;
+                case POLYGON:
+                    Polygon poly = (Polygon) e;
+                    gl.glBegin(GL2.GL_LINE_LOOP); // Draw as a closed loop
+                    for (PointEntity vert : poly.points) {
+                        gl.glVertex2f(vert.x, vert.y);
+                    }
+                    gl.glEnd();
+                    break;
             }
         }
-
-        // If after checking all entities, firstEntity is still true, it means sketchEntities was empty,
-        // or contained only invalid/unhandled entity types for bounding box calculation.
-        if (firstEntity) {
-            if (!sketchEntities.isEmpty()) {
-                minX = -10; maxX = 10;
-                minY = -10; maxY = 10;
-            } else {
-                return;
-            }
-        }
-
-        int canvasWidth = 800;
-        int canvasHeight = 800;
-
-        if (g.getClipBounds() != null) {
-            int clipWidth = g.getClipBounds().width;
-            int clipHeight = g.getClipBounds().height;
-            if (clipWidth > 0 && clipHeight > 0) {
-                canvasWidth = clipWidth;
-                canvasHeight = clipHeight;
-            }
-        }
-
-        int margin = 20;
-
-        float sketchWidth = maxX - minX;
-        float sketchHeight = maxY - minY;
-
-        if (sketchWidth == 0) sketchWidth = 1.0f;
-        if (sketchHeight == 0) sketchHeight = 1.0f;
-
-        float scaleX = (float)(canvasWidth - 2 * margin) / sketchWidth;
-        float scaleY = (float)(canvasHeight - 2 * margin) / sketchHeight;
-        float scale = Math.min(scaleX, scaleY);
-
-        float offsetX = (canvasWidth - sketchWidth * scale) / 2 - minX * scale;
-        float offsetY = (canvasHeight - sketchHeight * scale) / 2 - minY * scale;
-
-        // Draw each entity using helper methods
-        for (Entity e: sketchEntities) {
-            if (e instanceof PointEntity p) {
-                drawPoint(g, p, offsetX, offsetY, scale);
-            } else if (e instanceof Line l) {
-                drawLine(g, l, offsetX, offsetY, scale);
-            } else if (e instanceof Circle c) {
-                drawCircle(g, c, offsetX, offsetY, scale);
-            } else if (e instanceof Polygon poly) {
-                drawPolygon(g, poly, offsetX, offsetY, scale);
-            }
-        }
-    }
-
-    /**
-     * Draws a point entity as a small filled oval.
-     */
-    private void drawPoint(Graphics g, PointEntity p, float offsetX, float offsetY, float scale) {
-        int x = (int)(p.x * scale + offsetX);
-        int y = (int)(p.y * scale + offsetY);
-        int size = 4;
-        g.fillOval(x - size / 2, y - size / 2, size, size);
-    }
-
-    /**
-     * Draws a line entity between two points.
-     */
-    private void drawLine(Graphics g, Line l, float offsetX, float offsetY, float scale) {
-        int x1 = (int)(l.x1 * scale + offsetX);
-        int y1 = (int)(l.y1 * scale + offsetY);
-        int x2 = (int)(l.x2 * scale + offsetX);
-        int y2 = (int)(l.y2 * scale + offsetY);
-        g.drawLine(x1, y1, x2, y2);
-    }
-
-    /**
-     * Draws a circle entity as an oval.
-     */
-    private void drawCircle(Graphics g, Circle c, float offsetX, float offsetY, float scale) {
-        int x = (int)(c.x * scale + offsetX);
-        int y = (int)(c.y * scale + offsetY);
-        int r = (int)(c.r * scale);
-        g.drawOval(x - r, y - r, 2 * r, 2 * r);
-    }
-
-    /**
-     * Draws a polygon entity by connecting its points.
-     */
-    private void drawPolygon(Graphics g, Polygon poly, float offsetX, float offsetY, float scale) {
-        int n = poly.points.size();
-        int[] xPoints = new int[n];
-        int[] yPoints = new int[n];
-        for (int i = 0; i < n; i++) {
-            xPoints[i] = (int)(poly.points.get(i).x * scale + offsetX);
-            yPoints[i] = (int)(poly.points.get(i).y * scale + offsetY);
-        }
-        g.drawPolygon(xPoints, yPoints, n);
     }
 }
