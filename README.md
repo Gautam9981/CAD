@@ -68,12 +68,67 @@ Day 17 (7/8/25)
 
 I was able to set up the application such that it can also load .stl files as well, and allowing the manipulation of the view using the mouse and the keyboard
 
+Day 18 (7/15/25)
+
+I got JOGL support included in the program (in terms of the .stl files and rendering), and I will provide instructions on how to run it in Windows; For Linux/Mac (The lib files should be there already for Linux/MacOS), there is a script that will run it for you, just run that. 
+
 Instructions for Running the program:
 
 For Windows: 
 1. Get the JDK (Download a JDK from Oracle or Adoptium) and install it
 2. Download the .exe file
 3. Run the .exe file (If you see this message: "Windows protected your PC — Microsoft Defender SmartScreen prevented an unrecognized app from starting…", Click "More info". Then click "Run anyway".)
+
+JOGL Support:
+==============================
+SketchApp - Windows Instructions
+==============================
+
+Requirements:
+------------------------------
+- Java 8+ must be installed.
+  To check: open Command Prompt and type:
+    java -version
+  If not installed, download from:
+    https://adoptium.net or https://www.oracle.com/java/
+
+lib/ folder must include:
+------------------------------
+- jogl-all.jar
+- gluegen-rt.jar
+- JOGL native .dll files:
+    e.g. jogl_desktop.dll, gluegen-rt.dll, etc.
+
+You can get them from:
+https://jogamp.org/deployment/jogamp-current/archive/jogamp-all-platforms.7z  
+(Use 7-Zip to extract them)
+
+Folder Structure:
+------------------------------
+SketchApp/
+├── SketchApp.exe
+├── SketchApp.jar
+└── lib/
+    ├── jogl-all.jar
+    ├── gluegen-rt.jar
+    ├── jogl_desktop.dll
+    ├── gluegen-rt.dll
+    └── (other required .dlls)
+
+To Launch the App:
+------------------------------
+1. Ensure the `lib/` folder contains the required files.
+2. Double-click `SketchApp.exe`.
+
+That's it!
+
+🛠 Troubleshooting:
+------------------------------
+- If the app doesn't start:
+  → Ensure Java is installed.
+  → Check that all required JOGL files are in `lib/`.
+
+
 
 For MacOS/Linux/FreeBSD:
 1. Download JDK (Oracle or Adoptium), and install it
