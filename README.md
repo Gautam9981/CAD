@@ -74,7 +74,7 @@ I got JOGL support included in the program (in terms of the .stl files and rende
 
 7/17/25 (Day 19 and 20)
 
-For these two days, I was working to make sure that the binaries function as expected, as I have added OpenGL support through JOGL, and I can say that they do work properly (At least for Linux and Windows; Don't know about MacOS)
+For these two days, I was working to make sure that the binaries function as expected, as I have added OpenGL support through JOGL, and I can say that they do work properly (At least for Linux and Windows; Don't know about MacOS). For the Windows binary, I included the .jar file, as the .exe is basically a wrapper for the .jar file, should still run the .exe and it will work
 
 Instructions for Running the program:
 
@@ -90,7 +90,7 @@ SketchApp - Windows Instructions
 
 Requirements:
 ------------------------------
-- Java 8+ must be installed.
+- Java 21+ must be installed.
   To check: open Command Prompt and type:
     java -version
   If not installed, download from:
@@ -102,20 +102,6 @@ lib/ folder must include:
 - gluegen-rt.jar
 - JOGL native .dll files:
     e.g. jogl_desktop.dll, gluegen-rt.dll, etc.
-
-You can get them from:
-https://jogamp.org/deployment/jogamp-current/archive/jogamp-all-platforms.7z  
-(Use 7-Zip to extract them)
-
-Folder Structure:
-SketchApp/
-├── SketchApp.exe
-└── lib/
-    ├── jogl-all.jar
-    ├── gluegen-rt.jar
-    ├── jogl_desktop.dll
-    ├── gluegen-rt.dll
-    └── (other native DLLs)
 
 To Launch the App:
 ------------------------------
