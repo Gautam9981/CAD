@@ -93,8 +93,7 @@ Requirements:
 - Java 21+ must be installed.
   To check: open Command Prompt and type:
     java -version
-  If not installed, download from:
-    https://adoptium.net or https://www.oracle.com/java/
+  If not installed, download from Adoptium or Oracle
 
 lib/ folder must include:
 ------------------------------
