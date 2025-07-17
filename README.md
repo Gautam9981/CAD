@@ -72,6 +72,10 @@ Day 18 (7/15/25)
 
 I got JOGL support included in the program (in terms of the .stl files and rendering), and I will provide instructions on how to run it in Windows; For Linux/Mac (The lib files should be there already for Linux/MacOS), there is a script that will run it for you, just run that. 
 
+7/17/25 (Day 19 and 20)
+
+For these two days, I was working to make sure that the binaries function as expected, as I have added OpenGL support through JOGL, and I can say that they do work properly (At least for Linux and Windows; Don't know about MacOS)
+
 Instructions for Running the program:
 
 For Windows: 
