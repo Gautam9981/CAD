@@ -97,10 +97,94 @@ public class Sketch {
             }
             return sb.toString();
         }
+
+        // Add getPoints() method to Polygon
+        public List<Point2D> getPoints() {
+            List<Point2D> p2dPoints = new ArrayList<>();
+            for (PointEntity p : points) {
+                p2dPoints.add(new Point2D(p.x, p.y));
+            }
+            return p2dPoints;
+        }
     }
+
+    // New class definitions to resolve errors
+
+    /**
+     * Simple class to represent a 2D point for geometric operations.
+     * This is distinct from PointEntity which is a Sketch entity.
+     */
+    public static class Point2D {
+        private float x, y;
+
+        public Point2D(float x, float y) {
+            this.x = x;
+            this.y = y;
+        }
+
+        public float getX() {
+            return x;
+        }
+
+        public float getY() {
+            return y;
+        }
+    }
+
+    /**
+     * Simple class to represent a 3D point.
+     */
+    public static class Point3D {
+        private float x, y, z;
+
+        public Point3D(float x, float y, float z) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        public float getX() { return x; }
+        public float getY() { return y; }
+        public float getZ() { return z; }
+    }
+
+    /**
+     * Represents a 3D face, defined by a list of 3D points.
+     * Assumes points are ordered to define the face (e.g., clockwise or counter-clockwise).
+     */
+    public static class Face3D {
+        private List<Point3D> vertices;
+
+        // Constructor for a quad face (4 points)
+        public Face3D(Point3D p1, Point3D p2, Point3D p3, Point3D p4) {
+            this.vertices = new ArrayList<>();
+            this.vertices.add(p1);
+            this.vertices.add(p2);
+            this.vertices.add(p3);
+            this.vertices.add(p4);
+        }
+
+        // Constructor for a general polygonal face (list of points)
+        public Face3D(List<Point3D> vertices) {
+            if (vertices == null || vertices.size() < 3) {
+                throw new IllegalArgumentException("A Face3D must have at least 3 vertices.");
+            }
+            this.vertices = new ArrayList<>(vertices);
+        }
+
+        public List<Point3D> getVertices() {
+            return vertices;
+        }
+    }
+    // End of new class definitions
 
     private static final int MAX_SKETCH_ENTITIES = 1000;
     private final List < Entity > sketchEntities = new ArrayList < > ();
+
+    // New fields to resolve errors
+    public final List < Polygon > polygons = new ArrayList < > (); // To store only Polygon entities for extrusion
+    public List <Face3D> extrudedFaces = new ArrayList < > (); // To store the result of extrusion
+    // End of new fields
 
     /**
      * Adds a point entity to the sketch.
@@ -161,7 +245,9 @@ public class Sketch {
             return 1;
         }
         try {
-            sketchEntities.add(new Polygon(points));
+            Polygon newPolygon = new Polygon(points);
+            sketchEntities.add(newPolygon);
+            this.polygons.add(newPolygon); // Also add to the dedicated polygons list
             return 0;
         } catch (IllegalArgumentException e) {
             System.out.println("Error adding polygon: " + e.getMessage());
@@ -203,21 +289,23 @@ public class Sketch {
      */
     public void clearSketch() {
         sketchEntities.clear();
+        polygons.clear(); // Clear polygons list as well
+        extrudedFaces.clear(); // Clear extruded faces
     }
 
     /**
      * Returns a list of string representations of all entities in the sketch.
      * @return List of strings describing each sketch entity.
      */
-    public List<String> listSketch() {
-        List<String> output = new ArrayList<>();
+    public List < String > listSketch() {
+        List < String > output = new ArrayList < > ();
 
         if (sketchEntities.isEmpty()) {
             output.add("Sketch is empty.");
             return output;
         }
 
-        for (Entity e : sketchEntities) {
+        for (Entity e: sketchEntities) {
             output.add(e.toString());
         }
 
@@ -249,12 +337,12 @@ public class Sketch {
      */
     private int getDXFUnitCode(String unitStr) {
         return switch (unitStr.toLowerCase()) {
-            case "in", "inch", "inches" -> 1;
-            case "ft", "feet" -> 2;
-            case "mm", "millimeter", "millimeters" -> 4;
-            case "cm", "centimeter", "centimeters" -> 5;
-            case "m", "meter", "meters" -> 6;
-            default -> 0; // Unitless
+        case "in", "inch", "inches" -> 1;
+        case "ft", "feet" -> 2;
+        case "mm", "millimeter", "millimeters" -> 4;
+        case "cm", "centimeter", "centimeters" -> 5;
+        case "m", "meter", "meters" -> 6;
+        default -> 0; // Unitless
         };
     }
 
@@ -265,12 +353,12 @@ public class Sketch {
      */
     private static String getUnitsFromDXFCode(int code) {
         return switch (code) {
-            case 1 -> "in";
-            case 2 -> "ft";
-            case 4 -> "mm";
-            case 5 -> "cm";
-            case 6 -> "m";
-            default -> "unitless";
+        case 1 -> "in";
+        case 2 -> "ft";
+        case 4 -> "mm";
+        case 5 -> "cm";
+        case 6 -> "m";
+        default -> "unitless";
         };
     }
 
@@ -567,15 +655,15 @@ public class Sketch {
                     // If we were parsing a non-POLYLINE entity, add it now before processing the new one
                     if (currentEntity != null && !inPolylineEntity && !currentEntity.equals("VERTEX")) { // Exclude VERTEX as it's part of POLYLINE
                         switch (currentEntity) {
-                            case "POINT":
-                                addEntity("POINT", x1, y1, 0, 0, 0, 0, 0, null);
-                                break;
-                            case "LINE":
-                                addEntity("LINE", x1, y1, x2, y2, 0, 0, 0, null);
-                                break;
-                            case "CIRCLE":
-                                addEntity("CIRCLE", 0, 0, 0, 0, cx, cy, radius, null);
-                                break;
+                        case "POINT":
+                            addEntity("POINT", x1, y1, 0, 0, 0, 0, 0, null);
+                            break;
+                        case "LINE":
+                            addEntity("LINE", x1, y1, x2, y2, 0, 0, 0, null);
+                            break;
+                        case "CIRCLE":
+                            addEntity("CIRCLE", 0, 0, 0, 0, cx, cy, radius, null);
+                            break;
                             // POLYLINE and VERTEX are handled by SEQEND or when currentEntity changes
                         }
                         currentEntity = null; // Reset for the next entity
@@ -600,11 +688,17 @@ public class Sketch {
                         continue;
                     } else if (entityTypeOrSection.equals("EOF")) {
                         // Handle any last entity before EOF
-                         if (currentEntity != null && !inPolylineEntity && !currentEntity.equals("VERTEX")) {
+                        if (currentEntity != null && !inPolylineEntity && !currentEntity.equals("VERTEX")) {
                             switch (currentEntity) {
-                                case "POINT": addEntity("POINT", x1, y1, 0, 0, 0, 0, 0, null); break;
-                                case "LINE": addEntity("LINE", x1, y1, x2, y2, 0, 0, 0, null); break;
-                                case "CIRCLE": addEntity("CIRCLE", 0, 0, 0, 0, cx, cy, radius, null); break;
+                            case "POINT":
+                                addEntity("POINT", x1, y1, 0, 0, 0, 0, 0, null);
+                                break;
+                            case "LINE":
+                                addEntity("LINE", x1, y1, x2, y2, 0, 0, 0, null);
+                                break;
+                            case "CIRCLE":
+                                addEntity("CIRCLE", 0, 0, 0, 0, cx, cy, radius, null);
+                                break;
                             }
                         }
                         break; // End of file
@@ -617,7 +711,7 @@ public class Sketch {
 
                         if (currentEntity.equals("POLYLINE")) {
                             inPolylineEntity = true;
-                            polyPoints = new ArrayList<>(); // Initialize points list for this polyline
+                            polyPoints = new ArrayList < > (); // Initialize points list for this polyline
                             // Consume the next group codes for POLYLINE if any (e.g., 66, 70)
                             // Loop continues to read properties of POLYLINE or its VERTEX entities
                         } else if (currentEntity.equals("VERTEX")) {
@@ -658,47 +752,47 @@ public class Sketch {
                         valueLine = valueLine.trim();
 
                         switch (groupCode) {
-                            case 10: // X coordinate of start point (POINT, LINE) or center (CIRCLE) or vertex (VERTEX)
-                                if (currentEntity.equals("VERTEX") && waitingForVertexCoords) {
-                                    tempVertexX = Float.parseFloat(valueLine) * scale;
-                                } else {
-                                    if (currentEntity.equals("POINT") || currentEntity.equals("LINE")) x1 = Float.parseFloat(valueLine) * scale;
-                                    else if (currentEntity.equals("CIRCLE")) cx = Float.parseFloat(valueLine) * scale;
+                        case 10: // X coordinate of start point (POINT, LINE) or center (CIRCLE) or vertex (VERTEX)
+                            if (currentEntity.equals("VERTEX") && waitingForVertexCoords) {
+                                tempVertexX = Float.parseFloat(valueLine) * scale;
+                            } else {
+                                if (currentEntity.equals("POINT") || currentEntity.equals("LINE")) x1 = Float.parseFloat(valueLine) * scale;
+                                else if (currentEntity.equals("CIRCLE")) cx = Float.parseFloat(valueLine) * scale;
+                            }
+                            break;
+                        case 20: // Y coordinate of start point (POINT, LINE) or center (CIRCLE) or vertex (VERTEX)
+                            if (currentEntity.equals("VERTEX") && waitingForVertexCoords) {
+                                tempVertexY = Float.parseFloat(valueLine) * scale;
+                                // If we have both X and Y for a vertex, add it to the polyline
+                                if (polyPoints != null) {
+                                    polyPoints.add(new PointEntity(tempVertexX, tempVertexY));
                                 }
-                                break;
-                            case 20: // Y coordinate of start point (POINT, LINE) or center (CIRCLE) or vertex (VERTEX)
-                                if (currentEntity.equals("VERTEX") && waitingForVertexCoords) {
-                                    tempVertexY = Float.parseFloat(valueLine) * scale;
-                                    // If we have both X and Y for a vertex, add it to the polyline
-                                    if (polyPoints != null) {
-                                        polyPoints.add(new PointEntity(tempVertexX, tempVertexY));
-                                    }
-                                    waitingForVertexCoords = false; // Reset for next vertex
-                                } else {
-                                    if (currentEntity.equals("POINT") || currentEntity.equals("LINE")) y1 = Float.parseFloat(valueLine) * scale;
-                                    else if (currentEntity.equals("CIRCLE")) cy = Float.parseFloat(valueLine) * scale;
-                                }
-                                break;
-                            case 11: // X coordinate of end point (LINE)
-                                if (currentEntity.equals("LINE")) x2 = Float.parseFloat(valueLine) * scale;
-                                break;
-                            case 21: // Y coordinate of end point (LINE)
-                                if (currentEntity.equals("LINE")) y2 = Float.parseFloat(valueLine) * scale;
-                                break;
-                            case 40: // Radius (CIRCLE) or sometimes thickness for other entities, or start/end width for POLYLINE
-                                if (currentEntity.equals("CIRCLE")) radius = Float.parseFloat(valueLine) * scale;
-                                break;
-                            case 8: // Layer name (usually '0') - consume
-                            case 6: // Linetype name - consume
-                            case 62: // Color number - consume
-                            case 39: // Thickness - consume
-                            case 70: // Polyline flags (e.g., 1 for closed) - consume
-                            case 66: // Entities follow (for old POLYLINEs) - consume
-                                // These are common group codes to consume
-                                break;
-                            default:
-                                // System.out.println("DBG: Skipping unsupported group code: " + groupCode);
-                                break; // Skip unsupported group codes
+                                waitingForVertexCoords = false; // Reset for next vertex
+                            } else {
+                                if (currentEntity.equals("POINT") || currentEntity.equals("LINE")) y1 = Float.parseFloat(valueLine) * scale;
+                                else if (currentEntity.equals("CIRCLE")) cy = Float.parseFloat(valueLine) * scale;
+                            }
+                            break;
+                        case 11: // X coordinate of end point (LINE)
+                            if (currentEntity.equals("LINE")) x2 = Float.parseFloat(valueLine) * scale;
+                            break;
+                        case 21: // Y coordinate of end point (LINE)
+                            if (currentEntity.equals("LINE")) y2 = Float.parseFloat(valueLine) * scale;
+                            break;
+                        case 40: // Radius (CIRCLE) or sometimes thickness for other entities, or start/end width for POLYLINE
+                            if (currentEntity.equals("CIRCLE")) radius = Float.parseFloat(valueLine) * scale;
+                            break;
+                        case 8: // Layer name (usually '0') - consume
+                        case 6: // Linetype name - consume
+                        case 62: // Color number - consume
+                        case 39: // Thickness - consume
+                        case 70: // Polyline flags (e.g., 1 for closed) - consume
+                        case 66: // Entities follow (for old POLYLINEs) - consume
+                            // These are common group codes to consume
+                            break;
+                        default:
+                            // System.out.println("DBG: Skipping unsupported group code: " + groupCode);
+                            break; // Skip unsupported group codes
                         }
                     } catch (NumberFormatException e) {
                         System.err.println("Warning: Invalid number format for DXF value near group code: " + line + ", value: " + valueLine + ". Error: " + e.getMessage());
@@ -713,9 +807,15 @@ public class Sketch {
             // After loop, if there was an active non-polyline entity
             if (currentEntity != null && !inPolylineEntity && !currentEntity.equals("VERTEX")) {
                 switch (currentEntity) {
-                    case "POINT": addEntity("POINT", x1, y1, 0, 0, 0, 0, 0, null); break;
-                    case "LINE": addEntity("LINE", x1, y1, x2, y2, 0, 0, 0, null); break;
-                    case "CIRCLE": addEntity("CIRCLE", 0, 0, 0, 0, cx, cy, radius, null); break;
+                case "POINT":
+                    addEntity("POINT", x1, y1, 0, 0, 0, 0, 0, null);
+                    break;
+                case "LINE":
+                    addEntity("LINE", x1, y1, x2, y2, 0, 0, 0, null);
+                    break;
+                case "CIRCLE":
+                    addEntity("CIRCLE", 0, 0, 0, 0, cx, cy, radius, null);
+                    break;
                 }
             }
             // Also, if a polyline was active but didn't end with SEQEND (malformed file)
@@ -745,25 +845,25 @@ public class Sketch {
      * @param radius Radius (for Circle).
      * @param polyPoints List of points for a Polygon (null for other types).
      */
-    private void addEntity(String type, float x1, float y1, float x2, float y2, float cx, float cy, float radius, List<PointEntity> polyPoints) {
+    private void addEntity(String type, float x1, float y1, float x2, float y2, float cx, float cy, float radius, List < PointEntity > polyPoints) {
         switch (type) {
-            case "POINT":
-                addPoint(x1, y1);
-                break;
-            case "LINE":
-                addLine(x1, y1, x2, y2);
-                break;
-            case "CIRCLE":
-                addCircle(cx, cy, radius);
-                break;
-            case "POLYLINE": // This case handles the final addition of the polygon after all vertices are parsed
-                if (polyPoints != null) {
-                    addPolygon(polyPoints);
-                }
-                break;
+        case "POINT":
+            addPoint(x1, y1);
+            break;
+        case "LINE":
+            addLine(x1, y1, x2, y2);
+            break;
+        case "CIRCLE":
+            addCircle(cx, cy, radius);
+            break;
+        case "POLYLINE": // This case handles the final addition of the polygon after all vertices are parsed
+            if (polyPoints != null) {
+                addPolygon(polyPoints);
+            }
+            break;
             // VERTEX and SEQEND are control entities for POLYLINE, not standalone entities to be added here.
-            default:
-                System.out.println("Unsupported DXF entity type for adding: " + type);
+        default:
+            System.out.println("Unsupported DXF entity type for adding: " + type);
         }
     }
 
@@ -776,12 +876,12 @@ public class Sketch {
         // Define your internal base unit, e.g., millimeters.
         // Convert all DXF units to your internal unit.
         return switch (unitStr.toLowerCase()) {
-            case "in" -> 25.4f; // 1 inch = 25.4 mm
-            case "ft" -> 304.8f; // 1 foot = 304.8 mm
-            case "mm" -> 1.0f;
-            case "cm" -> 10.0f; // 1 cm = 10 mm
-            case "m" -> 1000.0f; // 1 m = 1000 mm
-            default -> 1.0f; // Unitless or unknown, assume 1:1
+        case "in" -> 25.4f; // 1 inch = 25.4 mm
+        case "ft" -> 304.8f; // 1 foot = 304.8 mm
+        case "mm" -> 1.0f;
+        case "cm" -> 10.0f; // 1 cm = 10 mm
+        case "m" -> 1000.0f; // 1 m = 1000 mm
+        default -> 1.0f; // Unitless or unknown, assume 1:1
         };
     }
 
@@ -795,43 +895,80 @@ public class Sketch {
      */
     public void draw(GL2 gl) {
         // Iterate through all sketch entities and draw them
-        for (Entity e : sketchEntities) {
+        for (Entity e: sketchEntities) {
             switch (e.type) {
-                case POINT:
-                    PointEntity p = (PointEntity) e;
-                    gl.glPointSize(5.0f); // Make points visible
-                    gl.glBegin(GL2.GL_POINTS);
-                    gl.glVertex2f(p.x, p.y);
-                    gl.glEnd();
-                    break;
-                case LINE:
-                    Line l = (Line) e;
-                    gl.glBegin(GL2.GL_LINES);
-                    gl.glVertex2f(l.x1, l.y1);
-                    gl.glVertex2f(l.x2, l.y2);
-                    gl.glEnd();
-                    break;
-                case CIRCLE:
-                    Circle c = (Circle) e;
-                    gl.glBegin(GL2.GL_LINE_LOOP);
-                    int segments = 50; // Resolution of the circle
-                    for (int i = 0; i < segments; i++) {
-                        double angle = 2.0 * Math.PI * i / segments;
-                        float x = c.x + c.r * (float) Math.cos(angle);
-                        float y = c.y + c.r * (float) Math.sin(angle);
-                        gl.glVertex2f(x, y);
-                    }
-                    gl.glEnd();
-                    break;
-                case POLYGON:
-                    Polygon poly = (Polygon) e;
-                    gl.glBegin(GL2.GL_LINE_LOOP); // Draw as a closed loop
-                    for (PointEntity vert : poly.points) {
-                        gl.glVertex2f(vert.x, vert.y);
-                    }
-                    gl.glEnd();
-                    break;
+            case POINT:
+                PointEntity p = (PointEntity) e;
+                gl.glPointSize(5.0f); // Make points visible
+                gl.glBegin(GL2.GL_POINTS);
+                gl.glVertex2f(p.x, p.y);
+                gl.glEnd();
+                break;
+            case LINE:
+                Line l = (Line) e;
+                gl.glBegin(GL2.GL_LINES);
+                gl.glVertex2f(l.x1, l.y1);
+                gl.glVertex2f(l.x2, l.y2);
+                gl.glEnd();
+                break;
+            case CIRCLE:
+                Circle c = (Circle) e;
+                gl.glBegin(GL2.GL_LINE_LOOP);
+                int segments = 50; // Resolution of the circle
+                for (int i = 0; i < segments; i++) {
+                    double angle = 2.0 * Math.PI * i / segments;
+                    float x = c.x + c.r * (float) Math.cos(angle);
+                    float y = c.y + c.r * (float) Math.sin(angle);
+                    gl.glVertex2f(x, y);
+                }
+                gl.glEnd();
+                break;
+            case POLYGON:
+                Polygon poly = (Polygon) e;
+                gl.glBegin(GL2.GL_LINE_LOOP); // Draw as a closed loop
+                for (PointEntity vert: poly.points) {
+                    gl.glVertex2f(vert.x, vert.y);
+                }
+                gl.glEnd();
+                break;
             }
+        }
+    }
+    public void extrude(double height) {
+        // Clear previous extruded faces
+        this.extrudedFaces.clear();
+
+        for (Polygon polygon: this.polygons) { // Use the dedicated polygons list
+            List < Point2D > points = polygon.getPoints(); // Call the new getPoints() method
+            int n = points.size();
+
+            List < Point3D > bottom = points.stream()
+                .map(p -> new Point3D(p.getX(), p.getY(), 0))
+                .toList();
+
+            List < Point3D > top = points.stream()
+                .map(p -> new Point3D(p.getX(), p.getY(), (float)height)) // Cast height to float
+                .toList();
+
+            // Side faces
+            for (int i = 0; i < n; i++) {
+                Point3D p1 = bottom.get(i);
+                Point3D p2 = bottom.get((i + 1) % n);
+                Point3D p3 = top.get((i + 1) % n);
+                Point3D p4 = top.get(i);
+
+                extrudedFaces.add(new Face3D(p1, p2, p3, p4));
+            }
+
+            // Top and bottom faces
+            // For top and bottom faces, ensure points are ordered consistently (e.g., all clockwise or all counter-clockwise)
+            // The `Face3D` constructor taking a list of points assumes they form a valid polygon.
+            extrudedFaces.add(new Face3D(top));
+            
+            // For the bottom face, reverse the order to maintain consistent normal direction (e.g., if top is CCW, bottom should be CW)
+            List<Point3D> reversedBottom = new ArrayList<>(bottom);
+            java.util.Collections.reverse(reversedBottom);
+            extrudedFaces.add(new Face3D(reversedBottom));
         }
     }
 }

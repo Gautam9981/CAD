@@ -7,6 +7,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors; // Added for stream operations in new code
 
 // JOGL imports for rendering methods in Geometry
 import com.jogamp.opengl.GL2;
@@ -35,14 +36,279 @@ public class Geometry {
     public static int cubeDivisions = 1;                // Cube subdivisions per edge
     public static int sphereLatDiv = 30;                // Sphere latitude divisions
     public static int sphereLonDiv = 30;                // Sphere longitude divisions
-    private static List<float[]> extrudedTriangles = new ArrayList<>(); // Extruded geometry storage
+    private static List<float[]> extrudedTriangles = new ArrayList<>(); // Extruded geometry storage (old format)
 
     /**
      * Stores triangles loaded from the last STL file. Each float[] contains:
      * [normalX, normalY, normalZ, v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z]
      * This format includes the facet normal directly with the vertices for easier rendering.
      */
-    private static List<float[]> loadedStlTriangles = new ArrayList<>();
+    private static List<float[]> loadedStlTriangles = new ArrayList<>(); // Old format for STL
+
+    // --- NEW ADDITIONS FOR SCALABILITY ---
+
+    /**
+     * Simple class to represent a 3D point.
+     * Added for the new scalable geometry system.
+     */
+    public static class Point3D {
+        private float x, y, z;
+
+        public Point3D(float x, float y, float z) {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        public float getX() { return x; }
+        public float getY() { return y; }
+        public float getZ() { return z; }
+    }
+
+    /**
+     * Represents a 3D triangle, defined by three 3D points.
+     * Added for the new scalable geometry system.
+     */
+    public static class Triangle3D {
+        private Point3D p1, p2, p3;
+
+        public Triangle3D(Point3D p1, Point3D p2, Point3D p3) {
+            this.p1 = p1;
+            this.p2 = p2;
+            this.p3 = p3;
+        }
+
+        public Point3D getP1() { return p1; }
+        public Point3D getP2() { return p2; }
+        public Point3D getP3() { return p3; }
+
+        /**
+         * Calculates the normal vector for the triangle.
+         * The normal is calculated using the cross product of two edges (p2-p1 and p3-p1).
+         * The vector is then normalized to unit length.
+         * @return A float array {nx, ny, nz} representing the normal vector.
+         */
+        public float[] getNormal() {
+            // Vector from p1 to p2
+            float v1x = p2.getX() - p1.getX();
+            float v1y = p2.getY() - p1.getY();
+            float v1z = p2.getZ() - p1.getZ();
+
+            // Vector from p1 to p3
+            float v2x = p3.getX() - p1.getX();
+            float v2y = p3.getY() - p1.getY();
+            float v2z = p3.getZ() - p1.getZ();
+
+            // Cross product (v1 x v2)
+            float nx = v1y * v2z - v1z * v2y;
+            float ny = v1z * v2x - v1x * v2z;
+            float nz = v1x * v2y - v1y * v2x;
+
+            // Normalize the vector
+            float length = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+            if (length == 0) return new float[] {0, 0, 0}; // Avoid division by zero
+            return new float[] {nx / length, ny / length, nz / length};
+        }
+    }
+
+    /**
+     * Interface for any 3D object that can provide its geometry as a list of triangles.
+     * This makes the `saveStl` and `drawCurrentShape` methods more scalable.
+     * Added for the new scalable geometry system.
+     */
+    public interface Renderable3D {
+        List<Triangle3D> getTriangles();
+    }
+
+    // Concrete implementations of Renderable3D for various shapes
+    // Added for the new scalable geometry system.
+
+    /**
+     * Represents a cube model that can provide its triangles.
+     */
+    public static class CubeModel implements Renderable3D {
+        private float size;
+        private int divisions;
+
+        public CubeModel(float size, int divisions) {
+            this.size = size;
+            this.divisions = divisions;
+        }
+
+        @Override
+        public List<Triangle3D> getTriangles() {
+            List<Triangle3D> triangles = new ArrayList<>();
+            float half = size / 2.0f;
+            float step = size / divisions;
+
+            // Front face (+Z)
+            for (int i = 0; i < divisions; i++) {
+                for (int j = 0; j < divisions; j++) {
+                    float x0 = -half + i * step;
+                    float x1 = x0 + step;
+                    float y0 = -half + j * step;
+                    float y1 = y0 + step;
+                    triangles.add(new Triangle3D(new Point3D(x0, y0, half), new Point3D(x1, y0, half), new Point3D(x1, y1, half)));
+                    triangles.add(new Triangle3D(new Point3D(x0, y0, half), new Point3D(x1, y1, half), new Point3D(x0, y1, half)));
+                }
+            }
+            // Back face (-Z)
+            for (int i = 0; i < divisions; i++) {
+                for (int j = 0; j < divisions; j++) {
+                    float x0 = -half + i * step;
+                    float x1 = x0 + step;
+                    float y0 = -half + j * step;
+                    float y1 = y0 + step;
+                    triangles.add(new Triangle3D(new Point3D(x0, y0, -half), new Point3D(x0, y1, -half), new Point3D(x1, y1, -half)));
+                    triangles.add(new Triangle3D(new Point3D(x0, y0, -half), new Point3D(x1, y1, -half), new Point3D(x1, y0, -half)));
+                }
+            }
+            // Right face (+X)
+            for (int i = 0; i < divisions; i++) {
+                for (int j = 0; j < divisions; j++) {
+                    float y0 = -half + i * step;
+                    float y1 = y0 + step;
+                    float z0 = -half + j * step;
+                    float z1 = z0 + step;
+                    triangles.add(new Triangle3D(new Point3D(half, y0, z0), new Point3D(half, y1, z0), new Point3D(half, y1, z1)));
+                    triangles.add(new Triangle3D(new Point3D(half, y0, z0), new Point3D(half, y1, z1), new Point3D(half, y0, z1)));
+                }
+            }
+            // Left face (-X)
+            for (int i = 0; i < divisions; i++) {
+                for (int j = 0; j < divisions; j++) {
+                    float y0 = -half + i * step;
+                    float y1 = y0 + step;
+                    float z0 = -half + j * step;
+                    float z1 = z0 + step;
+                    triangles.add(new Triangle3D(new Point3D(-half, y0, z0), new Point3D(-half, y0, z1), new Point3D(-half, y1, z1)));
+                    triangles.add(new Triangle3D(new Point3D(-half, y0, z0), new Point3D(-half, y1, z1), new Point3D(-half, y1, z0)));
+                }
+            }
+            // Top face (+Y)
+            for (int i = 0; i < divisions; i++) {
+                for (int j = 0; j < divisions; j++) {
+                    float x0 = -half + i * step;
+                    float x1 = x0 + step;
+                    float z0 = -half + j * step;
+                    float z1 = z0 + step;
+                    triangles.add(new Triangle3D(new Point3D(x0, half, z0), new Point3D(x1, half, z0), new Point3D(x1, half, z1)));
+                    triangles.add(new Triangle3D(new Point3D(x0, half, z0), new Point3D(x1, half, z1), new Point3D(x0, half, z1)));
+                }
+            }
+            // Bottom face (-Y)
+            for (int i = 0; i < divisions; i++) {
+                for (int j = 0; j < divisions; j++) {
+                    float x0 = -half + i * step;
+                    float x1 = x0 + step;
+                    float z0 = -half + j * step;
+                    float z1 = z0 + step;
+                    triangles.add(new Triangle3D(new Point3D(x0, -half, z0), new Point3D(x0, -half, z1), new Point3D(x1, -half, z1)));
+                    triangles.add(new Triangle3D(new Point3D(x0, -half, z0), new Point3D(x1, -half, z1), new Point3D(x1, -half, z0)));
+                }
+            }
+            return triangles;
+        }
+    }
+
+    /**
+     * Represents a sphere model that can provide its triangles.
+     */
+    public static class SphereModel implements Renderable3D {
+        private float radius;
+        private int latDiv;
+        private int lonDiv;
+
+        public SphereModel(float radius, int latDiv, int lonDiv) {
+            this.radius = radius;
+            this.latDiv = latDiv;
+            this.lonDiv = lonDiv;
+        }
+
+        /**
+         * Calculate Cartesian coordinates for a point on a sphere given spherical angles.
+         * @param r Radius of the sphere.
+         * @param theta Polar angle (latitude), from 0 (north pole) to PI (south pole).
+         * @param phi Azimuthal angle (longitude), from 0 to 2*PI.
+         * @return Cartesian coordinates as Point3D.
+         */
+        private Point3D sph(float r, float theta, float phi) {
+            return new Point3D(
+                r * (float) Math.sin(theta) * (float) Math.cos(phi),
+                r * (float) Math.cos(theta),
+                r * (float) Math.sin(theta) * (float) Math.sin(phi)
+            );
+        }
+
+        @Override
+        public List<Triangle3D> getTriangles() {
+            List<Triangle3D> triangles = new ArrayList<>();
+
+            for (int i = 0; i < latDiv; i++) {
+                float theta1 = (float) Math.PI * i / latDiv;
+                float theta2 = (float) Math.PI * (i + 1) / latDiv;
+
+                for (int j = 0; j < lonDiv; j++) {
+                    float phi1 = 2 * (float) Math.PI * j / lonDiv;
+                    float phi2 = 2 * (float) Math.PI * (j + 1) / lonDiv;
+
+                    Point3D v1 = sph(radius, theta1, phi1);
+                    Point3D v2 = sph(radius, theta2, phi1);
+                    Point3D v3 = sph(radius, theta2, phi2);
+                    Point3D v4 = sph(radius, theta1, phi2);
+
+                    if (i == 0) { // Top cap
+                        triangles.add(new Triangle3D(v1, v2, v3));
+                    } else if (i + 1 == latDiv) { // Bottom cap
+                        triangles.add(new Triangle3D(v1, v4, v3)); // Changed order for outward normal
+                    } else { // Middle sections, form two triangles (a quad)
+                        triangles.add(new Triangle3D(v1, v2, v3));
+                        triangles.add(new Triangle3D(v1, v3, v4));
+                    }
+                }
+            }
+            return triangles;
+        }
+    }
+
+    /**
+     * Represents a 3D model generated by extruding a 2D sketch.
+     */
+    public static class ExtrudedModel implements Renderable3D {
+        private List<Triangle3D> triangles;
+
+        public ExtrudedModel(List<Triangle3D> triangles) {
+            this.triangles = new ArrayList<>(triangles);
+        }
+
+        @Override
+        public List<Triangle3D> getTriangles() {
+            return triangles;
+        }
+    }
+
+    /**
+     * Represents a 3D model loaded from an STL file.
+     */
+    public static class LoadedStlModel implements Renderable3D {
+        private List<Triangle3D> triangles;
+
+        // The constructor now takes a list of Triangle3D, meaning loadStl will convert
+        public LoadedStlModel(List<Triangle3D> triangles) {
+            this.triangles = new ArrayList<>(triangles);
+        }
+
+        @Override
+        public List<Triangle3D> getTriangles() {
+            return triangles;
+        }
+    }
+
+    // This will hold the currently active 3D model for saving/drawing (new scalable approach)
+    private static Renderable3D activeRenderableModel = null;
+
+
+    // --- ORIGINAL METHODS (kept as per instruction) ---
 
     /**
      * Returns the currently active shape type.
@@ -75,13 +341,16 @@ public class Geometry {
      * Loads an STL file, parses its facets (normals and vertices), and stores them
      * in `loadedStlTriangles` in a format suitable for OpenGL rendering.
      * After successful loading, sets the `currShape` to `STL_LOADED`.
+     * ALSO, populates `activeRenderableModel` for the new scalable system.
      *
      * @param filename STL file to read.
      * @throws IOException if file reading fails or file is malformed.
      */
     public static void loadStl(String filename) throws IOException {
-        loadedStlTriangles.clear(); // Clear any previously loaded data
+        loadedStlTriangles.clear(); // Clear any previously loaded data (old format)
+        List<Triangle3D> newStlTriangles = new ArrayList<>(); // For the new format
         currShape = Shape.NONE;     // Reset shape type while loading
+        activeRenderableModel = null; // Reset new model
 
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
@@ -105,8 +374,14 @@ public class Geometry {
                     reader.readLine(); // Skip "outer loop"
 
                     // Read 3 vertices for the current facet
+                    boolean facetOk = true;
                     for (int i = 0; i < 3; i++) {
-                        String vertexLine = reader.readLine().trim();
+                        String vertexLine = reader.readLine();
+                        if (vertexLine == null) {
+                            System.err.println("ERROR: Unexpected EOF while reading vertices for a facet.");
+                            throw new IOException("Unexpected EOF in STL file.");
+                        }
+                        vertexLine = vertexLine.trim();
                         String[] vertexParts = vertexLine.split("\\s+");
                         if (vertexParts.length >= 4) {
                             currentVertices[i * 3] = Float.parseFloat(vertexParts[1]);
@@ -114,24 +389,39 @@ public class Geometry {
                             currentVertices[i * 3 + 2] = Float.parseFloat(vertexParts[3]);
                         } else {
                             System.err.println("Warning: Malformed vertex line, skipping facet: " + vertexLine);
-                            // If a vertex is malformed, we can't draw this triangle, so break and skip facet
-                            // More robust error handling might clear the currentNormal/currentVertices
+                            facetOk = false;
+                            // Consume remaining lines of this facet
+                            for (int j = i; j < 3; j++) { if (reader.readLine() == null) break; }
+                            reader.readLine(); // Skip "endloop"
+                            reader.readLine(); // Skip "endfacet"
                             break; // Exit vertex reading loop
                         }
                     }
 
-                    // Combine normal and vertices into one array for storage
-                    float[] fullTriangleData = new float[12]; // 3 normal + 9 vertices
-                    System.arraycopy(currentNormal, 0, fullTriangleData, 0, 3);
-                    System.arraycopy(currentVertices, 0, fullTriangleData, 3, 9);
-                    loadedStlTriangles.add(fullTriangleData);
+                    if (facetOk) {
+                        // Combine normal and vertices into one array for storage (old format)
+                        float[] fullTriangleData = new float[12]; // 3 normal + 9 vertices
+                        System.arraycopy(currentNormal, 0, fullTriangleData, 0, 3);
+                        System.arraycopy(currentVertices, 0, fullTriangleData, 3, 9);
+                        loadedStlTriangles.add(fullTriangleData); // Add to old list
 
-                    reader.readLine(); // Skip "endloop"
-                    reader.readLine(); // Skip "endfacet"
+                        // Create Triangle3D for the new format
+                        newStlTriangles.add(new Triangle3D(
+                            new Point3D(currentVertices[0], currentVertices[1], currentVertices[2]),
+                            new Point3D(currentVertices[3], currentVertices[4], currentVertices[5]),
+                            new Point3D(currentVertices[6], currentVertices[7], currentVertices[8])
+                        ));
+                        reader.readLine(); // Skip "endloop"
+                        reader.readLine(); // Skip "endfacet"
+                    }
                 }
             }
             System.out.println("Finished reading STL. Triangles loaded: " + loadedStlTriangles.size());
-            currShape = Shape.STL_LOADED; // Set the current shape to STL_LOADED
+            currShape = Shape.STL_LOADED; // Set the current shape to STL_LOADED (old way)
+
+            if (!newStlTriangles.isEmpty()) {
+                activeRenderableModel = new LoadedStlModel(newStlTriangles); // Set new model
+            }
         } catch (NumberFormatException e) {
             throw new IOException("Error parsing numeric data in STL file: " + e.getMessage(), e);
         }
@@ -139,6 +429,7 @@ public class Geometry {
 
     /**
      * Create a cube with specified size and subdivisions.
+     * Sets both old and new internal representations.
      *
      * @param size      The size of the cube's edge.
      * @param divisions Number of subdivisions per edge (1-200).
@@ -147,14 +438,16 @@ public class Geometry {
         if (divisions < 1 || divisions > 200) {
             throw new IllegalArgumentException("Cube divisions must be between 1 and 200");
         }
-        cubeDivisions = divisions;
-        param = size;
-        currShape = Shape.CUBE;
+        cubeDivisions = divisions; // Old parameter
+        param = size;              // Old parameter
+        currShape = Shape.CUBE;    // Old shape type
+        activeRenderableModel = new CubeModel(size, divisions); // New model
         System.out.printf("Cube created with size %.2f and %d subdivisions%n", size, divisions);
     }
 
     /**
      * Create a sphere with specified radius and subdivisions.
+     * Sets both old and new internal representations.
      *
      * @param radius    Radius of the sphere.
      * @param divisions Number of subdivisions (latitude and longitude, 3-100).
@@ -163,82 +456,108 @@ public class Geometry {
         if (divisions < 3 || divisions > 100) {
             throw new IllegalArgumentException("Sphere divisions must be between 3 and 100");
         }
-        sphereLatDiv = sphereLonDiv = divisions;
-        param = radius;
-        currShape = Shape.SPHERE;
+        sphereLatDiv = sphereLonDiv = divisions; // Old parameters
+        param = radius;                          // Old parameter
+        currShape = Shape.SPHERE;                // Old shape type
+        activeRenderableModel = new SphereModel(radius, divisions, divisions); // New model
         System.out.printf("Sphere created with radius %.2f and %d subdivisions%n", radius, divisions);
     }
 
     /**
      * Extrude a closed sketch to create a 3D shape.
-     * Currently disabled due to incomplete/broken logic.
+     * This method now generates and sets the `ExtrudedModel` as the current active model.
      *
      * @param sketch Sketch to extrude.
      * @param height Extrusion height.
      */
     public static void extrude(Sketch sketch, float height) {
-        // TODO: Fix extrusion logic before enabling.
-        /*
-        if (!sketch.isClosedLoop()) {
-            System.out.println("Sketch must be a closed loop to extrude.");
+        if (sketch == null || sketch.polygons.isEmpty()) {
+            System.out.println("No polygons in sketch to extrude.");
             return;
         }
 
-        extrudedTriangles.clear();
-        var entities = sketch.getEntities();
-        for (int i = 0; i < entities.size(); i++) {
-            Sketch.Entity entity = entities.get(i);
-            if (entity instanceof Sketch.Line line) {
-                float x1 = line.x1, y1 = line.y1;
-                float x2 = line.x2, y2 = line.y2;
+        List<Triangle3D> generatedExtrudedTriangles = new ArrayList<>();
 
-                float z0 = 0f;
-                float z1 = height;
+        for (Sketch.Polygon polygon : sketch.polygons) {
+            List<Sketch.Point2D> points = polygon.getPoints();
+            int n = points.size();
 
-                float[] p1 = new float[]{x1, y1, z0};
-                float[] p2 = new float[]{x2, y2, z0};
-                float[] p3 = new float[]{x2, y2, z1};
-                float[] p4 = new float[]{x1, y1, z1};
+            // Convert 2D points to 3D points at z=0 for bottom face
+            List<Point3D> bottomPoints = points.stream()
+                .map(p -> new Point3D(p.getX(), p.getY(), 0))
+                .collect(Collectors.toList());
 
-                extrudedTriangles.addAll(List.of(p1, p2, p3));
-                extrudedTriangles.addAll(List.of(p1, p3, p4));
+            // Convert 2D points to 3D points at z=height for top face
+            List<Point3D> topPoints = points.stream()
+                .map(p -> new Point3D(p.getX(), p.getY(), height))
+                .collect(Collectors.toList());
+
+            // Generate side faces (quads, triangulated into two triangles each)
+            for (int i = 0; i < n; i++) {
+                Point3D p1 = bottomPoints.get(i);
+                Point3D p2 = bottomPoints.get((i + 1) % n);
+                Point3D p3 = topPoints.get((i + 1) % n);
+                Point3D p4 = topPoints.get(i);
+
+                // Triangulate the quad (p1, p2, p3, p4) into two triangles
+                generatedExtrudedTriangles.add(new Triangle3D(p1, p2, p3));
+                generatedExtrudedTriangles.add(new Triangle3D(p1, p3, p4));
+            }
+
+            // Generate top face (fan triangulation)
+            if (topPoints.size() >= 3) {
+                Point3D fanOrigin = topPoints.get(0); // Use first point as fan center
+                for (int i = 1; i < topPoints.size() - 1; i++) {
+                    generatedExtrudedTriangles.add(new Triangle3D(fanOrigin, topPoints.get(i), topPoints.get(i + 1)));
+                }
+            }
+
+            // Generate bottom face (fan triangulation, points in reverse order for consistent normals)
+            if (bottomPoints.size() >= 3) {
+                Point3D fanOrigin = bottomPoints.get(0); // Use first point as fan center
+                for (int i = 1; i < bottomPoints.size() - 1; i++) {
+                    generatedExtrudedTriangles.add(new Triangle3D(fanOrigin, bottomPoints.get(i + 1), bottomPoints.get(i)));
+                }
             }
         }
-
-        currShape = Shape.NONE;
-        System.out.println("Extruded sketch stored in memory.");
-        */
-        System.out.println("Extrude logic is disabled (pending fix).");
+        // Set the active renderable model to the newly extruded model
+        activeRenderableModel = new ExtrudedModel(generatedExtrudedTriangles);
+        currShape = Shape.NONE; // Extrusion doesn't fit the simple enum, so NONE for old system
+        System.out.println("Extruded sketch to create a 3D model.");
+        // Note: The original 'extrudedTriangles' List<float[]> is not directly populated by this new logic,
+        // as the new system uses Geometry.Triangle3D. If backward compatibility for that specific list
+        // is needed, conversion would be required here. For saving/drawing, the new `activeRenderableModel` is used.
     }
 
     /**
      * Save the currently created shape (cube, sphere) or extruded geometry to an STL file.
-     * This method delegates the actual triangle generation to private helper methods.
+     * This method prioritizes saving from `activeRenderableModel` (new system),
+     * otherwise falls back to the old `currShape` logic.
      *
      * @param filename Path to the output STL file.
      * @throws IOException if file writing fails.
      */
     public static void saveStl(String filename) throws IOException {
-        if (currShape == Shape.NONE && extrudedTriangles.isEmpty()) {
-            System.out.println("No shape created yet");
-            return;
-        }
-
         try (PrintWriter out = new PrintWriter(new FileWriter(filename))) {
             out.println("solid shape");
 
-            if (currShape == Shape.CUBE) {
+            if (activeRenderableModel != null && !activeRenderableModel.getTriangles().isEmpty()) {
+                // Use the new scalable system if a model is active
+                for (Triangle3D triangle : activeRenderableModel.getTriangles()) {
+                    writeTriangleStl(out, triangle);
+                }
+            } else if (currShape == Shape.CUBE) {
                 generateCubeStl(out, param, cubeDivisions);
             } else if (currShape == Shape.SPHERE) {
                 generateSphereStl(out, param, sphereLatDiv, sphereLonDiv);
             } else if (currShape == Shape.STL_LOADED && !loadedStlTriangles.isEmpty()) {
-                // If a loaded STL is the current shape, just write its triangles back out
                 writeLoadedStlTriangles(out);
+            } else if (!extrudedTriangles.isEmpty()) { // Check for old extruded triangles if they were ever populated
+                 System.out.println("Skipping export of old-format extruded geometry (not implemented for save).");
+            } else {
+                System.out.println("No shape created yet or no active model to save.");
+                return; // Exit if nothing to save
             }
-            // else if (!extrudedTriangles.isEmpty()) { // For when extrusion is enabled
-            //     // TODO: Implement extrusion export once fixed
-            //     System.out.println("Skipping export of extruded geometry (not implemented).");
-            // }
 
             out.println("endsolid shape");
         }
@@ -248,7 +567,7 @@ public class Geometry {
 
     /**
      * Generates and writes STL facets for the current `loadedStlTriangles` data.
-     * This is used when saving a previously loaded STL file.
+     * This is used when saving a previously loaded STL file (old format).
      *
      * @param out PrintWriter to write STL data.
      */
@@ -263,9 +582,25 @@ public class Geometry {
         }
     }
 
+    /**
+     * Helper method to write a single Triangle3D to the STL file (for the new system).
+     *
+     * @param out PrintWriter to write STL data.
+     * @param triangle The Triangle3D object to write.
+     */
+    private static void writeTriangleStl(PrintWriter out, Triangle3D triangle) {
+        float[] normal = triangle.getNormal();
+        out.printf("  facet normal %f %f %f%n", normal[0], normal[1], normal[2]);
+        out.println("    outer loop");
+        out.printf("      vertex %f %f %f%n", triangle.getP1().getX(), triangle.getP1().getY(), triangle.getP1().getZ());
+        out.printf("      vertex %f %f %f%n", triangle.getP2().getX(), triangle.getP2().getY(), triangle.getP2().getZ());
+        out.printf("      vertex %f %f %f%n", triangle.getP3().getX(), triangle.getP3().getY(), triangle.getP3().getZ());
+        out.println("    endloop");
+        out.println("  endfacet");
+    }
 
     /**
-     * Generate STL triangles for a cube and write to output.
+     * Generate STL triangles for a cube and write to output (old system helper).
      *
      * @param out       PrintWriter to write STL.
      * @param size      Edge length of the cube.
@@ -345,7 +680,7 @@ public class Geometry {
     }
 
     /**
-     * Generate STL triangles for a sphere and write to output.
+     * Generate STL triangles for a sphere and write to output (old system helper).
      *
      * @param out     PrintWriter to write STL.
      * @param radius  Sphere radius.
@@ -353,10 +688,6 @@ public class Geometry {
      * @param lonDiv  Longitude subdivisions.
      */
     private static void generateSphereStl(PrintWriter out, float radius, int latDiv, int lonDiv) {
-        // This method generates sphere geometry. For robust results, it might be better
-        // to pre-calculate normals based on the sphere's surface (normalized vertex position)
-        // rather than using cross product of triangle vertices if the triangulation is poor.
-        // However, for standard subdivision, cross product gives decent results.
         for (int i = 0; i < latDiv; i++) {
             float theta1 = (float) Math.PI * i / latDiv;
             float theta2 = (float) Math.PI * (i + 1) / latDiv;
@@ -370,13 +701,9 @@ public class Geometry {
                 float[] v3 = sph(radius, theta2, phi2);
                 float[] v4 = sph(radius, theta1, phi2);
 
-                // For top/bottom caps, triangles share a pole vertex
                 if (i == 0) { // Top cap
-                    // v1, v2, v3 form a triangle that connects to the top pole implicitly
-                    // Normal for top pole region can be (0,1,0) or calculated from triangle.
                     writeTriangle(out, v1, v2, v3);
                 } else if (i + 1 == latDiv) { // Bottom cap
-                    // v1, v2, v4 form a triangle that connects to the bottom pole implicitly
                     writeTriangle(out, v1, v2, v4);
                 } else { // Middle sections, form two triangles (a quad)
                     writeTriangle(out, v1, v2, v3);
@@ -387,7 +714,7 @@ public class Geometry {
     }
 
     /**
-     * Calculate Cartesian coordinates for a point on a sphere given spherical angles.
+     * Calculate Cartesian coordinates for a point on a sphere given spherical angles (old system helper).
      *
      * @param r     Radius of the sphere.
      * @param theta Polar angle (latitude), from 0 (north pole) to PI (south pole).
@@ -403,7 +730,7 @@ public class Geometry {
     }
 
     /**
-     * Write a triangle facet to the STL file, computing its normal automatically.
+     * Write a triangle facet to the STL file, computing its normal automatically (old system helper).
      * This method is used when generating new geometry (e.g., cube, sphere).
      *
      * @param out PrintWriter to write STL.
@@ -416,7 +743,7 @@ public class Geometry {
     }
 
     /**
-     * Write a triangle facet to the STL file with an explicitly provided normal.
+     * Write a triangle facet to the STL file with an explicitly provided normal (old system helper).
      * This overload is useful when the normal is already known (e.g., from loaded STL data)
      * or for specific surface normals (like flat faces of a cube).
      *
@@ -450,7 +777,7 @@ public class Geometry {
     }
 
     /**
-     * Write a triangle facet to the STL file, computing its normal based on vertex winding.
+     * Write a triangle facet to the STL file, computing its normal based on vertex winding (old system helper).
      * This is useful for generated geometry where facet normals aren't pre-defined.
      *
      * @param out PrintWriter to write STL.
@@ -492,43 +819,66 @@ public class Geometry {
     /**
      * Draws the currently selected 3D shape using OpenGL. This method is called by JOGLCadCanvas's display method.
      * It handles drawing of cubes, spheres, and loaded STL models.
+     * It prioritizes drawing from `activeRenderableModel` (new system),
+     * otherwise falls back to the old `currShape` logic.
      *
      * @param gl The GL2 object (OpenGL context) used for drawing.
      */
-    // This method is already public static, which is good.
-    public static void drawCurrentShape(GL2 gl) { // Renamed from drawLoadedStl to reflect general purpose
-        switch (currShape) {
-            case CUBE:
-                if (param > 0) {
-                    drawCube(gl, param, cubeDivisions);
-                }
-                break;
-            case SPHERE:
-                if (param > 0) {
-                    drawSphere(gl, param, sphereLatDiv, sphereLonDiv);
-                }
-                break;
-            case STL_LOADED:
-                drawLoadedStl(gl); // Call the specific STL drawing method
-                break;
-            case NONE:
-            default:
-                // No shape to draw
-                break;
+    public static void drawCurrentShape(GL2 gl) {
+        if (activeRenderableModel != null && !activeRenderableModel.getTriangles().isEmpty()) {
+            // Use the new scalable system if a model is active
+            drawTrianglesFromModel(gl, activeRenderableModel.getTriangles());
+        } else {
+            // Fallback to old system for backward compatibility
+            switch (currShape) {
+                case CUBE:
+                    if (param > 0) {
+                        drawCube(gl, param, cubeDivisions);
+                    }
+                    break;
+                case SPHERE:
+                    if (param > 0) {
+                        drawSphere(gl, param, sphereLatDiv, sphereLonDiv);
+                    }
+                    break;
+                case STL_LOADED:
+                    drawLoadedStl(gl); // Call the specific STL drawing method
+                    break;
+                case NONE:
+                default:
+                    // No shape to draw
+                    break;
+            }
         }
     }
 
     /**
-     * Draws a cube using OpenGL. Vertices and normals are calculated on the fly.
+     * Helper to draw a list of Triangle3D objects using OpenGL (for the new system).
+     * @param gl The GL2 object.
+     * @param triangles The list of Triangle3D objects to draw.
+     */
+    private static void drawTrianglesFromModel(GL2 gl, List<Triangle3D> triangles) {
+        gl.glBegin(GL2.GL_TRIANGLES);
+        for (Triangle3D triangle : triangles) {
+            float[] normal = triangle.getNormal();
+            gl.glNormal3f(normal[0], normal[1], normal[2]);
+
+            gl.glVertex3f(triangle.getP1().getX(), triangle.getP1().getY(), triangle.getP1().getZ());
+            gl.glVertex3f(triangle.getP2().getX(), triangle.getP2().getY(), triangle.getP2().getZ());
+            gl.glVertex3f(triangle.getP3().getX(), triangle.getP3().getY(), triangle.getP3().getZ());
+        }
+        gl.glEnd();
+    }
+
+
+    /**
+     * Draws a cube using OpenGL. Vertices and normals are calculated on the fly (old system helper).
      * For high performance with many cubes, consider using VBOs.
      *
      * @param gl        The GL2 object.
      * @param size      Edge length of the cube.
      * @param divisions Number of subdivisions per edge (for finer detail, though simple cube just draws 6 faces).
      */
-    // CHANGE: Made private to public to allow JOGLCadCanvas to call it directly if desired.
-    // However, the preferred method is to call drawCurrentShape.
-    // Making this public is technically a valid fix, but calling drawCurrentShape is better design.
     public static void drawCube(GL2 gl, float size, int divisions) {
         float half = size / 2.0f;
 
@@ -580,15 +930,13 @@ public class Geometry {
     }
 
     /**
-     * Draws a sphere using OpenGL's GLU library.
+     * Draws a sphere using OpenGL's GLU library (old system helper).
      *
      * @param gl        The GL2 object.
      * @param radius    Radius of the sphere.
      * @param latDiv    Number of latitude subdivisions.
      * @param lonDiv    Number of longitude subdivisions.
      */
-    // CHANGE: Made private to public to allow JOGLCadCanvas to call it directly if desired.
-    // However, the preferred method is to call drawCurrentShape.
     public static void drawSphere(GL2 gl, float radius, int latDiv, int lonDiv) {
         GLU glu = new GLU(); // GLU instance (can be reused if stored as a static member)
         GLUquadric quadric = glu.gluNewQuadric();
@@ -601,14 +949,12 @@ public class Geometry {
 
     /**
      * Draws a loaded STL model using OpenGL. It iterates through the
-     * `loadedStlTriangles` list and renders each triangle with its associated normal.
+     * `loadedStlTriangles` list and renders each triangle with its associated normal (old system helper).
      * This uses immediate mode (`glBegin`/`glEnd`), which is simple but less performant
      * for very large models compared to Vertex Buffer Objects (VBOs).
      *
      * @param gl The GL2 object.
      */
-    // CHANGE: Made private to public to allow JOGLCadCanvas to call it directly if desired.
-    // However, the preferred method is to call drawCurrentShape.
     public static void drawLoadedStl(GL2 gl) {
         if (loadedStlTriangles.isEmpty()) {
             return; // Nothing to draw
