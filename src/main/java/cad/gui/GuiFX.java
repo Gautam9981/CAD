@@ -111,6 +111,10 @@ public class GuiFX extends Application {
     public static int cubeDivisions = 10; // Default divisions for cube
     public static Sketch sketch; // The core object for 2D sketching operations
 
+    private Button darkModeToggle; // Dark mode toggle button
+    private Scene scene; // Reference to the scene for theme switching
+    private boolean isDarkMode = false; // Current theme state
+
     // === OpenGL rendering variables ===
     private float rotationX = 0.0f; // Current rotation around the X-axis for 3D view
     private float rotationY = 0.0f; // Current rotation around the Y-axis for 3D view
@@ -138,6 +142,13 @@ public class GuiFX extends Application {
 
         // Create main layout
         BorderPane root = new BorderPane();
+        // Create dark mode toggle button and position it in the top-right corner
+        darkModeToggle = new Button("🌙");
+        darkModeToggle.setOnAction(e -> toggleDarkMode());
+        darkModeToggle.setStyle("-fx-font-size: 16px; -fx-padding: 8px;");
+        BorderPane.setAlignment(darkModeToggle, Pos.TOP_RIGHT);
+        BorderPane.setMargin(darkModeToggle, new Insets(10));
+        root.setTop(darkModeToggle);
 
         // Create split panes for layout organization
         SplitPane mainSplitPane = createMainSplitPane();
@@ -154,6 +165,8 @@ public class GuiFX extends Application {
         //scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
 
         primaryStage.setScene(scene);
+
+        
         // Handle application close request to stop the OpenGL animator and exit gracefully
         primaryStage.setOnCloseRequest(e -> {
             if (animator != null) {
@@ -171,6 +184,109 @@ public class GuiFX extends Application {
         }
     }
 
+        /**
+     * Toggles between dark and light mode themes.
+     */
+    private void toggleDarkMode() {
+        isDarkMode = !isDarkMode;
+        if (isDarkMode) {
+            applyDarkTheme();
+            darkModeToggle.setText("☀️");
+        } else {
+            applyLightTheme();
+            darkModeToggle.setText("🌙");
+        }
+    }
+
+    /**
+     * Applies dark theme styling to the application.
+     */
+    private void applyDarkTheme() {
+        scene.setRoot(scene.getRoot()); // Force refresh
+        scene.getRoot().setStyle(
+            "-fx-background-color: #2b2b2b;" +
+            "-fx-text-fill: #ffffff;"
+        );
+        
+        // Apply dark theme to all controls
+        String darkStyle = 
+            "-fx-background-color: #3c3c3c;" +
+            "-fx-text-fill: #ffffff;" +
+            "-fx-border-color: #555555;";
+        
+        String darkTextFieldStyle = 
+            "-fx-background-color: #4a4a4a;" +
+            "-fx-text-fill: #ffffff;" +
+            "-fx-border-color: #666666;";
+        
+        String darkButtonStyle = 
+            "-fx-background-color: #505050;" +
+            "-fx-text-fill: #ffffff;" +
+            "-fx-border-color: #666666;" +
+            "-fx-border-radius: 3px;" +
+            "-fx-background-radius: 3px;";
+        
+        // Apply styles to all nodes recursively
+        applyStyleToNode(scene.getRoot(), darkStyle, darkTextFieldStyle, darkButtonStyle);
+    }
+
+    /**
+     * Applies light theme styling to the application.
+     */
+    private void applyLightTheme() {
+        scene.setRoot(scene.getRoot()); // Force refresh
+        scene.getRoot().setStyle(
+            "-fx-background-color: #f0f0f0;" +
+            "-fx-text-fill: #000000;"
+        );
+        
+        // Apply light theme to all controls
+        String lightStyle = 
+            "-fx-background-color: #ffffff;" +
+            "-fx-text-fill: #000000;" +
+            "-fx-border-color: #cccccc;";
+        
+        String lightTextFieldStyle = 
+            "-fx-background-color: #ffffff;" +
+            "-fx-text-fill: #000000;" +
+            "-fx-border-color: #cccccc;";
+        
+        String lightButtonStyle = 
+            "-fx-background-color: #e0e0e0;" +
+            "-fx-text-fill: #000000;" +
+            "-fx-border-color: #aaaaaa;" +
+            "-fx-border-radius: 3px;" +
+            "-fx-background-radius: 3px;";
+        
+        // Apply styles to all nodes recursively
+        applyStyleToNode(scene.getRoot(), lightStyle, lightTextFieldStyle, lightButtonStyle);
+    }
+
+    /**
+     * Recursively applies styling to all nodes in the scene graph.
+     */
+    private void applyStyleToNode(javafx.scene.Node node, String generalStyle, String textFieldStyle, String buttonStyle) {
+        if (node instanceof TextField || node instanceof TextArea) {
+            node.setStyle(textFieldStyle);
+        } else if (node instanceof Button && node != darkModeToggle) {
+            node.setStyle(buttonStyle);
+        } else if (node instanceof ComboBox) {
+            node.setStyle(textFieldStyle);
+        } else if (node instanceof TitledPane) {
+            node.setStyle(generalStyle);
+        } else if (node instanceof ScrollPane) {
+            node.setStyle(generalStyle);
+        } else if (node instanceof SplitPane) {
+            node.setStyle(generalStyle);
+        }
+        
+        // Recursively apply to children
+        if (node instanceof javafx.scene.Parent) {
+            ((javafx.scene.Parent) node).getChildrenUnmodifiable().forEach(child -> 
+                applyStyleToNode(child, generalStyle, textFieldStyle, buttonStyle)
+            );
+        }
+    }
     /**
      * Initializes all the UI components (TextAreas, TextFields, ComboBoxes).
      * This method is called once during the application's startup.
