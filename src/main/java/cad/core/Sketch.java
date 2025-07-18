@@ -584,53 +584,7 @@ public class Sketch {
         clearSketch();
         this.units = "unitless"; // Reset units before loading
 
-        // First pass: Read header for units
-        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
-            String line;
-            boolean inHeaderSection = false;
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                if (line.equalsIgnoreCase("0")) {
-                    String nextLine = reader.readLine();
-                    if (nextLine != null && nextLine.equalsIgnoreCase("SECTION")) {
-                        nextLine = reader.readLine(); // Group code 2
-                        if (nextLine != null && nextLine.equalsIgnoreCase("2")) {
-                            String sectionName = reader.readLine();
-                            if (sectionName != null && sectionName.equalsIgnoreCase("HEADER")) {
-                                inHeaderSection = true;
-                            }
-                        }
-                    } else if (nextLine != null && nextLine.equalsIgnoreCase("ENDSEC") && inHeaderSection) {
-                        inHeaderSection = false;
-                        break; // Exit header parsing after ENDSEC
-                    }
-                } else if (inHeaderSection && line.equalsIgnoreCase("9")) {
-                    String varName = reader.readLine();
-                    if (varName != null && varName.equalsIgnoreCase("$INSUNITS")) {
-                        reader.readLine(); // Group code 70
-                        String valueLine = reader.readLine();
-                        if (valueLine != null) {
-                            try {
-                                int code = Integer.parseInt(valueLine.trim());
-                                this.units = getUnitsFromDXFCode(code);
-                                System.out.println("DXF Header Units: " + this.units + " (Code: " + code + ")");
-                            } catch (NumberFormatException e) {
-                                System.err.println("Warning: Invalid $INSUNITS code in DXF header. Using default units. Error: " + e.getMessage());
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (IOException e) {
-            System.err.println("Error reading DXF header: " + e.getMessage());
-            e.printStackTrace();
-            throw e; // Re-throw to indicate failure
-        }
-
-        float scale = unitScaleFactor(units);
-        System.out.println("Starting DXF entity parsing with units: " + units + " (scale factor: " + scale + ")");
-
-        // Second pass: Read entities
+        // Single pass: Read both header and entities
         try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
             String line;
             String currentEntity = null;
@@ -638,6 +592,7 @@ public class Sketch {
             List < PointEntity > polyPoints = null;
             float tempVertexX = 0, tempVertexY = 0;
 
+            boolean inHeaderSection = false;
             boolean inEntitiesSection = false;
             boolean inPolylineEntity = false; // Flag to track if we are currently parsing a POLYLINE's vertices
             boolean waitingForVertexCoords = false; // Flag to indicate that the next 10/20 group codes are for a vertex
@@ -656,30 +611,24 @@ public class Sketch {
                     }
                     entityTypeOrSection = entityTypeOrSection.trim().toUpperCase();
 
-                    // If we were parsing a non-POLYLINE entity, add it now before processing the new one
-                    if (currentEntity != null && !inPolylineEntity && !currentEntity.equals("VERTEX")) { // Exclude VERTEX as it's part of POLYLINE
-                        switch (currentEntity) {
-                        case "POINT":
-                            addEntity("POINT", x1, y1, 0, 0, 0, 0, 0, null);
-                            break;
-                        case "LINE":
-                            addEntity("LINE", x1, y1, x2, y2, 0, 0, 0, null);
-                            break;
-                        case "CIRCLE":
-                            addEntity("CIRCLE", 0, 0, 0, 0, cx, cy, radius, null);
-                            break;
-                            // POLYLINE and VERTEX are handled by SEQEND or when currentEntity changes
-                        }
-                        currentEntity = null; // Reset for the next entity
-                    }
-
+                    // Handle SECTION starts
                     if (entityTypeOrSection.equals("SECTION")) {
                         reader.readLine(); // Group code 2
                         String sectionName = reader.readLine();
-                        if (sectionName != null && sectionName.equalsIgnoreCase("ENTITIES")) {
-                            inEntitiesSection = true;
-                        } else {
-                            inEntitiesSection = false; // Not the entities section, skip content
+                        if (sectionName != null) {
+                            if (sectionName.equalsIgnoreCase("HEADER")) {
+                                inHeaderSection = true;
+                                inEntitiesSection = false;
+                            } else if (sectionName.equalsIgnoreCase("ENTITIES")) {
+                                inHeaderSection = false;
+                                inEntitiesSection = true;
+                                // Calculate scale now that we've read the header
+                                float scale = unitScaleFactor(units);
+                                System.out.println("Starting DXF entity parsing with units: " + units + " (scale factor: " + scale + ")");
+                            } else {
+                                inHeaderSection = false;
+                                inEntitiesSection = false;
+                            }
                         }
                         continue;
                     } else if (entityTypeOrSection.equals("ENDSEC")) {
@@ -688,11 +637,12 @@ public class Sketch {
                             polyPoints = null;
                             inPolylineEntity = false;
                         }
-                        inEntitiesSection = false; // Exit entities section
+                        inHeaderSection = false;
+                        inEntitiesSection = false; // Exit current section
                         continue;
                     } else if (entityTypeOrSection.equals("EOF")) {
                         // Handle any last entity before EOF
-                        if (currentEntity != null && !inPolylineEntity && !currentEntity.equals("VERTEX")) {
+                        if (currentEntity != null && !inPolylineEntity && !currentEntity.equals("VERTEX") && !currentEntity.equals("SKIP_VERTEX") && !currentEntity.equals("SEQEND")) {
                             switch (currentEntity) {
                             case "POINT":
                                 addEntity("POINT", x1, y1, 0, 0, 0, 0, 0, null);
@@ -706,6 +656,23 @@ public class Sketch {
                             }
                         }
                         break; // End of file
+                    }
+
+                    // If we were parsing a non-POLYLINE entity, add it now before processing the new one
+                    if (currentEntity != null && !inPolylineEntity && !currentEntity.equals("VERTEX") && !currentEntity.equals("SKIP_VERTEX") && !currentEntity.equals("SEQEND")) { // Exclude VERTEX, SKIP_VERTEX, and SEQEND
+                        switch (currentEntity) {
+                        case "POINT":
+                            addEntity("POINT", x1, y1, 0, 0, 0, 0, 0, null);
+                            break;
+                        case "LINE":
+                            addEntity("LINE", x1, y1, x2, y2, 0, 0, 0, null);
+                            break;
+                        case "CIRCLE":
+                            addEntity("CIRCLE", 0, 0, 0, 0, cx, cy, radius, null);
+                            break;
+                            // POLYLINE and VERTEX are handled by SEQEND or when currentEntity changes
+                        }
+                        currentEntity = null; // Reset for the next entity
                     }
 
                     if (inEntitiesSection) {
@@ -722,7 +689,9 @@ public class Sketch {
                             // This VERTEX is encountered directly, likely part of an already active POLYLINE
                             if (!inPolylineEntity) {
                                 System.err.println("Warning: Found VERTEX entity outside of POLYLINE. Skipping.");
-                                currentEntity = null; // Ignore this stray VERTEX
+                                // We need to skip all the group codes for this VERTEX until the next "0" group code
+                                // by setting a flag and not setting currentEntity to null immediately
+                                currentEntity = "SKIP_VERTEX"; // Special marker to skip this entity's data
                             } else {
                                 waitingForVertexCoords = true; // Set flag to expect 10, 20
                             }
@@ -736,17 +705,38 @@ public class Sketch {
                             }
                             polyPoints = null; // Clear for next polyline
                             inPolylineEntity = false; // Exit polyline parsing state
-                            currentEntity = null; // Reset to expect next main entity
-                            reader.readLine(); // Consume the next group code (usually 8 for layer)
+                            // Keep currentEntity as "SEQEND" so we can consume its group codes (like layer)
+                            // currentEntity will be reset when we encounter the next "0" group code
                         }
                     }
                     continue; // Skip to next line after processing a '0' group code
                 }
 
+                // Handle header variable parsing
+                if (inHeaderSection && line.equalsIgnoreCase("9")) {
+                    String varName = reader.readLine();
+                    if (varName != null && varName.equalsIgnoreCase("$INSUNITS")) {
+                        reader.readLine(); // Group code 70
+                        String valueLine = reader.readLine();
+                        if (valueLine != null) {
+                            try {
+                                int code = Integer.parseInt(valueLine.trim());
+                                this.units = getUnitsFromDXFCode(code);
+                                System.out.println("DXF Header Units: " + this.units + " (Code: " + code + ")");
+                            } catch (NumberFormatException e) {
+                                System.err.println("Warning: Invalid $INSUNITS code in DXF header. Using default units. Error: " + e.getMessage());
+                            }
+                        }
+                    }
+                    continue;
+                }
+
                 // If we are inside an entity definition (not a '0' group code line)
                 if (currentEntity != null && inEntitiesSection) {
+                    float scale = unitScaleFactor(units); // Calculate scale factor for this parsing
                     String valueLine = null;
                     try {
+                        // Parse the group code - it should be a number
                         int groupCode = Integer.parseInt(line);
                         valueLine = reader.readLine();
                         if (valueLine == null) {
@@ -754,6 +744,11 @@ public class Sketch {
                             break;
                         }
                         valueLine = valueLine.trim();
+
+                        // If we're skipping this entity, just consume the group code/value pair and continue
+                        if (currentEntity.equals("SKIP_VERTEX") || currentEntity.equals("SEQEND")) {
+                            continue; // Skip processing this group code/value pair
+                        }
 
                         switch (groupCode) {
                         case 10: // X coordinate of start point (POINT, LINE) or center (CIRCLE) or vertex (VERTEX)
@@ -809,7 +804,7 @@ public class Sketch {
             } // end of while (line = reader.readLine()) != null
 
             // After loop, if there was an active non-polyline entity
-            if (currentEntity != null && !inPolylineEntity && !currentEntity.equals("VERTEX")) {
+            if (currentEntity != null && !inPolylineEntity && !currentEntity.equals("VERTEX") && !currentEntity.equals("SKIP_VERTEX") && !currentEntity.equals("SEQEND")) {
                 switch (currentEntity) {
                 case "POINT":
                     addEntity("POINT", x1, y1, 0, 0, 0, 0, 0, null);

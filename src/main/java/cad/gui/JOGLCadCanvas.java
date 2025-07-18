@@ -326,8 +326,8 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         if (show3DModel) {
             // For 3D models, set up a perspective projection.
             // This simulates how a camera sees objects, with distant objects appearing smaller.
-            // Parameters: field of view (45 deg), aspect ratio, near clipping plane (0.1f), far clipping plane (500.0f).
-            glu.gluPerspective(45.0f, h, 0.1f, 1000.0f);
+            // Parameters: field of view (45 deg), aspect ratio, near clipping plane (0.1f), far clipping plane (2000.0f).
+            glu.gluPerspective(45.0f, h, 0.1f, 2000.0f); // Increased far clipping for large models
         } else {
             // For 2D sketches, set up an orthographic projection.
             // This projects objects without perspective distortion, suitable for CAD 2D views.
@@ -419,36 +419,8 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
             gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_AMBIENT_AND_DIFFUSE, objectColor, 0);
 
             // --- Render the Currently Selected 3D Object ---
-            // This switch statement queries the `Geometry` class to determine
-            // which 3D primitive or loaded model should be drawn.
-            switch (Geometry.getCurrentShape()) { // Get the current active shape type from Geometry
-                case CUBE:
-                    // If a cube is selected, check if its size is valid (greater than 0).
-                    if (Geometry.getParam() > 0) {
-                        // Call the static `drawCube` method in `Geometry` to render the cube.
-                        // It uses `Geometry.getParam()` for size and `Geometry.cubeDivisions` for detail.
-                        Geometry.drawCube(gl, Geometry.getParam(), Geometry.cubeDivisions);
-                    }
-                    break;
-                case SPHERE:
-                    // If a sphere is selected, check if its radius is valid.
-                    if (Geometry.getParam() > 0) {
-                        // Call the static `drawSphere` method in `Geometry` to render the sphere.
-                        // It uses `Geometry.getParam()` for radius and `Geometry.sphereLatDiv`/`sphereLonDiv` for detail.
-                        Geometry.drawSphere(gl, Geometry.getParam(), Geometry.sphereLatDiv, Geometry.sphereLonDiv);
-                    }
-                    break;
-                case STL_LOADED:
-                    // If an STL model has been loaded and is the active shape, draw it.
-                    // This method iterates through the stored STL triangles and renders them.
-                    Geometry.drawCurrentShape(gl);
-                    break;
-                case NONE:
-                default:
-                    // If no specific primitive or STL is selected, nothing is drawn in 3D.
-                    // This represents an empty 3D scene or no active model.
-                    break;
-            }
+            // Use the unified drawCurrentShape method which handles all shape types
+            Geometry.drawCurrentShape(gl);
         } else { // If in 2D sketch view mode
             // --- Set up for 2D Sketch Rendering ---
             gl.glPushMatrix(); // Save the current modelview matrix before applying 2D-specific transforms.

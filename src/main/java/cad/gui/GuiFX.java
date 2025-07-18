@@ -227,8 +227,8 @@ public class GuiFX extends Application {
 
             // Create the GLCanvas with the defined capabilities
             glCanvas = new JOGLCadCanvas(sketch);
-            glCanvas.setMinimumSize(new Dimension(400, 300)); // Set minimum size but allow growth
-            glCanvas.setPreferredSize(new Dimension(600, 450)); // Optimized initial size
+            glCanvas.setMinimumSize(new Dimension(600, 450)); // Increased minimum size for larger models
+            glCanvas.setPreferredSize(new Dimension(1200, 900)); // Much larger initial size for better viewing
             // Add custom OpenGL renderer and input listeners
             glRenderer = new OpenGLRenderer(); // Instantiate the renderer
             glCanvas.addGLEventListener(glRenderer); // Add the renderer to the canvas
@@ -331,7 +331,7 @@ public class GuiFX extends Application {
         canvasThread.start();
 
         splitPane.getItems().addAll(leftPanel, rightPanel);
-        splitPane.setDividerPositions(0.25); // Reduced to 25% for left panel, giving more space to 3D canvas
+        splitPane.setDividerPositions(0.20); // Reduced to 20% for left panel, giving even more space to 3D canvas
 
         return splitPane;
     }
@@ -345,7 +345,7 @@ public class GuiFX extends Application {
     private VBox createControlPanel() {
         VBox controlPanel = new VBox(8.0); // Reduced spacing for compactness
         controlPanel.setPadding(new Insets(8.0)); // Reduced padding
-        controlPanel.setMinWidth(320); // Reduced minimum width for more canvas space
+        controlPanel.setMinWidth(280); // Further reduced minimum width for more canvas space
 
         // Create TitledPane for commands, make it non-collapsible
         TitledPane commandsPane = new TitledPane("Commands", createCommandsPane());
@@ -615,8 +615,8 @@ public class GuiFX extends Application {
 
             // Calculate adaptive clipping planes based on model size and zoom
             float modelSize = Geometry.getModelMaxDimension();
-            float nearPlane = Math.max(0.01f, Math.abs(zoom) * 0.01f); // Dynamic near plane
-            float farPlane = Math.max(100.0f, Math.abs(zoom) + modelSize * 3.0f); // Dynamic far plane
+            float nearPlane = Math.max(0.01f, Math.abs(zoom) * 0.005f); // More conservative near plane
+            float farPlane = Math.max(1000.0f, Math.abs(zoom) + modelSize * 5.0f); // Increased far plane for large models
             
             gl.glMatrixMode(GL2.GL_PROJECTION);
             gl.glLoadIdentity();
@@ -647,8 +647,8 @@ public class GuiFX extends Application {
             
             // Calculate adaptive clipping planes based on model size and zoom
             float modelSize = Geometry.getModelMaxDimension();
-            float nearPlane = Math.max(0.01f, Math.abs(zoom) * 0.01f); // Dynamic near plane
-            float farPlane = Math.max(100.0f, Math.abs(zoom) + modelSize * 3.0f); // Dynamic far plane
+            float nearPlane = Math.max(0.01f, Math.abs(zoom) * 0.005f); // More conservative near plane
+            float farPlane = Math.max(1000.0f, Math.abs(zoom) + modelSize * 5.0f); // Increased far plane for large models
             
             glu.gluPerspective(45.0, aspect, nearPlane, farPlane); // Set up perspective projection with adaptive clipping
             gl.glMatrixMode(GL2.GL_MODELVIEW); // Switch back to model-view matrix mode
@@ -989,9 +989,9 @@ public class GuiFX extends Application {
         @Override
         public void mouseWheelMoved(MouseWheelEvent e) {
             zoom += e.getWheelRotation() * 0.5f; // Adjust zoom based on wheel rotation
-            // Clamp zoom values to a reasonable range
+            // Clamp zoom values to a reasonable range for large models
             if (zoom > -1.0f) zoom = -1.0f;
-            if (zoom < -50.0f) zoom = -50.0f;
+            if (zoom < -800.0f) zoom = -800.0f; // Increased limit for large models
             glCanvas.repaint(); // Request a repaint to show new zoom level
         }
     }
@@ -1096,17 +1096,15 @@ public class GuiFX extends Application {
                 case KeyEvent.VK_E:
                 case KeyEvent.VK_MINUS:
                     zoom -= 0.5f; // Zoom out
-                    if (zoom < -50.0f) zoom = -50.0f; // Clamp zoom
+                    if (zoom < -800.0f) zoom = -800.0f; // Increased clamp for large models
                     viewChanged = true;
                     break;
                     
                 // Reset View
                 case KeyEvent.VK_R:
-                    rotationX = 0.0f;
-                    rotationY = 0.0f;
-                    zoom = -5.0f;
+                    resetView(); // Use the auto-scaling reset method
                     viewChanged = true;
-                    appendOutput("View reset to default");
+                    appendOutput("View reset with auto-scaling");
                     break;
                     
                 // Toggle between 2D sketch and 3D model
@@ -1164,10 +1162,23 @@ public class GuiFX extends Application {
         float maxDimension = Geometry.getModelMaxDimension();
         if (maxDimension > 0) {
             // Set zoom so the model fits nicely in view
-            // Rule of thumb: zoom = -(maxDimension * 1.5) to see the full model
-            zoom = -(maxDimension * 1.5f);
+            // For very large models, use a logarithmic scaling approach
+            if (maxDimension <= 10.0f) {
+                // Small models: use simple scaling
+                zoom = -(maxDimension * 1.8f);
+            } else if (maxDimension <= 50.0f) {
+                // Medium models: moderate scaling
+                zoom = -(maxDimension * 1.5f);
+            } else if (maxDimension <= 150.0f) {
+                // Large models (like radius 60 sphere = 120 diameter): optimized scaling
+                zoom = -(maxDimension * 1.2f);
+            } else {
+                // Very large models: use more conservative scaling with logarithmic component
+                zoom = -(maxDimension * 0.8f + (float)Math.log10(maxDimension) * 15.0f);
+            }
+            
             // Clamp zoom to reasonable bounds
-            if (zoom < -200.0f) zoom = -200.0f;
+            if (zoom < -800.0f) zoom = -800.0f;  // Further increased upper limit for very large models
             if (zoom > -2.0f) zoom = -2.0f;
             
             appendOutput("View reset - zoom auto-adjusted to " + String.format("%.1f", zoom) + " for model size " + String.format("%.1f", maxDimension));
@@ -1351,9 +1362,6 @@ public class GuiFX extends Application {
      * 
      * Supported File Formats:
      * - .dxf: AutoCAD Drawing Exchange Format (via saveDXF)
-     * - .obj: Wavefront OBJ 3D model format (via saveOBJ) 
-     * - .sketch: Custom sketch format (via saveSketch)
-     * - Default: Attempts sketch format for unknown extensions
      * 
      * User Experience Features:
      * - Pre-configured file filters for each supported format
@@ -1368,8 +1376,6 @@ public class GuiFX extends Application {
      * - User cancellation (no error message)
      * 
      * @see #saveDXF(String) for DXF format saving
-     * @see #saveOBJ(String) for OBJ format saving  
-     * @see #saveSketch(String) for custom sketch format saving
      */
     private void saveFile() {
         String filename = fileField.getText(); // Get initial filename from UI field
@@ -1422,9 +1428,6 @@ public class GuiFX extends Application {
      * 
      * Supported File Formats:
      * - .dxf: AutoCAD Drawing Exchange Format (via loadDXF)
-     * - .obj: Wavefront OBJ 3D model format (via loadOBJ)
-     * - .sketch: Custom sketch format (via loadSketch)
-     * - Default: Attempts sketch format for unknown extensions
      * 
      * Post-Load Actions:
      * - Automatic canvas refresh to display loaded content

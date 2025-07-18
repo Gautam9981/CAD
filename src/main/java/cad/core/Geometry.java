@@ -84,11 +84,16 @@ public class Geometry {
             }
         }
         
-        // Calculate bounds for loaded STL
+        // Calculate bounds for loaded STL - create a copy to avoid ConcurrentModificationException
+        List<float[]> trianglesCopy;
+        synchronized (loadedStlTriangles) {
+            trianglesCopy = new ArrayList<>(loadedStlTriangles);
+        }
+        
         float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, minZ = Float.MAX_VALUE;
         float maxX = -Float.MAX_VALUE, maxY = -Float.MAX_VALUE, maxZ = -Float.MAX_VALUE;
         
-        for (float[] triData : loadedStlTriangles) {
+        for (float[] triData : trianglesCopy) {
             // Check all 3 vertices of each triangle (indices 3-11)
             for (int i = 0; i < 3; i++) {
                 float x = triData[3 + i * 3];
@@ -278,10 +283,13 @@ public class Geometry {
 
     /**
      * Creates a procedural cube with specified size and subdivisions.
-     * @param size Edge length of the cube
+     * @param size Edge length of the cube (0.1-100.0)
      * @param divisions Number of subdivisions per edge (1-200)
      */
     public static void createCube(float size, int divisions) {
+        if (size < 0.1f || size > 100.0f) {
+            throw new IllegalArgumentException("Cube size must be between 0.1 and 100.0");
+        }
         if (divisions < 1 || divisions > 200) {
             throw new IllegalArgumentException("Cube divisions must be between 1 and 200");
         }
@@ -304,10 +312,13 @@ public class Geometry {
 
     /**
      * Creates a procedural UV sphere with specified radius and subdivisions.
-     * @param radius Radius of the sphere
+     * @param radius Radius of the sphere (0.1-50.0)
      * @param divisions Number of latitude/longitude subdivisions (3-100)
      */
     public static void createSphere(float radius, int divisions) {
+        if (radius < 0.1f || radius > 80.0f) {
+            throw new IllegalArgumentException("Sphere radius must be between 0.1 and 80.0");
+        }
         if (divisions < 3 || divisions > 100) {
             throw new IllegalArgumentException("Sphere divisions must be between 3 and 100");
         }
