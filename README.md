@@ -72,9 +72,13 @@ Day 18 (7/15/25)
 
 I got JOGL support included in the program (in terms of the .stl files and rendering), and I will provide instructions on how to run it in Windows; For Linux/Mac (The lib files should be there already for Linux/MacOS), there is a script that will run it for you, just run that. 
 
-7/17/25 (Day 19 and 20)
+7/16/25-7/17/25 (Days 19 and 20)
 
 For these two days, I was working to make sure that the binaries function as expected, as I have added OpenGL support through JOGL, and I can say that they do work properly (At least for Linux and Windows; Don't know about MacOS). For the Windows binary, I included the .jar file, as the .exe is basically a wrapper for the .jar file, should still run the .exe and it will work
+
+7/18/25
+
+I have completed a major architectural change to the Geometry.java file, essentially, adding support for other 3D shapes other than Cubes and Spheres. I may have to work on fixing those implementations for the Cli and Gui components of the program
 
 Instructions for Running the program:
 
