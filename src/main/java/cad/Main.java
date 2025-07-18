@@ -1,8 +1,12 @@
 package cad;
 import java.util.Scanner;
 import cad.cli.Cli;
-import cad.gui.Gui;
+import cad.gui.GuiFX;
 
+/**
+ * Main entry point for the CAD application.
+ * Provides user choice between command-line interface (CLI) and graphical interface (GUI).
+ */
 public class Main {
 
     /**
@@ -22,7 +26,8 @@ public class Main {
             if (input.equals("1")) {
                 Cli.launch();
             } else if (input.equals("2")) {
-                Gui.launch();
+                // Corrected: Call the main method of GuiFX to properly launch the JavaFX application
+                GuiFX.main(args); 
             } else {
                 System.out.println("Invalid choice. Please try again.");
             }

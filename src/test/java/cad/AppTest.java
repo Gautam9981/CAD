@@ -5,12 +5,13 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 /**
- * Unit test for simple App.
+ * Basic unit tests for the CAD application.
+ * Contains placeholder tests to verify testing framework setup.
  */
 public class AppTest 
 {
     /**
-     * Rigorous Test :-)
+     * Basic test to verify testing framework is working correctly.
      */
     @Test
     public void shouldAnswerWithTrue()

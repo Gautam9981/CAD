@@ -10,6 +10,10 @@ import java.io.FileReader;
 import java.io.BufferedReader;
 // import java.awt.Graphics; // No longer directly used for OpenGL drawing
 
+/**
+ * 2D sketching system for creating and managing geometric entities.
+ * Supports points, lines, circles, polygons with DXF import/export capabilities.
+ */
 public class Sketch {
 
     /**

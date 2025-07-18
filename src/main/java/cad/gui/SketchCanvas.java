@@ -13,8 +13,8 @@ import java.util.List;
 
 
 /**
- * SketchCanvas supports both 2D sketch and 3D STL rendering.
- * Uses JOGL for OpenGL-based rendering (smooth shaded for STL).
+ * OpenGL canvas supporting both 2D sketch rendering and smooth-shaded 3D STL display.
+ * Provides mouse/keyboard controls for pan, zoom, and rotation with averaged normals for STL.
  */
 public class SketchCanvas extends GLJPanel implements GLEventListener {
     private final cad.core.Sketch sketch;
@@ -30,6 +30,10 @@ public class SketchCanvas extends GLJPanel implements GLEventListener {
     private double zoom = 1.0;
     private double rotateX = 0, rotateY = 0;
 
+    /**
+     * Creates sketch canvas with mouse/keyboard controls for 2D/3D interaction.
+     * @param sketch 2D sketch object for rendering
+     */
     public SketchCanvas(cad.core.Sketch sketch) {
         super(new GLCapabilities(GLProfile.getDefault()));
         this.sketch = sketch;

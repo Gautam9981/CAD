@@ -3,7 +3,6 @@ package cad.gui;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.glu.GLU;
-import com.jogamp.opengl.util.FPSAnimator;
 
 // Import your existing Geometry and Sketch classes
 import cad.core.Geometry;
@@ -18,26 +17,20 @@ import javax.swing.SwingUtilities;
 import java.io.IOException;
 
 /**
- * JOGLCadCanvas is a custom OpenGL canvas for rendering 3D objects and 2D sketches.
- * It extends GLJPanel from JOGL, providing an AWT-compatible component that can
- * render OpenGL graphics. It implements GLEventListener to handle OpenGL lifecycle
- * events (initialization, display, reshape, dispose).
- *
- * It supports interactive rotation, zooming, and switching between 2D and 3D views.
- * The 3D model data (cube, sphere, or loaded STL) is managed by the static
- * `cad.core.Geometry` class, making `JOGLCadCanvas` primarily a viewer/renderer.
+ * OpenGL canvas for rendering 3D models and 2D sketches with interactive controls.
+ * Extends GLJPanel and provides mouse/keyboard interaction for rotation, zoom, and view switching.
  */
 public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
 
     private GLU glu; // OpenGL Utility Library for perspective transformations and sphere rendering
-    private FPSAnimator animator; // Animator for smooth rendering at a fixed frames per second (FPS)
+    // Note: FPSAnimator is now managed by GuiFX class, not here to avoid conflicts
 
     // --- Camera/View parameters ---
     // These parameters control the position and orientation of the virtual camera
     // in the 3D scene, allowing user interaction (rotation, zoom).
     private float rotateX = 0.0f; // Rotation angle around the X-axis (for tilting the view up/down)
     private float rotateY = 0.0f; // Rotation angle around the Y-axis (for rotating the view left/right)
-    private float zoomZ = -5.0f; // Zoom level (distance from the camera along the Z-axis).
+    private float zoomZ = -600.0f; // Zoom level (distance from the camera along the Z-axis).
                                  // Negative values move the object further into the screen.
     private int lastMouseX, lastMouseY; // Stores the last mouse position during a drag operation
     private boolean mouseDragging = false; // Flag to track if the mouse is currently being dragged
@@ -49,11 +42,8 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
                                          // or the 2D sketch (false).
 
     /**
-     * Constructor for JOGLCadCanvas.
-     * Initializes the OpenGL canvas and sets up event listeners for user interaction
-     * (mouse for rotation/zoom, keyboard for view mode switching).
-     *
-     * @param sketch The 2D sketch object to render when in 2D view mode.
+     * Creates OpenGL canvas with mouse and keyboard interaction support.
+     * @param sketch 2D sketch object for rendering in sketch mode
      */
     public JOGLCadCanvas(Sketch sketch) {
         // Call the superclass constructor, requesting an OpenGL 2.0 profile.
@@ -137,7 +127,8 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
                         // Resets rotation and zoom to their default initial values.
                         rotateX = 0.0f;
                         rotateY = 0.0f;
-                        zoomZ = -5.0f;
+                        zoomZ = -600.0f; // Reset zoom to initial distance
+                        repaint();
                         break;
                     case KeyEvent.VK_2: // '2' key to Switch to 2D sketch view
                         // Calls the method to set the canvas to render the 2D sketch.
@@ -174,13 +165,10 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
     }
 
     /**
-     * Sets the current active shape to a sphere and updates its radius and subdivisions.
-     * This method delegates the actual setting of parameters to the static
-     * `Geometry.createSphere()` method.
-     *
-     * @param radius The radius of the sphere.
-     * @param latDiv The number of latitude subdivisions (for sphere generation).
-     * @param lonDiv The number of longitude subdivisions (for sphere generation).
+     * Creates a sphere with specified parameters and switches to 3D view.
+     * @param radius Sphere radius
+     * @param latDiv Latitude subdivisions  
+     * @param lonDiv Longitude subdivisions
      */
     public void setSphere(float radius, int latDiv, int lonDiv) {
         // Calls the static method in Geometry to define a sphere with the given radius and divisions.
@@ -192,12 +180,8 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
     }
 
     /**
-     * Loads an STL (Stereolithography) file using the static `Geometry.loadStl()` method.
-     * This method attempts to read 3D model data from the specified file.
-     * If the loading is successful, the view is automatically switched to 3D mode.
-     * Includes basic error handling for file input/output operations.
-     *
-     * @param filePath The path to the STL file to load.
+     * Loads STL file and switches to 3D model view.
+     * @param filePath Path to STL file to load
      */
     public void loadSTL(String filePath) {
         try {
@@ -205,6 +189,10 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
             // Geometry will parse the file and store the triangle data internally,
             // also setting its current shape type to STL_LOADED.
             Geometry.loadStl(filePath);
+            System.out.println("Loaded STL triangles: " + Geometry.getLoadedStlTriangles().size()); // Debug statement
+            System.out.println("Current shape after loading: " + Geometry.getCurrentShape()); // Debug current shape
+            System.out.println("Show3DModel flag: " + show3DModel); // Debug 3D flag
+            
             // If loading succeeds, switch the canvas to 3D model display mode.
             show3DModel();
             // Request a repaint to immediately display the loaded STL model.
@@ -270,13 +258,8 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         // Set the polygon mode for both front and back faces to GL_FILL.
         // This makes OpenGL render polygons as solid (filled) surfaces, rather than just wireframes.
         gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_FILL);
+        gl.glEnable(GL2.GL_NORMALIZE);
 
-        // Enable face culling. This optimizes rendering by not drawing faces that are
-        // facing away from the camera, which are typically hidden anyway.
-        gl.glEnable(GL2.GL_CULL_FACE);
-        // Specify that back-facing polygons should be culled. The "back" face is determined
-        // by the winding order of its vertices (clockwise or counter-clockwise).
-        gl.glCullFace(GL2.GL_BACK);
 
         // --- Lighting Setup ---
         // Enable OpenGL's lighting engine. Without this, objects will appear flat and unlit.
@@ -310,10 +293,8 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_SPECULAR, materialSpecular, 0);
         gl.glMaterialf(GL2.GL_FRONT, GL2.GL_SHININESS, shininess);
 
-        // Initialize and start the FPSAnimator to continuously redraw the canvas
-        // at 60 frames per second. This provides smooth animation and interactivity.
-        animator = new FPSAnimator(drawable, 60, true);
-        animator.start();
+        // Note: FPSAnimator is managed by GuiFX class, not here
+        // This prevents conflicts with multiple animators for the same drawable
     }
 
     /**
@@ -346,7 +327,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
             // For 3D models, set up a perspective projection.
             // This simulates how a camera sees objects, with distant objects appearing smaller.
             // Parameters: field of view (45 deg), aspect ratio, near clipping plane (0.1f), far clipping plane (500.0f).
-            glu.gluPerspective(45.0f, h, 0.1f, 500.0f);
+            glu.gluPerspective(45.0f, h, 0.1f, 1000.0f);
         } else {
             // For 2D sketches, set up an orthographic projection.
             // This projects objects without perspective distortion, suitable for CAD 2D views.
@@ -375,14 +356,60 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
         gl.glLoadIdentity(); // Reset the current modelview matrix to identity
 
-        if (show3DModel) { // If in 3D view mode
-            // --- Apply 3D Camera Transformations ---
-            // Translate the entire scene based on the zoom level.
-            gl.glTranslatef(0.0f, 0.0f, zoomZ);
-            // Rotate the scene around the X-axis based on `rotateX`.
-            gl.glRotatef(rotateX, 1.0f, 0.0f, 0.0f);
-            // Rotate the scene around the Y-axis based on `rotateY`.
-            gl.glRotatef(rotateY, 0.0f, 1.0f, 0.0f);
+        
+         if (show3DModel) { // If in 3D view mode
+            // --- Apply Camera Transformations using gluLookAt ---
+            // Calculate the camera's eye position based on zoom and rotations.
+            // Initial distance:
+            float distance = -zoomZ; // zoomZ is negative, so distance will be positive
+
+            // These calculations apply rotation to the camera's position around the origin (0,0,0)
+            // relative to a base position along the Z axis, allowing your mouse controls to work.
+            // You might need to fine-tune these rotation calculations based on exact desired behavior.
+            // For simple rotation around the origin, we rotate the camera's view point.
+
+            // The target remains the center of your model: (0, 0, 0)
+            float centerX = 0.0f;
+            float centerY = 0.0f;
+            float centerZ = 0.0f;
+
+            // Simple camera position based on rotation and distance
+            // We want to rotate the camera's view around the center (0,0,0)
+            // Let's calculate the eye position based on rotation angles.
+            // We'll effectively orbit the camera around (0,0,0).
+
+            // Convert degrees to radians for trigonometric functions
+            float radX = (float) Math.toRadians(rotateX);
+            float radY = (float) Math.toRadians(rotateY);
+
+            // Calculate eye position for orbiting effect
+            // Start with a point on the Z-axis, then rotate it.
+            float currentEyeX = 0;
+            float currentEyeY = 0;
+            float currentEyeZ = distance; // Base distance from origin
+
+            // Apply Y-rotation (around Y-axis)
+            float tempX = (float) (currentEyeX * Math.cos(radY) + currentEyeZ * Math.sin(radY));
+            float tempZ = (float) (-currentEyeX * Math.sin(radY) + currentEyeZ * Math.cos(radY));
+            currentEyeX = tempX;
+            currentEyeZ = tempZ;
+
+            // Apply X-rotation (around X-axis)
+            float tempY = (float) (currentEyeY * Math.cos(radX) - currentEyeZ * Math.sin(radX));
+            tempZ = (float) (currentEyeY * Math.sin(radX) + currentEyeZ * Math.cos(radX));
+            currentEyeY = tempY;
+            currentEyeZ = tempZ;
+
+
+            // Apply the gluLookAt transformation
+            if (glu != null) {
+                // Camera position (eye), look-at point (center), and up vector
+                glu.gluLookAt(currentEyeX, currentEyeY, currentEyeZ, // Eye position
+                              centerX, centerY, centerZ,             // Look-at point (center of your model)
+                              0.0f, 1.0f, 0.0f);                      // Up vector (Y-axis up)
+            } else {
+                System.err.println("GLU object not initialized!");
+            }
 
             // --- Set Default Material Color for 3D Objects ---
             // Set a default color (light blue) for objects. This applies to primitives
@@ -414,7 +441,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
                 case STL_LOADED:
                     // If an STL model has been loaded and is the active shape, draw it.
                     // This method iterates through the stored STL triangles and renders them.
-                    Geometry.drawLoadedStl(gl);
+                    Geometry.drawCurrentShape(gl);
                     break;
                 case NONE:
                 default:
@@ -428,7 +455,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
             gl.glTranslatef(0.0f, 0.0f, zoomZ); // Apply zoom to the 2D sketch (moves it in/out of the screen plane).
 
             gl.glDisable(GL2.GL_LIGHTING); // Disable lighting for 2D sketches to ensure flat, unlit appearance.
-            gl.glColor3f(0.8f, 0.8f, 0.8f); // Set the drawing color for sketch elements (light gray).
+            gl.glColor3f(0.2f, 0.2f, 0.8f);
             gl.glLineWidth(2.0f); // Set the line width for sketch elements.
 
             // --- Render the 2D Sketch ---
@@ -438,6 +465,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
             }
             gl.glEnable(GL2.GL_LIGHTING); // Re-enable lighting. Important so 3D objects are lit correctly
                                           // if the view switches back to 3D.
+            gl.glEnable(GL2.GL_DEPTH_TEST); // Ensure depth testing is enabled for 3D rendering.
             gl.glPopMatrix(); // Restore the previous modelview matrix.
         }
 
@@ -453,10 +481,5 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
      */
     @Override
     public void dispose(GLAutoDrawable drawable) {
-        // If the animator is running, stop it to release its thread and resources.
-        if (animator != null && animator.isStarted()) {
-            animator.stop();
-        }
-        // No explicit cleanup for GLU object is usually needed as it's managed by JOGL's context.
     }
 }
