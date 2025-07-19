@@ -672,7 +672,7 @@ public class Sketch {
                             break;
                             // POLYLINE and VERTEX are handled by SEQEND or when currentEntity changes
                         }
-                        currentEntity = null; // Reset for the next entity
+                        currentEntity = null; // Reset after processing the entity
                     }
 
                     if (inEntitiesSection) {
