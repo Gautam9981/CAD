@@ -63,101 +63,113 @@ public class Cli {
     /**
      * Main command processing loop.
      * Reads user input, parses commands, and executes corresponding methods.
+     * Includes comprehensive error handling for graceful exit.
      */
     public static void runCli() {
         try (Scanner scanner = new Scanner(System.in)) {
             while (true) {
-                System.out.print("cad> ");
-                if (!scanner.hasNextLine()) {
-                    System.out.println("\nEOF detected, exiting.");
-                    break;
-                }
+                try {
+                    System.out.print("cad> ");
+                    if (!scanner.hasNextLine()) {
+                        System.out.println("\nEOF detected, exiting CAD CLI gracefully.");
+                        System.exit(0);
+                    }
 
-                String input = scanner.nextLine().trim();
-                if (input.isEmpty()) continue;
+                    String input = scanner.nextLine().trim();
+                    if (input.isEmpty()) continue;
 
-                String[] argsArray = input.split("\\s+");
-                String command = argsArray[0].toLowerCase();
+                    String[] argsArray = input.split("\\s+");
+                    String command = argsArray[0].toLowerCase();
 
-                switch (command) {
-                    case "help":
-                    case "h":
-                        help();
-                        break;
+                    switch (command) {
+                        case "help":
+                        case "h":
+                            help();
+                            break;
 
-                    case "version":
-                    case "v":
-                        version();
-                        break;
+                        case "version":
+                        case "v":
+                            version();
+                            break;
 
-                    case "exit":
-                    case "e":
-                        exit();
-                        break;
+                        case "exit":
+                        case "e":
+                            exit();
+                            break;
 
-                    case "cube":
-                    case "c":
-                        createCube(argsArray);
-                        break;
+                        case "cube":
+                        case "c":
+                            createCube(argsArray);
+                            break;
 
-                    case "sphere":
-                    case "sp":
-                        createSphere(argsArray);
-                        break;
+                        case "sphere":
+                        case "sp":
+                            createSphere(argsArray);
+                            break;
 
-                    case "cube_div":
-                        setCubeDivisions(argsArray);
-                        break;
+                        case "cube_div":
+                            setCubeDivisions(argsArray);
+                            break;
 
-                    case "sphere_div":
-                        setSphereDivisions(argsArray);
-                        break;
+                        case "sphere_div":
+                            setSphereDivisions(argsArray);
+                            break;
 
-                    case "save":
-                    case "s":
-                        saveFile(argsArray);
-                        break;
+                        case "save":
+                        case "s":
+                            saveFile(argsArray);
+                            break;
 
-                    case "sketch_clear":
-                        sketchClear();
-                        break;
+                        case "sketch_clear":
+                            sketchClear();
+                            break;
 
-                    case "export_dxf":
-                        exportDxf(argsArray);
-                        break;
+                        case "export_dxf":
+                            exportDxf(argsArray);
+                            break;
 
-                    case "sketch_point":
-                        sketchPoint(argsArray);
-                        break;
+                        case "sketch_point":
+                            sketchPoint(argsArray);
+                            break;
 
-                    case "sketch_line":
-                        sketchLine(argsArray);
-                        break;
+                        case "sketch_line":
+                            sketchLine(argsArray);
+                            break;
 
-                    case "sketch_circle":
-                        sketchCircle(argsArray);
-                        break;
+                        case "sketch_circle":
+                            sketchCircle(argsArray);
+                            break;
 
-                    case "sketch_polygon":
-                        sketchPolygon(argsArray);
-                        break;
+                        case "sketch_polygon":
+                            sketchPolygon(argsArray);
+                            break;
 
-                    case "sketch_list":
-                        sketchList();
-                        break;
+                        case "sketch_list":
+                            sketchList();
+                            break;
 
-                    case "load":
-                        loadFile(argsArray);
-                        break;
+                        case "load":
+                            loadFile(argsArray);
+                            break;
 
-                    case "units":
-                        setUnits(argsArray);
-                        break;
+                        case "units":
+                            setUnits(argsArray);
+                            break;
 
-                    default:
-                        System.out.println("Unknown command: " + command + ". Type 'help' for a list.");
+                        default:
+                            System.out.println("Unknown command: " + command + ". Type 'help' for a list.");
+                    }
+                } catch (Exception e) {
+                    // Handle any command execution errors gracefully
+                    System.err.println("Error executing command: " + e.getMessage());
+                    System.out.println("Type 'help' for available commands or 'exit' to quit.");
                 }
             }
+        } catch (Exception e) {
+            // Handle any unexpected errors in the main loop
+            System.err.println("Unexpected error in CLI: " + e.getMessage());
+            System.err.println("Exiting CLI due to error.");
+            System.exit(1);
         }
     }
 
@@ -195,10 +207,12 @@ public class Cli {
     }
 
     /**
-     * Exits the application.
+     * Exits the application gracefully.
+     * Provides user feedback and ensures clean termination.
      */
     private static void exit() {
-        System.out.println("Exiting the CLI. Thanks for using it!");
+        System.out.println("Exiting CAD CLI. Thanks for using it!");
+        System.out.flush(); // Ensure output is written before exit
         System.exit(0);
     }
 

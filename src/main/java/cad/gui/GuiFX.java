@@ -69,12 +69,6 @@ import cad.core.Sketch;
  * - Dual-mode view switching between 3D models and 2D sketches
  * - Optimized layout with resizable panels and space-efficient design
  * 
- * Architecture:
- * - JavaFX for main UI components and layout management
- * - SwingNode wrapper for integrating JOGL OpenGL canvas
- * - Event-driven interaction with mouse and keyboard controls
- * - Dual focus management system for seamless keyboard navigation
- * - Model-View pattern with OpenGLRenderer handling all 3D rendering
  * 
  * Navigation Controls:
  * - Mouse: Drag to rotate, wheel to zoom, click to focus
@@ -82,12 +76,7 @@ import cad.core.Sketch;
  * - Space: Toggle between 3D and 2D views
  * - ESC: Restore canvas focus if needed
  * 
- * Layout Structure:
- * - Main split pane (horizontal): Control panel (25%) | 3D Canvas (75%)
- * - Vertical split: Main content (85%) | Console output (15%)
- * - Control panel: Commands section + Parameters section
- * - Optimized for space efficiency with large model viewing
- * 
+
 */
 
 public class GuiFX extends Application {
@@ -118,6 +107,11 @@ public class GuiFX extends Application {
     private int lastMouseX, lastMouseY; // Last mouse coordinates for drag rotation
     private boolean isDragging = false; // Flag to indicate if mouse is being dragged for rotation
     private List<float[]> stlTriangles; // Stores triangles data from a loaded STL file
+    
+    // === 2D Sketch view variables ===
+    private float sketch2DPanX = 0.0f; // Pan offset in X direction for 2D sketch view
+    private float sketch2DPanY = 0.0f; // Pan offset in Y direction for 2D sketch view
+    private float sketch2DZoom = 1.0f; // Zoom level for 2D sketch view (1.0 = default, >1.0 = zoomed in)
     // private boolean showSketch = false; // This field is now managed directly by OpenGLRenderer via setter
 
     /**
@@ -156,11 +150,7 @@ public class GuiFX extends Application {
         primaryStage.setScene(scene);
         // Handle application close request to stop the OpenGL animator and exit gracefully
         primaryStage.setOnCloseRequest(e -> {
-            if (animator != null) {
-                animator.stop();
-            }
-            Platform.exit();
-            System.exit(0);
+            cleanupAndExit();
         });
 
         primaryStage.show();
@@ -375,7 +365,7 @@ public class GuiFX extends Application {
             createSectionLabel("General Commands"),
             createButton("Help", e -> help()),
             createButton("Version", e -> appendOutput("CAD System version 1.0")),
-            createButton("Exit", e -> Platform.exit()),
+            createButton("Exit", e -> cleanupAndExit()),
             new Separator()
         );
 
@@ -579,23 +569,26 @@ public class GuiFX extends Application {
 
             gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
             
-            // Update projection matrix to handle dynamic clipping planes based on zoom
-            updateProjectionMatrix(drawable);
-            
-            gl.glLoadIdentity(); // Reset the model-view matrix
-
-            // Apply transformations for viewing (zoom, rotation)
-            gl.glTranslatef(0.0f, 0.0f, zoom);
-            gl.glRotatef(rotationX, 1.0f, 0.0f, 0.0f);
-            gl.glRotatef(rotationY, 0.0f, 1.0f, 0.0f);
-
             // Conditional rendering based on the showSketch flag and loaded STL data
-            if (this.showSketch) { // Use 'this.showSketch' or directly 'showSketch'
+            if (this.showSketch) {
+                // For 2D sketch rendering, don't apply 3D transformations
                 renderSketch(gl); // Render 2D sketch elements
-            } else if (stlTriangles != null) {
-                renderStlTriangles(gl); // Render loaded STL triangles
             } else {
-                renderDefaultCube(gl); // Render a default cube if no STL is loaded
+                // For 3D rendering, apply transformations and update projection matrix
+                updateProjectionMatrix(drawable);
+                
+                gl.glLoadIdentity(); // Reset the model-view matrix
+
+                // Apply transformations for viewing (zoom, rotation)
+                gl.glTranslatef(0.0f, 0.0f, zoom);
+                gl.glRotatef(rotationX, 1.0f, 0.0f, 0.0f);
+                gl.glRotatef(rotationY, 0.0f, 1.0f, 0.0f);
+
+                if (stlTriangles != null) {
+                    renderStlTriangles(gl); // Render loaded STL triangles
+                } else {
+                    renderDefaultCube(gl); // Render a default cube if no STL is loaded
+                }
             }
         }
 
@@ -746,9 +739,11 @@ public class GuiFX extends Application {
         }
 
         /**
-         * Renders the 2D sketch elements (points, lines, circles, polygons)
-         * by parsing the string representation from the Sketch object.
-         * Disables lighting temporarily for 2D rendering.
+         * Renders the 2D sketch elements using the Sketch class's built-in draw method.
+         * This is much more efficient than parsing string representations.
+         * Uses proper aspect ratio to ensure circles appear round, not oval.
+         * Completely independent of 3D view transformations.
+         * Supports 2D view manipulation (pan and zoom).
          *
          * @param gl The GL2 object for OpenGL drawing commands.
          */
@@ -756,109 +751,40 @@ public class GuiFX extends Application {
             gl.glDisable(GL2.GL_LIGHTING); // Disable lighting for 2D elements
             gl.glColor3f(0.0f, 0.0f, 0.0f); // Set color to black for sketch elements
 
-            // Set up 2D orthographic projection for sketch rendering
+            // Completely reset and set up 2D orthographic projection
             gl.glMatrixMode(GL2.GL_PROJECTION);
             gl.glPushMatrix();
             gl.glLoadIdentity();
-            gl.glOrtho(-50.0, 50.0, -50.0, 50.0, -1.0, 1.0); // 2D orthographic view
             
+            // Get current viewport dimensions to calculate aspect ratio
+            int[] viewport = new int[4];
+            gl.glGetIntegerv(GL2.GL_VIEWPORT, viewport, 0);
+            int width = viewport[2];
+            int height = viewport[3];
+            
+            // Calculate aspect ratio and set up orthographic projection with zoom
+            double aspectRatio = (double) width / height;
+            double baseSize = 50.0; // Base coordinate system size
+            double size = baseSize / sketch2DZoom; // Apply zoom (smaller size = more zoomed in)
+            
+            if (aspectRatio >= 1.0) {
+                // Wide screen - extend horizontal range
+                gl.glOrtho(-size * aspectRatio, size * aspectRatio, -size, size, -1.0, 1.0);
+            } else {
+                // Tall screen - extend vertical range
+                gl.glOrtho(-size, size, -size / aspectRatio, size / aspectRatio, -1.0, 1.0);
+            }
+            
+            // Set up modelview matrix with 2D transformations
             gl.glMatrixMode(GL2.GL_MODELVIEW);
             gl.glPushMatrix();
             gl.glLoadIdentity();
+            
+            // Apply 2D pan transformations
+            gl.glTranslatef(sketch2DPanX, sketch2DPanY, 0.0f);
 
-            List<String> sketchItems = sketch.listSketch(); // Get list of sketch items
-
-            for (String item : sketchItems) {
-                String[] parts = item.split(" "); // Split the string to parse element type and coordinates
-                if (parts.length > 0) {
-                    try {
-                        String type = parts[0];
-                        
-                        if (type.equalsIgnoreCase("Point")) {
-                            // Parse point coordinates
-                            float x = Float.parseFloat(parts[2].replace("(", "").replace(",", ""));
-                            float y = Float.parseFloat(parts[3].replace(")", ""));
-                            gl.glPointSize(5.0f); // Set point size
-                            gl.glBegin(GL2.GL_POINTS);
-                            gl.glVertex2f(x, y); // Draw the point
-                            gl.glEnd();
-                        } else if (type.equalsIgnoreCase("Line")) {
-                            // Parse line start and end coordinates
-                            float x1 = Float.parseFloat(parts[2].replace("(", "").replace(",", ""));
-                            float y1 = Float.parseFloat(parts[3].replace(")", ""));
-                            float x2 = Float.parseFloat(parts[5].replace("(", "").replace(",", ""));
-                            float y2 = Float.parseFloat(parts[6].replace(")", ""));
-                            gl.glLineWidth(2.0f); // Set line width
-                            gl.glBegin(GL2.GL_LINES);
-                            gl.glVertex2f(x1, y1); // Draw the line segment
-                            gl.glVertex2f(x2, y2);
-                            gl.glEnd();
-                        } else if (type.equalsIgnoreCase("Circle")) {
-                            // Parse circle center and radius
-                            // Format: "Circle at (x, y) with radius r"
-                            // parts[0]="Circle", parts[1]="at", parts[2]="(x,", parts[3]="y)", parts[4]="with", parts[5]="radius", parts[6]="r"
-                            float cx = Float.parseFloat(parts[2].replace("(", "").replace(",", ""));
-                            float cy = Float.parseFloat(parts[3].replace(")", ""));
-                            float r = Float.parseFloat(parts[6]);
-
-                            gl.glLineWidth(2.0f); // Set line width
-                            gl.glBegin(GL2.GL_LINE_LOOP); // Begin drawing a closed loop for the circle
-                            for (int i = 0; i < 30; i++) { // Use 30 segments for approximation
-                                float angle = (float) (2 * Math.PI * i / 30);
-                                gl.glVertex2f(cx + (float) Math.cos(angle) * r, cy + (float) Math.sin(angle) * r);
-                            }
-                            gl.glEnd();
-                        } else if (type.equalsIgnoreCase("Polygon")) {
-                            // Handle two polygon formats:
-                            // 1. "Polygon at center (x, y) with radius r, sides n"
-                            // 2. "Polygon with points: (x1, y1) (x2, y2) ..."
-                            
-                            if (item.contains("with points:")) {
-                                // Parse polygon with individual points
-                                String pointsSection = item.substring(item.indexOf("with points:") + 12).trim();
-                                String[] coordinates = pointsSection.split("\\s+");
-                                
-                                gl.glLineWidth(2.0f);
-                                gl.glBegin(GL2.GL_LINE_LOOP);
-                                
-                                for (String coord : coordinates) {
-                                    if (coord.contains("(") && coord.contains(")")) {
-                                        try {
-                                            // Extract x,y from format "(x, y)"
-                                            String cleanCoord = coord.replace("(", "").replace(")", "");
-                                            String[] xy = cleanCoord.split(",");
-                                            if (xy.length == 2) {
-                                                float x = Float.parseFloat(xy[0].trim());
-                                                float y = Float.parseFloat(xy[1].trim());
-                                                gl.glVertex2f(x, y);
-                                            }
-                                        } catch (NumberFormatException e) {
-                                            // Skip invalid coordinate
-                                        }
-                                    }
-                                }
-                                gl.glEnd();
-                            } else {
-                                // Parse polygon center, radius, and number of sides (original format)
-                                float cx = Float.parseFloat(parts[3].replace("(", "").replace(",", ""));
-                                float cy = Float.parseFloat(parts[4].replace(")", ""));
-                                float r = Float.parseFloat(parts[6].replace(",", ""));
-                                int sides = Integer.parseInt(parts[8]);
-
-                                gl.glLineWidth(2.0f); // Set line width
-                                gl.glBegin(GL2.GL_LINE_LOOP); // Begin drawing a closed loop for the polygon
-                                for (int i = 0; i < sides; i++) {
-                                    float angle = (float) (2 * Math.PI * i / sides);
-                                    gl.glVertex2f(cx + (float) Math.cos(angle) * r, cy + (float) Math.sin(angle) * r);
-                                }
-                                gl.glEnd();
-                            }
-                        }
-                    } catch (NumberFormatException e) {
-                        System.err.println("Error parsing sketch item: " + item + " - " + e.getMessage());
-                    }
-                }
-            }
+            // Use the sketch's built-in draw method instead of parsing strings
+            sketch.draw(gl);
             
             // Restore matrices and lighting
             gl.glPopMatrix(); // Restore modelview matrix
@@ -959,7 +885,8 @@ public class GuiFX extends Application {
     }
 
     /**
-     * MouseMotionListener implementation for the GLCanvas to handle mouse dragging for rotation.
+     * MouseMotionListener implementation for the GLCanvas to handle mouse dragging.
+     * Supports both 3D rotation (for models) and 2D panning (for sketches).
      */
     private class CanvasMouseMotionListener implements MouseMotionListener {
         @Override
@@ -968,13 +895,22 @@ public class GuiFX extends Application {
                 int deltaX = e.getX() - lastMouseX; // Calculate change in X
                 int deltaY = e.getY() - lastMouseY; // Calculate change in Y
 
-                rotationY += deltaX * 0.5f; // Update Y-axis rotation based on horizontal drag
-                rotationX += deltaY * 0.5f; // Update X-axis rotation based on vertical drag
+                if (glRenderer != null && glRenderer.isShowingSketch()) {
+                    // 2D sketch mode: pan the view
+                    // Convert screen delta to world coordinates based on current zoom
+                    float panSpeed = 0.1f / sketch2DZoom; // Scale pan speed with zoom level
+                    sketch2DPanX += deltaX * panSpeed;
+                    sketch2DPanY -= deltaY * panSpeed; // Flip Y because screen Y is inverted
+                } else {
+                    // 3D model mode: rotate the view
+                    rotationY += deltaX * 0.5f; // Update Y-axis rotation based on horizontal drag
+                    rotationX += deltaY * 0.5f; // Update X-axis rotation based on vertical drag
+                }
 
                 lastMouseX = e.getX(); // Update last mouse X
                 lastMouseY = e.getY(); // Update last mouse Y
 
-                glCanvas.repaint(); // Request a repaint to show new rotation
+                glCanvas.repaint(); // Request a repaint to show new transformation
             }
         }
 
@@ -984,14 +920,31 @@ public class GuiFX extends Application {
 
     /**
      * MouseWheelListener implementation for the GLCanvas to handle zooming.
+     * Supports both 3D zoom (for models) and 2D zoom (for sketches).
      */
     private class CanvasMouseWheelListener implements MouseWheelListener {
         @Override
         public void mouseWheelMoved(MouseWheelEvent e) {
-            zoom += e.getWheelRotation() * 0.5f; // Adjust zoom based on wheel rotation
-            // Clamp zoom values to a reasonable range for large models
-            if (zoom > -1.0f) zoom = -1.0f;
-            if (zoom < -800.0f) zoom = -800.0f; // Increased limit for large models
+            if (glRenderer != null && glRenderer.isShowingSketch()) {
+                // 2D sketch mode: adjust 2D zoom
+                float zoomFactor = 1.1f; // 10% zoom step
+                if (e.getWheelRotation() < 0) {
+                    // Scroll up: zoom in
+                    sketch2DZoom *= zoomFactor;
+                } else {
+                    // Scroll down: zoom out
+                    sketch2DZoom /= zoomFactor;
+                }
+                // Clamp zoom to reasonable range
+                if (sketch2DZoom < 0.1f) sketch2DZoom = 0.1f; // Max zoom out
+                if (sketch2DZoom > 20.0f) sketch2DZoom = 20.0f; // Max zoom in
+            } else {
+                // 3D model mode: adjust 3D zoom
+                zoom += e.getWheelRotation() * 0.5f; // Adjust zoom based on wheel rotation
+                // Clamp zoom values to a reasonable range for large models
+                if (zoom > -1.0f) zoom = -1.0f;
+                if (zoom < -800.0f) zoom = -800.0f; // Increased limit for large models
+            }
             glCanvas.repaint(); // Request a repaint to show new zoom level
         }
     }
@@ -1027,84 +980,126 @@ public class GuiFX extends Application {
      * 5. HELP SYSTEM:
      *    - Ctrl+H: Display detailed keyboard controls help
      * 
-     * Performance Features:
-     * - Conditional repainting: Only updates display when view changes
-     * - Efficient event handling: Switch statement for fast key dispatch
-     * - User feedback: Console messages for important state changes
      * 
      */
     private class CanvasKeyListener implements KeyListener {
         /**
-         * Handles key press events for 3D navigation and application control.
+         * Handles key press events for navigation and application control.
+         * Supports both 3D model manipulation and 2D sketch view manipulation.
          * 
          * This method implements the core keyboard interface for the CAD application,
-         * processing key combinations and translating them into appropriate 3D
-         * transformations or application commands. It uses a switch statement for
-         * optimal performance and includes conditional repainting to avoid
-         * unnecessary GPU updates.
+         * processing key combinations and translating them into appropriate view
+         * transformations or application commands. It dynamically switches behavior
+         * based on whether the user is in 2D sketch mode or 3D model mode.
          * 
+         * 2D Sketch Mode Controls:
+         * - Arrow Keys: Pan view (move sketch content)
+         * - Q/E or +/-: Zoom in/out
+         * - R: Reset 2D view to default
          * 
+         * 3D Model Mode Controls:
+         * - Arrow Keys: Rotate model
+         * - Q/E or +/-: Zoom in/out
+         * - R: Reset 3D view with auto-scaling
          * 
-         * Supported Key Mappings:
-         * - VK_LEFT/RIGHT: Y-axis rotation (±3° increments)
-         * - VK_UP/DOWN: X-axis rotation (±3° increments)  
-         * - VK_Q/+: Zoom in (approach model)
-         * - VK_E/-: Zoom out (retreat from model)
-         * - VK_R: Reset view with auto-scaling
-         * - VK_SPACE: Toggle 2D/3D view modes
-         * - VK_ESCAPE: Force canvas focus restoration
-         * - Ctrl+VK_H: Display keyboard help
-         * 
-         * Performance Optimizations:
-         * - Conditional repainting: Only updates when view actually changes
-         * - Fast key dispatch: Switch statement for O(1) key handling
-         * - Clamped transformations: Prevents invalid view states
+         * Universal Controls:
+         * - SPACE: Toggle between 2D/3D view modes
+         * - ESC: Force canvas focus restoration
+         * - Ctrl+H: Display keyboard help
          * 
          */
         @Override
         public void keyPressed(KeyEvent e) {
             boolean viewChanged = false;
+            boolean is2DSketchMode = (glRenderer != null && glRenderer.isShowingSketch());
             
-            // Adjust rotation or zoom based on specific key presses
+            // Adjust view based on current mode and key presses
             switch (e.getKeyCode()) {
-                // Arrow Keys - Main rotation control
+                // Arrow Keys - Context-sensitive controls
                 case KeyEvent.VK_UP:
-                    rotationX -= 3.0f; // Rotate up
+                    if (is2DSketchMode) {
+                        // 2D mode: pan up
+                        sketch2DPanY += 2.0f / sketch2DZoom; // Scale pan with zoom
+                    } else {
+                        // 3D mode: rotate up
+                        rotationX -= 3.0f;
+                    }
                     viewChanged = true;
                     break;
                 case KeyEvent.VK_DOWN:
-                    rotationX += 3.0f; // Rotate down
+                    if (is2DSketchMode) {
+                        // 2D mode: pan down
+                        sketch2DPanY -= 2.0f / sketch2DZoom; // Scale pan with zoom
+                    } else {
+                        // 3D mode: rotate down
+                        rotationX += 3.0f;
+                    }
                     viewChanged = true;
                     break;
                 case KeyEvent.VK_LEFT:
-                    rotationY -= 3.0f; // Rotate left
+                    if (is2DSketchMode) {
+                        // 2D mode: pan left
+                        sketch2DPanX -= 2.0f / sketch2DZoom; // Scale pan with zoom
+                    } else {
+                        // 3D mode: rotate left
+                        rotationY -= 3.0f;
+                    }
                     viewChanged = true;
                     break;
                 case KeyEvent.VK_RIGHT:
-                    rotationY += 3.0f; // Rotate right
+                    if (is2DSketchMode) {
+                        // 2D mode: pan right
+                        sketch2DPanX += 2.0f / sketch2DZoom; // Scale pan with zoom
+                    } else {
+                        // 3D mode: rotate right
+                        rotationY += 3.0f;
+                    }
                     viewChanged = true;
                     break;
                     
-                // Zoom Controls
+                // Zoom Controls - Context-sensitive
                 case KeyEvent.VK_Q:
                 case KeyEvent.VK_PLUS:
                 case KeyEvent.VK_EQUALS: // For keyboards where + requires shift
-                    zoom += 0.5f; // Zoom in
-                    if (zoom > -1.0f) zoom = -1.0f; // Clamp zoom
+                    if (is2DSketchMode) {
+                        // 2D mode: zoom in
+                        sketch2DZoom *= 1.2f; // 20% zoom step
+                        if (sketch2DZoom > 20.0f) sketch2DZoom = 20.0f; // Clamp max zoom
+                    } else {
+                        // 3D mode: zoom in
+                        zoom += 0.5f;
+                        if (zoom > -1.0f) zoom = -1.0f; // Clamp zoom
+                    }
                     viewChanged = true;
                     break;
                 case KeyEvent.VK_E:
                 case KeyEvent.VK_MINUS:
-                    zoom -= 0.5f; // Zoom out
-                    if (zoom < -800.0f) zoom = -800.0f; // Increased clamp for large models
+                    if (is2DSketchMode) {
+                        // 2D mode: zoom out
+                        sketch2DZoom /= 1.2f; // 20% zoom step
+                        if (sketch2DZoom < 0.1f) sketch2DZoom = 0.1f; // Clamp min zoom
+                    } else {
+                        // 3D mode: zoom out
+                        zoom -= 0.5f;
+                        if (zoom < -800.0f) zoom = -800.0f; // Increased clamp for large models
+                    }
                     viewChanged = true;
                     break;
                     
-                // Reset View
+                // Reset View - Context-sensitive
                 case KeyEvent.VK_R:
-                    resetView(); // Use the auto-scaling reset method
+                    if (is2DSketchMode) {
+                        // Reset 2D view
+                        sketch2DPanX = 0.0f;
+                        sketch2DPanY = 0.0f;
+                        sketch2DZoom = 1.0f;
+                        appendOutput("2D sketch view reset");
+                    } else {
+                        // Reset 3D view
+                        resetView(); // Use the auto-scaling reset method
+                        appendOutput("3D model view reset with auto-scaling");
+                    }
                     viewChanged = true;
-                    appendOutput("View reset with auto-scaling");
                     break;
                     
                 // Toggle between 2D sketch and 3D model
@@ -1113,9 +1108,9 @@ public class GuiFX extends Application {
                         boolean currentSketchMode = glRenderer.isShowingSketch();
                         glRenderer.setShowSketch(!currentSketchMode);
                         if (!currentSketchMode) {
-                            appendOutput("Switched to 2D sketch view");
+                            appendOutput("Switched to 2D sketch view - Use arrow keys to pan, Q/E to zoom");
                         } else {
-                            appendOutput("Switched to 3D model view");
+                            appendOutput("Switched to 3D model view - Use arrow keys to rotate, Q/E to zoom");
                         }
                         viewChanged = true;
                     }
@@ -1196,22 +1191,31 @@ public class GuiFX extends Application {
      * 
      * This method provides users with a quick reference guide for all available
      * keyboard shortcuts and controls. It's triggered by pressing Ctrl+H and
-     * outputs a formatted help message to the console area.
+     * outputs a formatted help message to the console area. Updated to include
+     * both 2D sketch manipulation and 3D model controls.
      *
      */
     private void showKeyboardHelp() {
         appendOutput("=== Keyboard Controls ===");
-        appendOutput("View Controls:");
-        appendOutput("  Arrow Keys: Rotate view (Up/Down/Left/Right)");
+        appendOutput("3D Model View Controls:");
+        appendOutput("  Arrow Keys: Rotate model (Up/Down/Left/Right)");
         appendOutput("  Q/E or +/-: Zoom in/out");
-        appendOutput("  R: Reset view to default");
+        appendOutput("  R: Reset view to default with auto-scaling");
         appendOutput("");
-        appendOutput("View Switching:");
+        appendOutput("2D Sketch View Controls:");
+        appendOutput("  Arrow Keys: Pan sketch view (Up/Down/Left/Right)");
+        appendOutput("  Q/E or +/-: Zoom in/out");
+        appendOutput("  R: Reset view to center with default zoom");
+        appendOutput("");
+        appendOutput("Universal Controls:");
         appendOutput("  SPACE: Toggle between 2D sketch and 3D model");
-        appendOutput("");
-        appendOutput("Other:");
         appendOutput("  ESC: Restore canvas focus");
         appendOutput("  Ctrl+H: Show this help");
+        appendOutput("");
+        appendOutput("Mouse Controls:");
+        appendOutput("  3D Mode: Drag to rotate, wheel to zoom");
+        appendOutput("  2D Mode: Drag to pan, wheel to zoom");
+        appendOutput("  Click: Restore focus for keyboard controls");
         appendOutput("=========================");
     }
 
@@ -1352,28 +1356,6 @@ public class GuiFX extends Application {
      * chooser dialog for user selection and delegates to format-specific save
      * methods based on the chosen file extension.
      * 
-     * Process Flow:
-     * 1. Display JavaFX FileChooser with appropriate filters
-     * 2. Allow user to select save location and filename
-     * 3. Extract file extension to determine format
-     * 4. Delegate to appropriate format-specific save method
-     * 5. Provide user feedback on save success/failure
-     * 6. Handle cancellation gracefully without error messages
-     * 
-     * Supported File Formats:
-     * - .dxf: AutoCAD Drawing Exchange Format (via saveDXF)
-     * 
-     * User Experience Features:
-     * - Pre-configured file filters for each supported format
-     * - Intelligent default extension suggestion
-     * - Clear success/error feedback in console
-     * - Graceful handling of user cancellation
-     * 
-     * Error Handling:
-     * - File access permission issues
-     * - Invalid file paths or names
-     * - Format-specific save failures
-     * - User cancellation (no error message)
      * 
      * @see #saveDXF(String) for DXF format saving
      */
@@ -1414,33 +1396,7 @@ public class GuiFX extends Application {
      * Initiates the file loading process with user-selected file and format detection.
      * 
      * This method provides a comprehensive file loading interface that automatically
-     * detects supported formats and delegates to appropriate parsing methods. It
-     * includes robust error handling and user feedback throughout the loading process.
-     * 
-     * Process Flow:
-     * 1. Display JavaFX FileChooser with format filters
-     * 2. Allow user to select file to load
-     * 3. Extract file extension for format detection
-     * 4. Validate file existence and accessibility
-     * 5. Delegate to format-specific loading method
-     * 6. Update UI with loaded content
-     * 7. Provide success/error feedback to user
-     * 
-     * Supported File Formats:
-     * - .dxf: AutoCAD Drawing Exchange Format (via loadDXF)
-     * 
-     * Post-Load Actions:
-     * - Automatic canvas refresh to display loaded content
-     * - Console notification of successful load
-     * - Error reporting for failed operations
-     * - Focus restoration to canvas for immediate interaction
-     * 
-     * Error Handling:
-     * - File not found or access denied
-     * - Unsupported or corrupted file formats
-     * - Parsing errors in file content
-     * - Memory issues with large files
-     * - User cancellation (graceful exit)
+     * detects supported formats and delegates to appropriate parsing methods. 
      * 
      * @see #loadDXF(String) for DXF format loading
      * @see #loadOBJ(String) for OBJ format loading
@@ -1502,33 +1458,6 @@ public class GuiFX extends Application {
      * which is widely supported by CAD applications. It handles the complete export
      * process including file selection, format conversion, and error management.
      * 
-     * Process Flow:
-     * 1. Display FileChooser with DXF-specific filter (.dxf extension)
-     * 2. Allow user to specify export filename and location
-     * 3. Validate current model state (ensure geometry exists)
-     * 4. Convert internal geometry representation to DXF format
-     * 5. Write DXF data to selected file
-     * 6. Provide success confirmation or error details
-     * 
-     * DXF Export Features:
-     * - Industry-standard AutoCAD DXF R14 format compatibility
-     * - Preserves 3D geometry with accurate coordinates
-     * - Maintains entity relationships and properties
-     * - Supports lines, circles, polygons, and 3D faces
-     * - Includes layer information and material properties
-     * 
-     * Validation Checks:
-     * - Ensures valid geometry exists before export
-     * - Verifies file write permissions
-     * - Checks disk space availability
-     * - Validates filename format and characters
-     * 
-     * Error Handling:
-     * - No geometry to export (empty model)
-     * - File access or permission issues
-     * - Disk space insufficient
-     * - Invalid filename or path
-     * - DXF format conversion errors
      * 
      * @see Geometry class for internal model representation
      * @see #saveDXF(String) for the actual DXF writing implementation
@@ -1571,27 +1500,8 @@ public class GuiFX extends Application {
      * This method provides a safe way to reset the sketch workspace, ensuring
      * users don't accidentally lose work by requiring explicit confirmation.
      * It completely removes all sketch entities and updates the display.
-     * 
-     * Process Flow:
-     * 1. Check if sketch contains any entities
-     * 2. Display confirmation dialog if entities exist
-     * 3. Clear all sketch entities upon user confirmation
-     * 4. Refresh canvas to show empty sketch
-     * 5. Provide feedback about clear operation
-     * 6. Handle cancellation gracefully
-     * 
-     * Safety Features:
-     * - Confirmation dialog prevents accidental data loss
-     * - No-op if sketch is already empty (no unnecessary dialogs)
-     * - Clear success message for user feedback
-     * - Immediate visual update of canvas
-     * 
-     * Entities Affected:
-     * - All 2D points, lines, circles, and polygons
-     * - Construction geometry and reference elements
-     * - Temporary sketch elements
-     * - Constraint relationships between entities
-     * 
+     *
+     *
      * Post-Clear State:
      * - Empty sketch ready for new geometry
      * - Clean coordinate system
@@ -1621,34 +1531,6 @@ public class GuiFX extends Application {
      * with their properties and relationships. Essential for debugging
      * complex sketches and verifying geometry accuracy.
      * 
-     * Process Flow:
-     * 1. Retrieve current sketch from geometry system
-     * 2. Iterate through all entity types systematically
-     * 3. Format entity information with coordinates and properties
-     * 4. Output organized listing to console
-     * 5. Include entity count summary
-     * 6. Handle empty sketch case gracefully
-     * 
-     * Entity Information Displayed:
-     * - Points: ID, coordinates (x, y), entity type
-     * - Lines: ID, start/end coordinates, length, angle
-     * - Circles: ID, center coordinates, radius, circumference
-     * - Polygons: ID, vertex count, vertex coordinates, area
-     * - Entity relationships and constraints
-     * 
-     * Output Format Features:
-     * - Hierarchical organization by entity type
-     * - Consistent coordinate formatting (decimal precision)
-     * - Clear section headers and separators
-     * - Entity count summaries for each type
-     * - Total entity count at end
-     * 
-     * Use Cases:
-     * - Debugging sketch geometry issues
-     * - Verifying coordinate accuracy
-     * - Understanding entity relationships
-     * - Quality assurance before 3D conversion
-     * - Educational examination of sketch structure
      * 
      * @see Sketch class for entity storage and management
      * @see #sketchClear() for clearing all listed entities
@@ -1678,50 +1560,16 @@ public class GuiFX extends Application {
      * building blocks for more complex geometry. Points can be used as reference
      * locations, endpoints for lines, centers for circles, or vertices for polygons.
      * 
-     * Process Flow:
-     * 1. Parse X coordinate from input field with validation
-     * 2. Parse Y coordinate from input field with validation
-     * 3. Create new Point entity with validated coordinates
-     * 4. Add point to current sketch entity collection
-     * 5. Refresh canvas to display new point visually
-     * 6. Provide creation confirmation and entity ID
-     * 7. Clear input fields for next point entry
-     * 
-     * Input Validation:
-     * - Numeric format validation for both coordinates
-     * - Range checking for reasonable coordinate values
-     * - Duplicate point detection (optional warning)
-     * - Empty field handling with clear error messages
-     * 
-     * Point Properties:
-     * - Unique entity ID for reference
-     * - Precise floating-point coordinates (x, y)
-     * - Visual representation as small circle or cross
-     * - Selectable for use in other operations
-     * - Persistent storage in sketch file formats
-     * 
-     * Error Handling:
-     * - Invalid number format in coordinate fields
-     * - Missing or empty coordinate values
-     * - Extreme coordinate values outside canvas
-     * - Memory allocation issues for point storage
-     * 
-     * User Experience:
-     * - Immediate visual feedback on canvas
-     * - Console confirmation with point coordinates
-     * - Input field clearing for rapid successive entry
-     * - Point highlight on creation for visual confirmation
      * 
      * @see Point class for point entity implementation
      * @see Sketch class for entity management
      * @see #sketchLine() for creating lines between points
      */
     private void sketchPoint() {
-        String x = sketchPointX.getText();
-        String y = sketchPointY.getText();
-        String[] args = {x, y};
         try {
-            sketch.sketchPoint(args); // Pass arguments as String array
+            float x = Float.parseFloat(sketchPointX.getText());
+            float y = Float.parseFloat(sketchPointY.getText());
+            sketch.addPoint(x, y);
             appendOutput("Point added: (" + x + ", " + y + ")");
             glRenderer.setShowSketch(true); // Ensure sketch view is active
             glCanvas.repaint(); // Repaint canvas to show new point
@@ -1738,13 +1586,12 @@ public class GuiFX extends Application {
      * Reads x1,y1,x2,y2 values, validates them, adds line to sketch, and updates display.
      */
     private void sketchLine() {
-        String x1 = sketchLineX1.getText();
-        String y1 = sketchLineY1.getText();
-        String x2 = sketchLineX2.getText();
-        String y2 = sketchLineY2.getText();
-        String[] args = {x1, y1, x2, y2};
         try {
-            sketch.sketchLine(args); // Pass arguments as String array
+            float x1 = Float.parseFloat(sketchLineX1.getText());
+            float y1 = Float.parseFloat(sketchLineY1.getText());
+            float x2 = Float.parseFloat(sketchLineX2.getText());
+            float y2 = Float.parseFloat(sketchLineY2.getText());
+            sketch.addLine(x1, y1, x2, y2);
             appendOutput("Line added: (" + x1 + ", " + y1 + ") to (" + x2 + ", " + y2 + ")");
             glRenderer.setShowSketch(true); // Ensure sketch view is active
             glCanvas.repaint(); // Repaint canvas to show new line
@@ -1757,20 +1604,20 @@ public class GuiFX extends Application {
     }
 
     /**
-     * Creates a circle in the sketch using center coordinates and radius from input fields.
-     * Reads x,y,radius values, validates them, adds circle to sketch, and updates display.
+     * Adds a circle to the sketch from user input fields.
+     * It parses the center coordinates (x, y) and the radius,
+     * then adds the circle to the sketch and updates the view.
      */
     private void sketchCircle() {
-        String x = sketchCircleX.getText();
-        String y = sketchCircleY.getText();
-        String r = sketchCircleR.getText();
-        String[] args = {x, y, r};
         try {
-            sketch.sketchCircle(args); // Pass arguments as String array
-            appendOutput("Circle added: center (" + x + ", " + y + "), radius " + r);
-            glRenderer.setShowSketch(true); // Ensure sketch view is active
-            glCanvas.repaint(); // Repaint canvas to show new circle
-            glCanvas.requestFocusInWindow(); // Request focus for interaction
+            float x = Float.parseFloat(sketchCircleX.getText());
+            float y = Float.parseFloat(sketchCircleY.getText());
+            float r = Float.parseFloat(sketchCircleR.getText());
+            sketch.addCircle(x, y, r);
+            appendOutput("Circle added at (" + x + ", " + y + ") with radius " + r);
+            glRenderer.setShowSketch(true); // Ensure sketch view is shown
+            glCanvas.repaint(); // Repaint canvas after adding element
+            glCanvas.requestFocusInWindow();
         } catch (NumberFormatException e) {
             appendOutput("Invalid input. Please enter numbers for X, Y, and Radius for Circle.");
         } catch (IllegalArgumentException e) {
@@ -1779,24 +1626,18 @@ public class GuiFX extends Application {
     }
 
     /**
-     * Creates a regular polygon in the sketch using center, radius, and side count from input fields.
-     * Validates sides are between 3-25, then adds polygon to sketch and updates display.
+     * Adds a regular polygon to the sketch from user input fields.
+     * It parses the center coordinates, radius, and number of sides,
+     * then adds the polygon to the sketch and updates the view.
      */
     private void sketchPolygon() {
         try {
-            // Correctly parsing String inputs from TextFields into float and int
             float x = Float.parseFloat(sketchPolygonX.getText());
             float y = Float.parseFloat(sketchPolygonY.getText());
             float r = Float.parseFloat(sketchPolygonR.getText());
             int sides = Integer.parseInt(sketchPolygonSides.getText());
-
-            if (sides < 3 || sides > 25) {
-                appendOutput("Polygon sides must be between 3 and 25.");
-                return;
-            }
-            // Calling sketch.sketchPolygon with the correctly parsed float and int arguments
-            sketch.sketchPolygon(x, y, r, sides);
-            appendOutput("Polygon added: center (" + x + ", " + y + "), radius " + r + ", sides " + sides);
+            sketch.addNSidedPolygon(x, y, r, sides);
+            appendOutput("Polygon added at (" + x + ", " + y + ") with radius " + r + " and " + sides + " sides.");
             glRenderer.setShowSketch(true); // Ensure sketch view is shown
             glCanvas.repaint(); // Repaint canvas after adding element
             glCanvas.requestFocusInWindow();
