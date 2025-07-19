@@ -162,6 +162,58 @@ public class GuiFX extends Application {
     }
 
     /**
+     * Properly cleans up resources and exits the application.
+     * This method should be called whenever the application needs to terminate,
+     * whether through window close, exit button, or programmatic exit.
+     * It ensures all resources are properly released before termination.
+     */
+    private void cleanupAndExit() {
+        try {
+            // Stop the OpenGL animator immediately
+            if (animator != null) {
+                if (animator.isAnimating()) {
+                    animator.stop();
+                }
+                // Give a very short time for cleanup, but don't wait too long
+                Thread.sleep(50);
+            }
+            
+            // Dispose of the OpenGL context if possible
+            if (glCanvas != null) {
+                glCanvas.destroy();
+            }
+            
+        } catch (Exception e) {
+            // Ignore cleanup errors and force exit
+            System.err.println("Warning during cleanup: " + e.getMessage());
+        }
+        
+        // Force immediate exit - don't wait for JavaFX platform
+        Platform.runLater(() -> {
+            Platform.exit();
+            // Use a separate thread to force exit after a short delay
+            new Thread(() -> {
+                try {
+                    Thread.sleep(100);
+                    System.exit(0);
+                } catch (InterruptedException ignored) {
+                    System.exit(0);
+                }
+            }).start();
+        });
+        
+        // Also try to exit from this thread as backup
+        new Thread(() -> {
+            try {
+                Thread.sleep(200);
+                System.exit(0);
+            } catch (InterruptedException ignored) {
+                System.exit(0);
+            }
+        }).start();
+    }
+
+    /**
      * Initializes all the UI components (TextAreas, TextFields, ComboBoxes).
      * This method is called once during the application's startup.
      */
