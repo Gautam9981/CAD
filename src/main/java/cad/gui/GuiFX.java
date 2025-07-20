@@ -16,6 +16,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -25,6 +26,8 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.Window; // Import Window
+
+import java.util.Optional;
 
 // Swing/AWT imports (only for JOGL + file dialogs)
 import javax.swing.JPanel;
@@ -265,7 +268,7 @@ public class GuiFX extends Application {
             // Create OpenGL capabilities with double buffering and hardware acceleration
             GLCapabilities capabilities = new GLCapabilities(profile);
             capabilities.setDoubleBuffered(true);
-            capabilities.setHardwareAccelerated(true);
+            capabilities.setHardwareAccelerated(false);
 
             // Create the GLCanvas with the defined capabilities
             glCanvas = new JOGLCadCanvas(sketch);
@@ -448,7 +451,8 @@ public class GuiFX extends Application {
             createButton("Sketch Point", e -> sketchPoint()),
             createButton("Sketch Line", e -> sketchLine()),
             createButton("Sketch Circle", e -> sketchCircle()),
-            createButton("Sketch Polygon", e -> sketchPolygon())
+            createButton("Sketch Polygon", e -> sketchPolygon()),
+            createButton("Extrude Sketch", e -> extrudeSketch())
         );
 
         ScrollPane scrollPane = new ScrollPane(commandsBox);
@@ -1695,6 +1699,53 @@ public class GuiFX extends Application {
             glCanvas.requestFocusInWindow();
         } catch (NumberFormatException e) {
             appendOutput("Invalid input. Please enter numbers for X, Y, Radius, and an integer for Sides for Polygon.");
+        }
+    }
+
+    /**
+     * Extrudes the current 2D sketch into a 3D shape.
+     * Opens a dialog to get the extrusion height from the user.
+     */
+    private void extrudeSketch() {
+        // Check if sketch has any closed loops (polygons)
+        if (!sketch.isClosedLoop()) {
+            appendOutput("Error: Sketch must contain at least one polygon to extrude.");
+            appendOutput("Tip: Use 'Sketch Polygon' button to create polygons first.");
+            return;
+        }
+
+        // Create a dialog to get the extrusion height
+        TextInputDialog dialog = new TextInputDialog("10.0");
+        dialog.setTitle("Extrude Sketch");
+        dialog.setHeaderText("Extrude 2D Sketch into 3D");
+        dialog.setContentText("Enter extrusion height:");
+
+        // Show dialog and process result
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            try {
+                float height = Float.parseFloat(result.get());
+                if (height <= 0) {
+                    appendOutput("Error: Extrusion height must be greater than 0.");
+                    return;
+                }
+
+                // Perform the extrusion
+                Geometry.extrude(sketch, height);
+                
+                appendOutput("Successfully extruded sketch with height " + height);
+                appendOutput("Switching to 3D view to show extruded geometry.");
+                
+                // Switch to 3D view to show the result
+                glRenderer.setShowSketch(false);
+                glCanvas.repaint();
+                glCanvas.requestFocusInWindow();
+                
+            } catch (NumberFormatException e) {
+                appendOutput("Error: Invalid height value. Please provide a numeric value.");
+            } catch (Exception e) {
+                appendOutput("Error during extrusion: " + e.getMessage());
+            }
         }
     }
 

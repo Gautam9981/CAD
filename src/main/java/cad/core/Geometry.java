@@ -22,12 +22,14 @@ public class Geometry {
     /**
      * Supported 3D shapes and model types.
      * STL_LOADED represents externally loaded models.
+     * EXTRUDED represents extruded 2D sketches.
      */
     public enum Shape {
         NONE,
         CUBE,
         SPHERE,
-        STL_LOADED // Added for loaded STL models
+        STL_LOADED, // Added for loaded STL models
+        EXTRUDED    // Added for extruded sketches
     }
 
     private static Shape currShape = Shape.NONE;       // Currently active shape
@@ -68,26 +70,49 @@ public class Geometry {
     }
 
     /**
+     * Gets triangles from extruded sketch for rendering.
+     * @return List of triangle arrays with format [nx, ny, nz, v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z]
+     */
+    public static List<float[]> getExtrudedTriangles() {
+        return extrudedTriangles;
+    }
+
+    /**
      * Calculates maximum dimension of current model for auto-scaling views.
      * @return Maximum width, height, or depth of the model
      */
     public static float getModelMaxDimension() {
-        if (loadedStlTriangles.isEmpty()) {
-            // If no STL loaded, use the current shape parameters
-            switch (currShape) {
-                case CUBE:
-                    return param; // For cube, param is the edge length
-                case SPHERE:
-                    return param * 2; // For sphere, param is radius, so diameter is max dimension
-                default:
-                    return 2.0f; // Default fallback
-            }
+        List<float[]> trianglesToCheck = null;
+        
+        // Determine which triangle list to use based on current shape
+        switch (currShape) {
+            case CUBE:
+                return param; // For cube, param is the edge length
+            case SPHERE:
+                return param * 2; // For sphere, param is radius, so diameter is max dimension
+            case STL_LOADED:
+                if (!loadedStlTriangles.isEmpty()) {
+                    trianglesToCheck = loadedStlTriangles;
+                }
+                break;
+            case EXTRUDED:
+                if (!extrudedTriangles.isEmpty()) {
+                    trianglesToCheck = extrudedTriangles;
+                }
+                break;
+            default:
+                return 2.0f; // Default fallback
         }
         
-        // Calculate bounds for loaded STL - create a copy to avoid ConcurrentModificationException
+        // If no triangles to check, return default
+        if (trianglesToCheck == null || trianglesToCheck.isEmpty()) {
+            return 2.0f;
+        }
+        
+        // Calculate bounds for triangles - create a copy to avoid ConcurrentModificationException
         List<float[]> trianglesCopy;
-        synchronized (loadedStlTriangles) {
-            trianglesCopy = new ArrayList<>(loadedStlTriangles);
+        synchronized (trianglesToCheck) {
+            trianglesCopy = new ArrayList<>(trianglesToCheck);
         }
         
         float minX = Float.MAX_VALUE, minY = Float.MAX_VALUE, minZ = Float.MAX_VALUE;
@@ -508,48 +533,118 @@ public class Geometry {
 
     /**
      * Extrude a closed sketch to create a 3D shape.
-     * Currently disabled due to incomplete/broken logic.
+     * Converts closed polygons in the sketch into 3D geometry.
      *
      * @param sketch Sketch to extrude.
      * @param height Extrusion height.
      */
     public static void extrude(Sketch sketch, float height) {
-        // TODO: Fix extrusion logic before enabling.
-        /*
         if (!sketch.isClosedLoop()) {
-            System.out.println("Sketch must be a closed loop to extrude.");
+            System.out.println("Sketch must contain at least one closed loop (polygon) to extrude.");
             return;
         }
 
         extrudedTriangles.clear();
-        var entities = sketch.getEntities();
-        for (int i = 0; i < entities.size(); i++) {
-            Sketch.Entity entity = entities.get(i);
-            if (entity instanceof Sketch.Line line) {
-                float x1 = line.x1, y1 = line.y1;
-                float x2 = line.x2, y2 = line.y2;
-
-                float z0 = 0f;
-                float z1 = height;
-
-                float[] p1 = new float[]{x1, y1, z0};
-                float[] p2 = new float[]{x2, y2, z0};
-                float[] p3 = new float[]{x2, y2, z1};
-                float[] p4 = new float[]{x1, y1, z1};
-
-                extrudedTriangles.addAll(List.of(p1, p2, p3));
-                extrudedTriangles.addAll(List.of(p1, p3, p4));
-            }
+        
+        // Use the sketch's built-in extrude functionality
+        sketch.extrude(height);
+        
+        // Convert Face3D objects from sketch to triangle format for rendering
+        for (Sketch.Face3D face : sketch.extrudedFaces) {
+            convertFaceToTriangles(face);
         }
 
-        currShape = Shape.NONE;
-        System.out.println("Extruded sketch stored in memory.");
-        */
-        System.out.println("Extrude logic is disabled (pending fix).");
+        currShape = Shape.EXTRUDED;
+        System.out.println("Sketch extruded successfully. Generated " + extrudedTriangles.size() + " triangles.");
+    }
+    
+    /**
+     * Converts a Face3D object to triangles and adds them to extrudedTriangles.
+     * Uses triangle fan approach for faces with more than 3 vertices.
+     *
+     * @param face Face3D object to convert.
+     */
+    private static void convertFaceToTriangles(Sketch.Face3D face) {
+        List<Sketch.Point3D> vertices = face.getVertices();
+        int numVertices = vertices.size();
+        
+        if (numVertices < 3) {
+            System.err.println("Warning: Face with less than 3 vertices cannot be triangulated.");
+            return;
+        }
+        
+        if (numVertices == 3) {
+            // Already a triangle
+            addTriangleToExtruded(vertices.get(0), vertices.get(1), vertices.get(2));
+        } else {
+            // Triangle fan: connect all vertices to the first vertex
+            for (int i = 1; i < numVertices - 1; i++) {
+                addTriangleToExtruded(vertices.get(0), vertices.get(i), vertices.get(i + 1));
+            }
+        }
+    }
+    
+    /**
+     * Adds a triangle to the extruded triangles list in the correct format.
+     * Format: [nx, ny, nz, v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z]
+     *
+     * @param p1 First vertex
+     * @param p2 Second vertex  
+     * @param p3 Third vertex
+     */
+    private static void addTriangleToExtruded(Sketch.Point3D p1, Sketch.Point3D p2, Sketch.Point3D p3) {
+        // Calculate normal vector using cross product
+        float[] normal = calculateTriangleNormal(p1, p2, p3);
+        
+        // Create triangle array with normal and vertices
+        float[] triangle = new float[12];
+        triangle[0] = normal[0];    // nx
+        triangle[1] = normal[1];    // ny
+        triangle[2] = normal[2];    // nz
+        triangle[3] = p1.getX();    // v1x
+        triangle[4] = p1.getY();    // v1y
+        triangle[5] = p1.getZ();    // v1z
+        triangle[6] = p2.getX();    // v2x
+        triangle[7] = p2.getY();    // v2y
+        triangle[8] = p2.getZ();    // v2z
+        triangle[9] = p3.getX();    // v3x
+        triangle[10] = p3.getY();   // v3y
+        triangle[11] = p3.getZ();   // v3z
+        
+        extrudedTriangles.add(triangle);
+    }
+    
+    /**
+     * Calculates the normal vector for a triangle defined by three 3D points.
+     *
+     * @param p1 First vertex
+     * @param p2 Second vertex
+     * @param p3 Third vertex
+     * @return Normal vector as float array [nx, ny, nz]
+     */
+    private static float[] calculateTriangleNormal(Sketch.Point3D p1, Sketch.Point3D p2, Sketch.Point3D p3) {
+        // Edge vectors
+        float ex1 = p2.getX() - p1.getX(), ey1 = p2.getY() - p1.getY(), ez1 = p2.getZ() - p1.getZ();
+        float ex2 = p3.getX() - p1.getX(), ey2 = p3.getY() - p1.getY(), ez2 = p3.getZ() - p1.getZ();
+        
+        // Cross product
+        float nx = ey1 * ez2 - ez1 * ey2;
+        float ny = ez1 * ex2 - ex1 * ez2;
+        float nz = ex1 * ey2 - ey1 * ex2;
+        
+        // Normalize
+        float length = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+        if (length > 0) {
+            nx /= length;
+            ny /= length;
+            nz /= length;
+        }
+        
+        return new float[]{nx, ny, nz};
     }
 
     /**
-     * Saves current geometry (cube, sphere, or extruded shapes) to STL file.
+     * Saves current geometry (cube, sphere, loaded STL, or extruded shapes) to STL file.
      * @param filename Output file path
      * @throws IOException if file writing fails
      */
@@ -569,11 +664,10 @@ public class Geometry {
             } else if (currShape == Shape.STL_LOADED && !loadedStlTriangles.isEmpty()) {
                 // If a loaded STL is the current shape, just write its triangles back out
                 writeLoadedStlTriangles(out);
+            } else if (currShape == Shape.EXTRUDED && !extrudedTriangles.isEmpty()) {
+                // Export extruded geometry
+                writeExtrudedTriangles(out);
             }
-            // else if (!extrudedTriangles.isEmpty()) { // For when extrusion is enabled
-            //     // TODO: Implement extrusion export once fixed
-            //     System.out.println("Skipping export of extruded geometry (not implemented).");
-            // }
 
             out.println("endsolid shape");
         }
@@ -589,6 +683,23 @@ public class Geometry {
      */
     private static void writeLoadedStlTriangles(PrintWriter out) {
         for (float[] triData : loadedStlTriangles) {
+            // triData format: [nx, ny, nz, v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z]
+            writeTriangle(out,
+                    triData[0], triData[1], triData[2], // Normal
+                    triData[3], triData[4], triData[5], // V1
+                    triData[6], triData[7], triData[8], // V2
+                    triData[9], triData[10], triData[11]);// V3
+        }
+    }
+
+    /**
+     * Generates and writes STL facets for the current `extrudedTriangles` data.
+     * This is used when saving extruded geometry to STL format.
+     *
+     * @param out PrintWriter to write STL data.
+     */
+    private static void writeExtrudedTriangles(PrintWriter out) {
+        for (float[] triData : extrudedTriangles) {
             // triData format: [nx, ny, nz, v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z]
             writeTriangle(out,
                     triData[0], triData[1], triData[2], // Normal
@@ -826,7 +937,7 @@ public class Geometry {
 
     /**
      * Draws the currently selected 3D shape using OpenGL. This method is called by JOGLCadCanvas's display method.
-     * It handles drawing of cubes, spheres, and loaded STL models.
+     * It handles drawing of cubes, spheres, loaded STL models, and extruded sketches.
      *
      * @param gl The GL2 object (OpenGL context) used for drawing.
      */
@@ -846,6 +957,10 @@ public class Geometry {
             case STL_LOADED:
                 System.out.println("About to call drawLoadedStl"); // Debug
                 drawLoadedStl(gl); // Call the specific STL drawing method
+                break;
+            case EXTRUDED:
+                System.out.println("About to call drawExtruded"); // Debug
+                drawExtruded(gl); // Draw extruded geometry
                 break;
             case NONE:
             default:
@@ -965,5 +1080,33 @@ public class Geometry {
         }
         gl.glEnd();
         System.out.println("Finished drawing " + loadedStlTriangles.size() + " triangles"); // Debug
+    }
+    
+    /**
+     * Draws extruded geometry using OpenGL. Similar to drawLoadedStl but for extruded shapes.
+     * This method renders triangles from the extrudedTriangles list.
+     *
+     * @param gl The GL2 object (OpenGL context) used for drawing.
+     */
+    public static void drawExtruded(GL2 gl) {
+        System.out.println("drawExtruded called. Triangle count: " + extrudedTriangles.size()); // Debug
+        if (extrudedTriangles.isEmpty()) {
+            System.out.println("No extruded triangles to draw - returning early"); // Debug
+            return; // Nothing to draw
+        }
+
+        gl.glBegin(GL2.GL_TRIANGLES);
+        for (float[] triData : extrudedTriangles) {
+            // Each triData array contains: [nx, ny, nz, v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z]
+            // Set the normal for the entire triangle
+            gl.glNormal3f(triData[0], triData[1], triData[2]);
+
+            // Define the three vertices of the triangle
+            gl.glVertex3f(triData[3], triData[4], triData[5]);   // Vertex 1
+            gl.glVertex3f(triData[6], triData[7], triData[8]);   // Vertex 2
+            gl.glVertex3f(triData[9], triData[10], triData[11]); // Vertex 3
+        }
+        gl.glEnd();
+        System.out.println("Finished drawing " + extrudedTriangles.size() + " extruded triangles"); // Debug
     }
 }

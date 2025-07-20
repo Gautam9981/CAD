@@ -316,6 +316,28 @@ public class Sketch {
         return output;
     }
 
+    /**
+     * Gets all entities in the sketch.
+     * @return List of all sketch entities.
+     */
+    public List<Entity> getEntities() {
+        return new ArrayList<>(sketchEntities);
+    }
+
+    /**
+     * Checks if the sketch forms a closed loop.
+     * A closed loop is defined as having at least one polygon entity.
+     * @return true if sketch contains closed shapes (polygons), false otherwise.
+     */
+    public boolean isClosedLoop() {
+        for (Entity entity : sketchEntities) {
+            if (entity instanceof Polygon) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private String units = "mm";
 
     /**

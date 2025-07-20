@@ -148,6 +148,11 @@ public class Cli {
                             sketchList();
                             break;
 
+                        case "extrude":
+                        case "ext":
+                            extrudeSketch(argsArray);
+                            break;
+
                         case "load":
                             loadFile(argsArray);
                             break;
@@ -194,6 +199,8 @@ public class Cli {
         System.out.println("  sketch_polygon <x1> <y1> <x2> <y2> ... <xn> <yn> - Add polygon from explicit points (3-25 points)");
         System.out.println("  sketch_clear                - Clear sketch");
         System.out.println("  sketch_list                 - List all sketch entities");
+        System.out.println("  extrude <height>            - Extrude closed sketch into 3D");
+        System.out.println("  ext <height>                - Alias for extrude");
         System.out.println("  export_dxf <filename>       - Export sketch to DXF");
         System.out.println("  units <mm|cm|m|in|ft>       - Set units");
         System.out.println("  help (h), version (v), exit (e)");
@@ -459,6 +466,44 @@ public class Cli {
      */
     private static void sketchList() {
         sketch.listSketch();
+    }
+
+    /**
+     * Extrudes the current sketch into a 3D shape.
+     * Requires at least one closed polygon in the sketch.
+     * 
+     * @param args Command arguments, expects height as second argument
+     */
+    private static void extrudeSketch(String[] args) {
+        if (args.length < 2) {
+            System.out.println("Usage: extrude <height>");
+            System.out.println("Example: extrude 10.5");
+            return;
+        }
+
+        try {
+            float height = Float.parseFloat(args[1]) * currentUnit.toMillimeter;
+            
+            // Check if sketch has any closed loops (polygons)
+            if (!sketch.isClosedLoop()) {
+                System.out.println("Error: Sketch must contain at least one polygon to extrude.");
+                System.out.println("Tip: Use 'sketch_polygon' command to create polygons.");
+                return;
+            }
+
+            // Perform the extrusion
+            Geometry.extrude(sketch, height);
+            
+            System.out.printf("Successfully extruded sketch with height %.2f %s%n", 
+                            args[1], currentUnit.name().toLowerCase());
+            System.out.println("Use 'save <filename>' to export the 3D model to STL format.");
+            
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Invalid height value. Please provide a numeric value.");
+            System.out.println("Example: extrude 10.5");
+        } catch (Exception e) {
+            System.out.println("Error during extrusion: " + e.getMessage());
+        }
     }
 
     /**
