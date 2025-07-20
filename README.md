@@ -76,9 +76,13 @@ I got JOGL support included in the program (in terms of the .stl files and rende
 
 For these two days, I was working to make sure that the binaries function as expected, as I have added OpenGL support through JOGL, and I can say that they do work properly (At least for Linux and Windows; Don't know about MacOS). For the Windows binary, I included the .jar file, as the .exe is basically a wrapper for the .jar file, should still run the .exe and it will work
 
-7/18/25
+Day 21 (7/18/25)
 
 I have completed a major architectural change to the Geometry.java file, essentially, adding support for other 3D shapes other than Cubes and Spheres. I may have to work on fixing those implementations for the Cli and Gui components of the program
+
+Day 22 (7/20/25)
+
+Extrude functionality works, but it feels rather crude right now (just the basics). I will be updating ALL binaries to have this extrusion functionality ready
 
 Instructions for Running the program:
 
