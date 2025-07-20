@@ -187,7 +187,7 @@ public class Sketch {
 
     // New fields to resolve errors
     public final List < Polygon > polygons = new ArrayList < > (); // To store only Polygon entities for extrusion
-    public List <Face3D> extrudedFaces = new ArrayList < > (); // To store the result of extrusion
+    // public List <Face3D> extrudedFaces = new ArrayList < > (); // To store the result of extrusion
     // End of new fields
 
     /**
@@ -294,7 +294,7 @@ public class Sketch {
     public void clearSketch() {
         sketchEntities.clear();
         polygons.clear(); // Clear polygons list as well
-        extrudedFaces.clear(); // Clear extruded faces
+        // extrudedFaces.clear(); // Clear extruded faces
     }
 
     /**
@@ -955,41 +955,41 @@ public class Sketch {
             }
         }
     }
-    public void extrude(double height) {
-        // Clear previous extruded faces
-        this.extrudedFaces.clear();
+    // public void extrude(double height) {
+    //     // Clear previous extruded faces
+    //     this.extrudedFaces.clear();
 
-        for (Polygon polygon: this.polygons) { // Use the dedicated polygons list
-            List < Point2D > points = polygon.getPoints(); // Call the new getPoints() method
-            int n = points.size();
+    //     for (Polygon polygon: this.polygons) { // Use the dedicated polygons list
+    //         List < Point2D > points = polygon.getPoints(); // Call the new getPoints() method
+    //         int n = points.size();
 
-            List < Point3D > bottom = points.stream()
-                .map(p -> new Point3D(p.getX(), p.getY(), 0))
-                .toList();
+    //         List < Point3D > bottom = points.stream()
+    //             .map(p -> new Point3D(p.getX(), p.getY(), 0))
+    //             .toList();
 
-            List < Point3D > top = points.stream()
-                .map(p -> new Point3D(p.getX(), p.getY(), (float)height)) // Cast height to float
-                .toList();
+    //         List < Point3D > top = points.stream()
+    //             .map(p -> new Point3D(p.getX(), p.getY(), (float)height)) // Cast height to float
+    //             .toList();
 
-            // Side faces
-            for (int i = 0; i < n; i++) {
-                Point3D p1 = bottom.get(i);
-                Point3D p2 = bottom.get((i + 1) % n);
-                Point3D p3 = top.get((i + 1) % n);
-                Point3D p4 = top.get(i);
+    //         // Side faces
+    //         for (int i = 0; i < n; i++) {
+    //             Point3D p1 = bottom.get(i);
+    //             Point3D p2 = bottom.get((i + 1) % n);
+    //             Point3D p3 = top.get((i + 1) % n);
+    //             Point3D p4 = top.get(i);
 
-                extrudedFaces.add(new Face3D(p1, p2, p3, p4));
-            }
+    //             extrudedFaces.add(new Face3D(p1, p2, p3, p4));
+    //         }
 
-            // Top and bottom faces
-            // For top and bottom faces, ensure points are ordered consistently (e.g., all clockwise or all counter-clockwise)
-            // The `Face3D` constructor taking a list of points assumes they form a valid polygon.
-            extrudedFaces.add(new Face3D(top));
+    //         // Top and bottom faces
+    //         // For top and bottom faces, ensure points are ordered consistently (e.g., all clockwise or all counter-clockwise)
+    //         // The `Face3D` constructor taking a list of points assumes they form a valid polygon.
+    //         extrudedFaces.add(new Face3D(top));
             
-            // For the bottom face, reverse the order to maintain consistent normal direction (e.g., if top is CCW, bottom should be CW)
-            List<Point3D> reversedBottom = new ArrayList<>(bottom);
-            java.util.Collections.reverse(reversedBottom);
-            extrudedFaces.add(new Face3D(reversedBottom));
-        }
-    }
+    //         // For the bottom face, reverse the order to maintain consistent normal direction (e.g., if top is CCW, bottom should be CW)
+    //         List<Point3D> reversedBottom = new ArrayList<>(bottom);
+    //         java.util.Collections.reverse(reversedBottom);
+    //         extrudedFaces.add(new Face3D(reversedBottom));
+    //     }
+    // }
 }

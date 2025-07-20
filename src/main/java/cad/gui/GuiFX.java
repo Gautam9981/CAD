@@ -451,8 +451,8 @@ public class GuiFX extends Application {
             createButton("Sketch Point", e -> sketchPoint()),
             createButton("Sketch Line", e -> sketchLine()),
             createButton("Sketch Circle", e -> sketchCircle()),
-            createButton("Sketch Polygon", e -> sketchPolygon()),
-            createButton("Extrude Sketch", e -> extrudeSketch())
+            createButton("Sketch Polygon", e -> sketchPolygon())
+            // createButton("Extrude Sketch", e -> extrudeSketch())
         );
 
         ScrollPane scrollPane = new ScrollPane(commandsBox);
@@ -1706,48 +1706,48 @@ public class GuiFX extends Application {
      * Extrudes the current 2D sketch into a 3D shape.
      * Opens a dialog to get the extrusion height from the user.
      */
-    private void extrudeSketch() {
-        // Check if sketch has any closed loops (polygons)
-        if (!sketch.isClosedLoop()) {
-            appendOutput("Error: Sketch must contain at least one polygon to extrude.");
-            appendOutput("Tip: Use 'Sketch Polygon' button to create polygons first.");
-            return;
-        }
+    // private void extrudeSketch() {
+    //     // Check if sketch has any closed loops (polygons)
+    //     if (!sketch.isClosedLoop()) {
+    //         appendOutput("Error: Sketch must contain at least one polygon to extrude.");
+    //         appendOutput("Tip: Use 'Sketch Polygon' button to create polygons first.");
+    //         return;
+    //     }
 
-        // Create a dialog to get the extrusion height
-        TextInputDialog dialog = new TextInputDialog("10.0");
-        dialog.setTitle("Extrude Sketch");
-        dialog.setHeaderText("Extrude 2D Sketch into 3D");
-        dialog.setContentText("Enter extrusion height:");
+    //     // Create a dialog to get the extrusion height
+    //     TextInputDialog dialog = new TextInputDialog("10.0");
+    //     dialog.setTitle("Extrude Sketch");
+    //     dialog.setHeaderText("Extrude 2D Sketch into 3D");
+    //     dialog.setContentText("Enter extrusion height:");
 
-        // Show dialog and process result
-        Optional<String> result = dialog.showAndWait();
-        if (result.isPresent()) {
-            try {
-                float height = Float.parseFloat(result.get());
-                if (height <= 0) {
-                    appendOutput("Error: Extrusion height must be greater than 0.");
-                    return;
-                }
+    //     // Show dialog and process result
+    //     Optional<String> result = dialog.showAndWait();
+    //     if (result.isPresent()) {
+    //         try {
+    //             float height = Float.parseFloat(result.get());
+    //             if (height <= 0) {
+    //                 appendOutput("Error: Extrusion height must be greater than 0.");
+    //                 return;
+    //             }
 
-                // Perform the extrusion
-                Geometry.extrude(sketch, height);
+    //             // Perform the extrusion
+    //             Geometry.extrude(sketch, height);
                 
-                appendOutput("Successfully extruded sketch with height " + height);
-                appendOutput("Switching to 3D view to show extruded geometry.");
+    //             appendOutput("Successfully extruded sketch with height " + height);
+    //             appendOutput("Switching to 3D view to show extruded geometry.");
                 
-                // Switch to 3D view to show the result
-                glRenderer.setShowSketch(false);
-                glCanvas.repaint();
-                glCanvas.requestFocusInWindow();
+    //             // Switch to 3D view to show the result
+    //             glRenderer.setShowSketch(false);
+    //             glCanvas.repaint();
+    //             glCanvas.requestFocusInWindow();
                 
-            } catch (NumberFormatException e) {
-                appendOutput("Error: Invalid height value. Please provide a numeric value.");
-            } catch (Exception e) {
-                appendOutput("Error during extrusion: " + e.getMessage());
-            }
-        }
-    }
+    //         } catch (NumberFormatException e) {
+    //             appendOutput("Error: Invalid height value. Please provide a numeric value.");
+    //         } catch (Exception e) {
+    //             appendOutput("Error during extrusion: " + e.getMessage());
+    //         }
+    //     }
+    // }
 
     /**
      * Main method to launch the JavaFX application.
