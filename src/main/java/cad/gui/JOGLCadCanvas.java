@@ -418,9 +418,15 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
             // Apply this color to both ambient and diffuse material properties.
             gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_AMBIENT_AND_DIFFUSE, objectColor, 0);
 
-            // --- Render the Currently Selected 3D Object ---
-            // Use the unified drawCurrentShape method which handles all shape types
-            Geometry.drawCurrentShape(gl);
+            // --- Render 3D Geometry ---
+            // Check if we have extruded geometry from the sketch to render
+            if (!sketch.extrudedFaces.isEmpty()) {
+                // Render the extruded 3D geometry from the sketch
+                sketch.draw3D(gl);
+            } else {
+                // Render the default 3D shapes (cube, sphere, STL) if no extruded geometry
+                Geometry.drawCurrentShape(gl);
+            }
         } else { // If in 2D sketch view mode
             // --- Set up for 2D Sketch Rendering ---
             gl.glPushMatrix(); // Save the current modelview matrix before applying 2D-specific transforms.

@@ -46,4 +46,4 @@ public class Main {
         }
         // Scanner is automatically closed here due to try-with-resources
     }
-}
+} 

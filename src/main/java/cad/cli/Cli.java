@@ -29,7 +29,7 @@ public class Cli {
      * Prints welcome message and enters the command input loop.
      */
     public static void launch() {
-        System.out.println("Welcome to CAD CLI v1.0 (BETA)");
+        System.out.println("Welcome to CAD CLI v2.5.0");
         System.out.println("Running Cli mode...");
         runCli();
     }
@@ -148,6 +148,11 @@ public class Cli {
                             sketchList();
                             break;
 
+                        case "extrude":
+                        case "ext":
+                            extrudeRedirectToGUI();
+                            break;
+
                         case "load":
                             loadFile(argsArray);
                             break;
@@ -194,6 +199,7 @@ public class Cli {
         System.out.println("  sketch_polygon <x1> <y1> <x2> <y2> ... <xn> <yn> - Add polygon from explicit points (3-25 points)");
         System.out.println("  sketch_clear                - Clear sketch");
         System.out.println("  sketch_list                 - List all sketch entities");
+        System.out.println("  extrude                     - View extrusion info (use GUI for better experience)");
         System.out.println("  export_dxf <filename>       - Export sketch to DXF");
         System.out.println("  units <mm|cm|m|in|ft>       - Set units");
         System.out.println("  help (h), version (v), exit (e)");
@@ -459,6 +465,34 @@ public class Cli {
      */
     private static void sketchList() {
         sketch.listSketch();
+    }
+
+    /**
+     * Displays information about extrusion and redirects users to the GUI for better experience.
+     * The CLI no longer supports extrusion functionality as it's better suited for the GUI.
+     */
+    private static void extrudeRedirectToGUI() {
+        System.out.println("==========================================");
+        System.out.println("           EXTRUSION NOTICE");
+        System.out.println("==========================================");
+        System.out.println();
+        System.out.println("Extrusion functionality has been moved to the GUI for a better user experience.");
+        System.out.println();
+        System.out.println("The GUI provides:");
+        System.out.println("  • Real-time 3D visualization of extruded geometry");
+        System.out.println("  • Interactive controls for extrusion height");
+        System.out.println("  • Support for extruding circles, polygons, and other shapes");
+        System.out.println("  • Immediate visual feedback during the extrusion process");
+        System.out.println("  • Better handling of complex DXF files with multiple entities");
+        System.out.println();
+        System.out.println("To use extrusion:");
+        System.out.println("  1. Export your sketch to DXF: export_dxf mysketch.dxf");
+        System.out.println("  2. Run the GUI application");
+        System.out.println("  3. Load your DXF file in the GUI");
+        System.out.println("  4. Use the 'Extrude Sketch' button for 3D extrusion");
+        System.out.println();
+        System.out.println("Thank you for understanding!");
+        System.out.println("==========================================");
     }
 
     /**
