@@ -187,7 +187,7 @@ public class Sketch {
 
     // New fields to resolve errors
     public final List < Polygon > polygons = new ArrayList < > (); // To store only Polygon entities for extrusion
-    // public List <Face3D> extrudedFaces = new ArrayList < > (); // To store the result of extrusion
+    public List<Face3D> extrudedFaces = new ArrayList < > (); // To store the result of extrusion
     // End of new fields
 
     /**
@@ -294,7 +294,7 @@ public class Sketch {
     public void clearSketch() {
         sketchEntities.clear();
         polygons.clear(); // Clear polygons list as well
-        // extrudedFaces.clear(); // Clear extruded faces
+        extrudedFaces.clear(); // Clear extruded faces
     }
 
     /**
@@ -325,13 +325,13 @@ public class Sketch {
     }
 
     /**
-     * Checks if the sketch forms a closed loop.
-     * A closed loop is defined as having at least one polygon entity.
-     * @return true if sketch contains closed shapes (polygons), false otherwise.
+     * Checks if the sketch contains extrudable shapes.
+     * Extrudable shapes include polygons and circles.
+     * @return true if sketch contains extrudable shapes (polygons or circles), false otherwise.
      */
     public boolean isClosedLoop() {
         for (Entity entity : sketchEntities) {
-            if (entity instanceof Polygon) {
+            if (entity instanceof Polygon || entity instanceof Circle) {
                 return true;
             }
         }
@@ -907,6 +907,153 @@ public class Sketch {
     }
 
     /**
+     * Renders extruded 3D faces using OpenGL.
+     * This method renders the 3D geometry created by the extrude operation.
+     * It converts Face3D objects to triangles and renders them with proper lighting.
+     *
+     * @param gl The GL2 object (OpenGL context) used for drawing.
+     */
+    public void draw3D(GL2 gl) {
+        if (extrudedFaces.isEmpty()) {
+            return; // Nothing to render
+        }
+
+        // Set material properties for extruded geometry
+        float[] materialAmbient = {0.2f, 0.4f, 0.6f, 1.0f}; // Blue-ish ambient
+        float[] materialDiffuse = {0.4f, 0.6f, 0.8f, 1.0f}; // Blue-ish diffuse
+        float[] materialSpecular = {0.8f, 0.8f, 0.8f, 1.0f}; // White specular
+        gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_AMBIENT, materialAmbient, 0);
+        gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_DIFFUSE, materialDiffuse, 0);
+        gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_SPECULAR, materialSpecular, 0);
+        gl.glMaterialf(GL2.GL_FRONT, GL2.GL_SHININESS, 60.0f);
+
+        // Render each face
+        for (Face3D face : extrudedFaces) {
+            renderFace3D(gl, face);
+        }
+    }
+
+    /**
+     * Renders a single Face3D object as triangles.
+     * Uses triangle fan tessellation for faces with more than 3 vertices.
+     *
+     * @param gl The GL2 object for OpenGL rendering.
+     * @param face The Face3D object to render.
+     */
+    private void renderFace3D(GL2 gl, Face3D face) {
+        List<Point3D> vertices = face.getVertices();
+        int numVertices = vertices.size();
+
+        if (numVertices < 3) {
+            return; // Cannot render face with less than 3 vertices
+        }
+
+        if (numVertices == 3) {
+            // Triangle - render directly
+            gl.glBegin(GL2.GL_TRIANGLES);
+            
+            Point3D p1 = vertices.get(0);
+            Point3D p2 = vertices.get(1);
+            Point3D p3 = vertices.get(2);
+            
+            // Calculate and set normal
+            float[] normal = calculateFaceNormal(p1, p2, p3);
+            gl.glNormal3f(normal[0], normal[1], normal[2]);
+            
+            gl.glVertex3f(p1.getX(), p1.getY(), p1.getZ());
+            gl.glVertex3f(p2.getX(), p2.getY(), p2.getZ());
+            gl.glVertex3f(p3.getX(), p3.getY(), p3.getZ());
+            
+            gl.glEnd();
+        } else if (numVertices == 4) {
+            // Quad - render as two triangles
+            gl.glBegin(GL2.GL_TRIANGLES);
+            
+            Point3D p1 = vertices.get(0);
+            Point3D p2 = vertices.get(1);
+            Point3D p3 = vertices.get(2);
+            Point3D p4 = vertices.get(3);
+            
+            // First triangle: p1, p2, p3
+            float[] normal1 = calculateFaceNormal(p1, p2, p3);
+            gl.glNormal3f(normal1[0], normal1[1], normal1[2]);
+            gl.glVertex3f(p1.getX(), p1.getY(), p1.getZ());
+            gl.glVertex3f(p2.getX(), p2.getY(), p2.getZ());
+            gl.glVertex3f(p3.getX(), p3.getY(), p3.getZ());
+            
+            // Second triangle: p1, p3, p4
+            float[] normal2 = calculateFaceNormal(p1, p3, p4);
+            gl.glNormal3f(normal2[0], normal2[1], normal2[2]);
+            gl.glVertex3f(p1.getX(), p1.getY(), p1.getZ());
+            gl.glVertex3f(p3.getX(), p3.getY(), p3.getZ());
+            gl.glVertex3f(p4.getX(), p4.getY(), p4.getZ());
+            
+            gl.glEnd();
+        } else {
+            // General polygon - use triangle fan
+            gl.glBegin(GL2.GL_TRIANGLES);
+            
+            Point3D center = vertices.get(0); // Use first vertex as fan center
+            
+            for (int i = 1; i < numVertices - 1; i++) {
+                Point3D p1 = center;
+                Point3D p2 = vertices.get(i);
+                Point3D p3 = vertices.get(i + 1);
+                
+                // Calculate and set normal for this triangle
+                float[] normal = calculateFaceNormal(p1, p2, p3);
+                gl.glNormal3f(normal[0], normal[1], normal[2]);
+                
+                gl.glVertex3f(p1.getX(), p1.getY(), p1.getZ());
+                gl.glVertex3f(p2.getX(), p2.getY(), p2.getZ());
+                gl.glVertex3f(p3.getX(), p3.getY(), p3.getZ());
+            }
+            
+            gl.glEnd();
+        }
+    }
+
+    /**
+     * Calculates the normal vector for a triangular face defined by three 3D points.
+     * Uses the cross product of two edge vectors.
+     *
+     * @param p1 First vertex of the triangle.
+     * @param p2 Second vertex of the triangle.
+     * @param p3 Third vertex of the triangle.
+     * @return Normal vector as a float array [nx, ny, nz].
+     */
+    private float[] calculateFaceNormal(Point3D p1, Point3D p2, Point3D p3) {
+        // Calculate two edge vectors
+        float ex1 = p2.getX() - p1.getX();
+        float ey1 = p2.getY() - p1.getY();
+        float ez1 = p2.getZ() - p1.getZ();
+        
+        float ex2 = p3.getX() - p1.getX();
+        float ey2 = p3.getY() - p1.getY();
+        float ez2 = p3.getZ() - p1.getZ();
+        
+        // Calculate cross product
+        float nx = ey1 * ez2 - ez1 * ey2;
+        float ny = ez1 * ex2 - ex1 * ez2;
+        float nz = ex1 * ey2 - ey1 * ex2;
+        
+        // Normalize the normal vector
+        float length = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+        if (length > 0.001f) { // Avoid division by zero
+            nx /= length;
+            ny /= length;
+            nz /= length;
+        } else {
+            // Default normal if calculation fails
+            nx = 0.0f;
+            ny = 0.0f;
+            nz = 1.0f;
+        }
+        
+        return new float[]{nx, ny, nz};
+    }
+
+    /**
      * Renders all entities in the sketch using OpenGL.
      * This method is designed to be called by JOGLCadCanvas's `display` method
      * when the 2D sketch view is active. It iterates through the `sketchEntities`
@@ -955,41 +1102,109 @@ public class Sketch {
             }
         }
     }
-    // public void extrude(double height) {
-    //     // Clear previous extruded faces
-    //     this.extrudedFaces.clear();
+    /**
+     * Extrudes all closed shapes in the sketch to create 3D faces.
+     * Handles polygons, circles, and potentially connected line loops.
+     * Creates side faces, top faces, and bottom faces for each extrudable shape.
+     * @param height The height of the extrusion in the Z direction.
+     */
+    public void extrude(double height) {
+        // Clear previous extruded faces
+        this.extrudedFaces.clear();
 
-    //     for (Polygon polygon: this.polygons) { // Use the dedicated polygons list
-    //         List < Point2D > points = polygon.getPoints(); // Call the new getPoints() method
-    //         int n = points.size();
+        // Extrude existing polygons (POLYLINE entities from DXF)
+        for (Polygon polygon: this.polygons) {
+            extrudePolygon(polygon, height);
+        }
+        
+        // Extrude circles as cylindrical shapes
+        for (Entity entity : sketchEntities) {
+            if (entity instanceof Circle) {
+                Circle circle = (Circle) entity;
+                extrudeCircle(circle, height);
+            }
+        }
+        
+        // TODO: Add logic to detect and extrude closed loops formed by connected lines
+        // This would handle cases where multiple LINE entities form a closed shape
+    }
+    
+    /**
+     * Extrudes a single polygon to create 3D faces.
+     * @param polygon The polygon to extrude
+     * @param height The extrusion height
+     */
+    private void extrudePolygon(Polygon polygon, double height) {
+        List < Point2D > points = polygon.getPoints();
+        int n = points.size();
 
-    //         List < Point3D > bottom = points.stream()
-    //             .map(p -> new Point3D(p.getX(), p.getY(), 0))
-    //             .toList();
+        List < Point3D > bottom = points.stream()
+            .map(p -> new Point3D(p.getX(), p.getY(), 0))
+            .toList();
 
-    //         List < Point3D > top = points.stream()
-    //             .map(p -> new Point3D(p.getX(), p.getY(), (float)height)) // Cast height to float
-    //             .toList();
+        List < Point3D > top = points.stream()
+            .map(p -> new Point3D(p.getX(), p.getY(), (float)height))
+            .toList();
 
-    //         // Side faces
-    //         for (int i = 0; i < n; i++) {
-    //             Point3D p1 = bottom.get(i);
-    //             Point3D p2 = bottom.get((i + 1) % n);
-    //             Point3D p3 = top.get((i + 1) % n);
-    //             Point3D p4 = top.get(i);
+        // Side faces
+        for (int i = 0; i < n; i++) {
+            Point3D p1 = bottom.get(i);
+            Point3D p2 = bottom.get((i + 1) % n);
+            Point3D p3 = top.get((i + 1) % n);
+            Point3D p4 = top.get(i);
 
-    //             extrudedFaces.add(new Face3D(p1, p2, p3, p4));
-    //         }
+            extrudedFaces.add(new Face3D(p1, p2, p3, p4));
+        }
 
-    //         // Top and bottom faces
-    //         // For top and bottom faces, ensure points are ordered consistently (e.g., all clockwise or all counter-clockwise)
-    //         // The `Face3D` constructor taking a list of points assumes they form a valid polygon.
-    //         extrudedFaces.add(new Face3D(top));
+        // Top and bottom faces
+        extrudedFaces.add(new Face3D(top));
+        
+        List<Point3D> reversedBottom = new ArrayList<>(bottom);
+        java.util.Collections.reverse(reversedBottom);
+        extrudedFaces.add(new Face3D(reversedBottom));
+    }
+    
+    /**
+     * Extrudes a circle to create a cylindrical shape.
+     * @param circle The circle to extrude
+     * @param height The extrusion height
+     */
+    private void extrudeCircle(Circle circle, double height) {
+        int segments = 32; // Number of segments to approximate the circle
+        List<Point2D> circlePoints = new ArrayList<>();
+        
+        // Generate points around the circle
+        for (int i = 0; i < segments; i++) {
+            double angle = 2.0 * Math.PI * i / segments;
+            float x = circle.x + circle.r * (float) Math.cos(angle);
+            float y = circle.y + circle.r * (float) Math.sin(angle);
+            circlePoints.add(new Point2D(x, y));
+        }
+        
+        // Create bottom and top point lists
+        List<Point3D> bottom = circlePoints.stream()
+            .map(p -> new Point3D(p.getX(), p.getY(), 0))
+            .toList();
             
-    //         // For the bottom face, reverse the order to maintain consistent normal direction (e.g., if top is CCW, bottom should be CW)
-    //         List<Point3D> reversedBottom = new ArrayList<>(bottom);
-    //         java.util.Collections.reverse(reversedBottom);
-    //         extrudedFaces.add(new Face3D(reversedBottom));
-    //     }
-    // }
+        List<Point3D> top = circlePoints.stream()
+            .map(p -> new Point3D(p.getX(), p.getY(), (float)height))
+            .toList();
+        
+        // Create side faces (cylindrical surface)
+        for (int i = 0; i < segments; i++) {
+            Point3D p1 = bottom.get(i);
+            Point3D p2 = bottom.get((i + 1) % segments);
+            Point3D p3 = top.get((i + 1) % segments);
+            Point3D p4 = top.get(i);
+            
+            extrudedFaces.add(new Face3D(p1, p2, p3, p4));
+        }
+        
+        // Create top and bottom circular faces
+        extrudedFaces.add(new Face3D(top));
+        
+        List<Point3D> reversedBottom = new ArrayList<>(bottom);
+        java.util.Collections.reverse(reversedBottom);
+        extrudedFaces.add(new Face3D(reversedBottom));
+    }
 }

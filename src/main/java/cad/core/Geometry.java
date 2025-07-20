@@ -13,6 +13,9 @@ import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.glu.GLUquadric;
 
+// GUI import to access sketch data
+import cad.gui.GuiFX;
+
 /**
  * Core geometry engine for 3D shape creation, STL file operations, and model management.
  * Provides procedural generation of cubes and spheres, STL import/export, and rendering support.
@@ -28,8 +31,8 @@ public class Geometry {
         NONE,
         CUBE,
         SPHERE,
-        STL_LOADED // Added for loaded STL models
-        // EXTRUDED    // Added for extruded sketches
+        STL_LOADED, // Added for loaded STL models
+        EXTRUDED    // Added for extruded sketches
     }
 
     private static Shape currShape = Shape.NONE;       // Currently active shape
@@ -37,7 +40,7 @@ public class Geometry {
     public static int cubeDivisions = 1;                // Cube subdivisions per edge
     public static int sphereLatDiv = 30;                // Sphere latitude divisions
     public static int sphereLonDiv = 30;                // Sphere longitude divisions
-    // private static List<float[]> extrudedTriangles = new ArrayList<>(); // Extruded geometry storage
+    private static List<float[]> extrudedTriangles = new ArrayList<>(); // Extruded geometry storage
 
     /**
      * Triangle data from loaded STL files. Each array contains:
@@ -73,9 +76,9 @@ public class Geometry {
      * Gets triangles from extruded sketch for rendering.
      * @return List of triangle arrays with format [nx, ny, nz, v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z]
      */
-    // public static List<float[]> getExtrudedTriangles() {
-    //     return extrudedTriangles;
-    // }
+    public static List<float[]> getExtrudedTriangles() {
+        return extrudedTriangles;
+    }
 
     /**
      * Calculates maximum dimension of current model for auto-scaling views.
@@ -649,7 +652,10 @@ public class Geometry {
      * @throws IOException if file writing fails
      */
     public static void saveStl(String filename) throws IOException {
-        if (currShape == Shape.NONE /* && extrudedTriangles.isEmpty() */) {
+        // Check if we have extruded faces available from GuiFX.sketch
+        boolean hasExtrudedGeometry = GuiFX.sketch != null && !GuiFX.sketch.extrudedFaces.isEmpty();
+        
+        if (currShape == Shape.NONE && !hasExtrudedGeometry) {
             System.out.println("No shape created yet");
             return;
         }
@@ -657,17 +663,17 @@ public class Geometry {
         try (PrintWriter out = new PrintWriter(new FileWriter(filename))) {
             out.println("solid shape");
 
-            if (currShape == Shape.CUBE) {
+            if (hasExtrudedGeometry) {
+                // Export extruded geometry directly from the sketch
+                writeExtrudedSketchToStl(out, GuiFX.sketch);
+            } else if (currShape == Shape.CUBE) {
                 generateCubeStl(out, param, cubeDivisions);
             } else if (currShape == Shape.SPHERE) {
                 generateSphereStl(out, param, sphereLatDiv, sphereLonDiv);
             } else if (currShape == Shape.STL_LOADED && !loadedStlTriangles.isEmpty()) {
                 // If a loaded STL is the current shape, just write its triangles back out
                 writeLoadedStlTriangles(out);
-            } // else if (currShape == Shape.EXTRUDED && !extrudedTriangles.isEmpty()) {
-                // Export extruded geometry
-            //     writeExtrudedTriangles(out);
-            // }
+            }
 
             out.println("endsolid shape");
         }
@@ -698,16 +704,61 @@ public class Geometry {
      *
      * @param out PrintWriter to write STL data.
      */
-    // private static void writeExtrudedTriangles(PrintWriter out) {
-    //     for (float[] triData : extrudedTriangles) {
-    //         // triData format: [nx, ny, nz, v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z]
-    //         writeTriangle(out,
-    //                 triData[0], triData[1], triData[2], // Normal
-    //                 triData[3], triData[4], triData[5], // V1
-    //                 triData[6], triData[7], triData[8], // V2
-    //                 triData[9], triData[10], triData[11]);// V3
-    //     }
-    // }
+    /**
+     * Writes extruded sketch geometry directly to STL format.
+     * Takes the Face3D objects from the sketch and converts them to triangles.
+     *
+     * @param out PrintWriter to write STL data.
+     * @param sketch The sketch containing extruded faces.
+     */
+    private static void writeExtrudedSketchToStl(PrintWriter out, Sketch sketch) {
+        int triangleCount = 0;
+        
+        for (Sketch.Face3D face : sketch.extrudedFaces) {
+            List<Sketch.Point3D> vertices = face.getVertices();
+            int numVertices = vertices.size();
+            
+            if (numVertices < 3) {
+                System.err.println("Warning: Skipping face with less than 3 vertices.");
+                continue;
+            }
+            
+            if (numVertices == 3) {
+                // Already a triangle - write directly
+                writeTriangleFromPoints(out, vertices.get(0), vertices.get(1), vertices.get(2));
+                triangleCount++;
+            } else {
+                // Triangle fan: connect all vertices to the first vertex
+                for (int i = 1; i < numVertices - 1; i++) {
+                    writeTriangleFromPoints(out, vertices.get(0), vertices.get(i), vertices.get(i + 1));
+                    triangleCount++;
+                }
+            }
+        }
+        
+        System.out.println("Wrote " + triangleCount + " triangles from extruded sketch to STL.");
+    }
+    
+    /**
+     * Helper method to write a triangle to STL from three Point3D objects.
+     * Calculates the normal automatically.
+     *
+     * @param out PrintWriter to write STL data.
+     * @param p1 First vertex
+     * @param p2 Second vertex
+     * @param p3 Third vertex
+     */
+    private static void writeTriangleFromPoints(PrintWriter out, Sketch.Point3D p1, Sketch.Point3D p2, Sketch.Point3D p3) {
+        // Calculate normal vector using cross product
+        float[] normal = calculateTriangleNormal(p1, p2, p3);
+        
+        // Write triangle to STL
+        writeTriangle(out,
+            normal[0], normal[1], normal[2], // Normal
+            p1.getX(), p1.getY(), p1.getZ(), // V1
+            p2.getX(), p2.getY(), p2.getZ(), // V2
+            p3.getX(), p3.getY(), p3.getZ());// V3
+    }
 
 
     /**
