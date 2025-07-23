@@ -2,7 +2,9 @@ package cad.core;
 
 import com.jogamp.opengl.GL2;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -1125,8 +1127,11 @@ public class Sketch {
             }
         }
         
-        // TODO: Add logic to detect and extrude closed loops formed by connected lines
-        // This would handle cases where multiple LINE entities form a closed shape
+        // Detect and extrude closed loops formed by connected lines
+        List<List<Point2D>> closedLoops = findClosedLoopsFromLines();
+        for (List<Point2D> loop : closedLoops) {
+            extrudeClosedLoop(loop, height);
+        }
     }
     
     /**
@@ -1206,5 +1211,222 @@ public class Sketch {
         List<Point3D> reversedBottom = new ArrayList<>(bottom);
         java.util.Collections.reverse(reversedBottom);
         extrudedFaces.add(new Face3D(reversedBottom));
+    }
+    
+    /**
+     * Finds closed loops formed by connected lines in the sketch.
+     * This method analyzes all Line entities and attempts to find sequences
+     * of connected lines that form closed polygonal shapes.
+     * @return A list of closed loops, where each loop is a list of points
+     */
+    private List<List<Point2D>> findClosedLoopsFromLines() {
+        List<List<Point2D>> closedLoops = new ArrayList<>();
+        List<Line> lines = new ArrayList<>();
+        
+        // Collect all line entities
+        for (Entity entity : sketchEntities) {
+            if (entity instanceof Line) {
+                lines.add((Line) entity);
+            }
+        }
+        
+        if (lines.isEmpty()) {
+            return closedLoops;
+        }
+        
+        // Track which lines have been used
+        Set<Line> usedLines = new HashSet<>();
+        
+        // Try to build closed loops starting from each unused line
+        for (Line startLine : lines) {
+            if (usedLines.contains(startLine)) {
+                continue;
+            }
+            
+            List<Point2D> currentLoop = new ArrayList<>();
+            Set<Line> currentLoopLines = new HashSet<>();
+            
+            // Start the loop
+            currentLoop.add(new Point2D(startLine.x1, startLine.y1));
+            currentLoop.add(new Point2D(startLine.x2, startLine.y2));
+            currentLoopLines.add(startLine);
+            
+            Point2D currentEndPoint = new Point2D(startLine.x2, startLine.y2);
+            Point2D startPoint = new Point2D(startLine.x1, startLine.y1);
+            
+            boolean foundConnection = true;
+            while (foundConnection) {
+                foundConnection = false;
+                
+                // Look for a line that connects to our current end point
+                for (Line nextLine : lines) {
+                    if (currentLoopLines.contains(nextLine)) {
+                        continue;
+                    }
+                    
+                    Point2D nextStart = new Point2D(nextLine.x1, nextLine.y1);
+                    Point2D nextEnd = new Point2D(nextLine.x2, nextLine.y2);
+                    
+                    // Check if this line connects to our current end point
+                    if (isPointsEqual(currentEndPoint, nextStart)) {
+                        currentLoop.add(nextEnd);
+                        currentLoopLines.add(nextLine);
+                        currentEndPoint = nextEnd;
+                        foundConnection = true;
+                        break;
+                    } else if (isPointsEqual(currentEndPoint, nextEnd)) {
+                        currentLoop.add(nextStart);
+                        currentLoopLines.add(nextLine);
+                        currentEndPoint = nextStart;
+                        foundConnection = true;
+                        break;
+                    }
+                }
+            }
+            
+            // Check if we have a closed loop (end point connects back to start)
+            if (currentLoop.size() >= 3 && isPointsEqual(currentEndPoint, startPoint)) {
+                // Remove the duplicate end point
+                currentLoop.remove(currentLoop.size() - 1);
+                closedLoops.add(currentLoop);
+                usedLines.addAll(currentLoopLines);
+            }
+        }
+        
+        return closedLoops;
+    }
+    
+    /**
+     * Helper method to check if two points are equal within a small tolerance.
+     * @param p1 First point
+     * @param p2 Second point
+     * @return true if points are equal within tolerance
+     */
+    private boolean isPointsEqual(Point2D p1, Point2D p2) {
+        float tolerance = 1e-6f;
+        return Math.abs(p1.getX() - p2.getX()) < tolerance && 
+               Math.abs(p1.getY() - p2.getY()) < tolerance;
+    }
+    
+    /**
+     * Extrudes a closed loop of points to create 3D faces.
+     * This method treats the loop as a polygon and creates the corresponding
+     * 3D geometry including side faces, top face, and bottom face.
+     * @param loop The closed loop of points to extrude
+     * @param height The extrusion height
+     */
+    private void extrudeClosedLoop(List<Point2D> loop, double height) {
+        if (loop.size() < 3) {
+            return; // Need at least 3 points for a valid polygon
+        }
+        
+        int n = loop.size();
+        
+        // Create bottom and top point lists
+        List<Point3D> bottom = loop.stream()
+            .map(p -> new Point3D(p.getX(), p.getY(), 0))
+            .toList();
+            
+        List<Point3D> top = loop.stream()
+            .map(p -> new Point3D(p.getX(), p.getY(), (float)height))
+            .toList();
+        
+        // Create side faces
+        for (int i = 0; i < n; i++) {
+            Point3D p1 = bottom.get(i);
+            Point3D p2 = bottom.get((i + 1) % n);
+            Point3D p3 = top.get((i + 1) % n);
+            Point3D p4 = top.get(i);
+            
+            extrudedFaces.add(new Face3D(p1, p2, p3, p4));
+        }
+        
+        // Create top and bottom faces
+        extrudedFaces.add(new Face3D(top));
+        
+        List<Point3D> reversedBottom = new ArrayList<>(bottom);
+        java.util.Collections.reverse(reversedBottom);
+        extrudedFaces.add(new Face3D(reversedBottom));
+    }
+    
+    /**
+     * Converts extruded 3D faces to triangles for OpenGL rendering.
+     * Each face is triangulated and returned as an array of float values
+     * compatible with STL triangle format (normal + 3 vertices).
+     * @return List of triangle arrays for OpenGL rendering
+     */
+    public List<float[]> getExtrudedTriangles() {
+        List<float[]> triangles = new ArrayList<>();
+        
+        for (Face3D face : extrudedFaces) {
+            // Triangulate the face (convert n-sided face to triangles)
+            List<float[]> faceTriangles = triangulateFace(face);
+            triangles.addAll(faceTriangles);
+        }
+        
+        return triangles;
+    }
+    
+    /**
+     * Triangulates a 3D face into triangles for rendering.
+     * Uses fan triangulation for faces with more than 3 vertices.
+     * @param face The face to triangulate
+     * @return List of triangles representing the face
+     */
+    private List<float[]> triangulateFace(Face3D face) {
+        List<float[]> triangles = new ArrayList<>();
+        List<Point3D> vertices = face.vertices;
+        
+        if (vertices.size() < 3) {
+            return triangles; // Cannot create triangles from less than 3 vertices
+        }
+        
+        if (vertices.size() == 3) {
+            // Already a triangle
+            triangles.add(createTriangle(vertices.get(0), vertices.get(1), vertices.get(2)));
+        } else {
+            // Fan triangulation: connect all vertices to the first vertex
+            Point3D center = vertices.get(0);
+            for (int i = 1; i < vertices.size() - 1; i++) {
+                triangles.add(createTriangle(center, vertices.get(i), vertices.get(i + 1)));
+            }
+        }
+        
+        return triangles;
+    }
+    
+    /**
+     * Creates a triangle array from three 3D points.
+     * Calculates the normal vector and formats as STL triangle.
+     * @param p1 First vertex
+     * @param p2 Second vertex  
+     * @param p3 Third vertex
+     * @return Triangle array [nx, ny, nz, x1, y1, z1, x2, y2, z2, x3, y3, z3]
+     */
+    private float[] createTriangle(Point3D p1, Point3D p2, Point3D p3) {
+        // Calculate normal vector using cross product
+        float[] v1 = {p2.x - p1.x, p2.y - p1.y, p2.z - p1.z};
+        float[] v2 = {p3.x - p1.x, p3.y - p1.y, p3.z - p1.z};
+        
+        // Cross product: v1 × v2
+        float nx = v1[1] * v2[2] - v1[2] * v2[1];
+        float ny = v1[2] * v2[0] - v1[0] * v2[2];
+        float nz = v1[0] * v2[1] - v1[1] * v2[0];
+        
+        // Normalize the normal vector
+        float length = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+        if (length > 0) {
+            nx /= length;
+            ny /= length;
+            nz /= length;
+        }
+        
+        // Return triangle in STL format: normal + 3 vertices
+        return new float[] {
+            nx, ny, nz,           // Normal vector
+            p1.x, p1.y, p1.z,     // Vertex 1
+            p2.x, p2.y, p2.z,     // Vertex 2
+            p3.x, p3.y, p3.z      // Vertex 3
+        };
     }
 }

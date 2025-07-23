@@ -16,14 +16,15 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.control.SplitPane; // Explicitly import SplitPane
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window; // Import Window
 
@@ -56,6 +57,7 @@ import com.jogamp.opengl.util.FPSAnimator;
 
 // Project-specific imports
 import cad.core.Geometry;
+import cad.core.Point;
 import cad.core.Sketch;
 
 /**
@@ -451,8 +453,8 @@ public class GuiFX extends Application {
             createButton("Sketch Point", e -> sketchPoint()),
             createButton("Sketch Line", e -> sketchLine()),
             createButton("Sketch Circle", e -> sketchCircle()),
-            createButton("Sketch Polygon", e -> sketchPolygon())
-            // createButton("Extrude Sketch", e -> extrudeSketch())
+            createButton("Sketch Polygon", e -> sketchPolygon()),
+            createButton("Extrude Sketch", e -> extrudeSketch())
         );
 
         ScrollPane scrollPane = new ScrollPane(commandsBox);
@@ -1704,50 +1706,113 @@ public class GuiFX extends Application {
 
     /**
      * Extrudes the current 2D sketch into a 3D shape.
-     * Opens a dialog to get the extrusion height from the user.
+     * Opens a custom dialog window to get the extrusion height from the user.
      */
-    // private void extrudeSketch() {
-    //     // Check if sketch has any closed loops (polygons)
-    //     if (!sketch.isClosedLoop()) {
-    //         appendOutput("Error: Sketch must contain at least one polygon to extrude.");
-    //         appendOutput("Tip: Use 'Sketch Polygon' button to create polygons first.");
-    //         return;
-    //     }
+    private void extrudeSketch() {
+        // Check if sketch has any geometry to extrude
+        if (sketch.listSketch().isEmpty()) {
+            appendOutput("Error: Sketch is empty. Add some geometry first.");
+            appendOutput("Tip: Use sketch commands to create points, lines, circles, or polygons.");
+            return;
+        }
 
-    //     // Create a dialog to get the extrusion height
-    //     TextInputDialog dialog = new TextInputDialog("10.0");
-    //     dialog.setTitle("Extrude Sketch");
-    //     dialog.setHeaderText("Extrude 2D Sketch into 3D");
-    //     dialog.setContentText("Enter extrusion height:");
+        // Create a custom dialog window
+        Stage extrudeDialog = new Stage();
+        extrudeDialog.setTitle("Extrude Sketch");
+        extrudeDialog.initModality(Modality.APPLICATION_MODAL);
+        extrudeDialog.setResizable(false);
 
-    //     // Show dialog and process result
-    //     Optional<String> result = dialog.showAndWait();
-    //     if (result.isPresent()) {
-    //         try {
-    //             float height = Float.parseFloat(result.get());
-    //             if (height <= 0) {
-    //                 appendOutput("Error: Extrusion height must be greater than 0.");
-    //                 return;
-    //             }
+        // Create layout
+        VBox layout = new VBox(15);
+        layout.setPadding(new Insets(20));
+        layout.setAlignment(Pos.CENTER);
 
-    //             // Perform the extrusion
-    //             Geometry.extrude(sketch, height);
+        // Add title label
+        Label titleLabel = new Label("Extrude 2D Sketch into 3D");
+        titleLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px;");
+
+        // Add instruction label
+        Label instructionLabel = new Label("Enter the height for extrusion:");
+
+        // Create text field for height input
+        TextField heightField = new TextField("10.0");
+        heightField.setPrefWidth(150);
+        heightField.setPromptText("Height value");
+
+        // Create buttons
+        HBox buttonBox = new HBox(10);
+        buttonBox.setAlignment(Pos.CENTER);
+        
+        Button extrudeButton = new Button("Extrude");
+        Button cancelButton = new Button("Cancel");
+        
+        extrudeButton.setPrefWidth(80);
+        cancelButton.setPrefWidth(80);
+
+        buttonBox.getChildren().addAll(extrudeButton, cancelButton);
+
+        // Add all components to layout
+        layout.getChildren().addAll(titleLabel, instructionLabel, heightField, buttonBox);
+
+        // Set up button actions
+        extrudeButton.setOnAction(e -> {
+            try {
+                double height = Double.parseDouble(heightField.getText());
+                if (height <= 0) {
+                    appendOutput("Error: Extrusion height must be greater than 0.");
+                    return;
+                }
+
+                // Perform the extrusion using the sketch's built-in method
+                sketch.extrude(height);
                 
-    //             appendOutput("Successfully extruded sketch with height " + height);
-    //             appendOutput("Switching to 3D view to show extruded geometry.");
+                // Get the extruded faces and convert them to triangles for rendering
+                List<float[]> extrudedTriangles = sketch.getExtrudedTriangles();
                 
-    //             // Switch to 3D view to show the result
-    //             glRenderer.setShowSketch(false);
-    //             glCanvas.repaint();
-    //             glCanvas.requestFocusInWindow();
+                if (extrudedTriangles != null && !extrudedTriangles.isEmpty()) {
+                    // Set the extruded geometry for rendering
+                    glRenderer.setStlTriangles(extrudedTriangles);
+                    
+                    appendOutput("Successfully extruded sketch with height " + height);
+                    appendOutput("Generated " + extrudedTriangles.size() + " triangles from extrusion.");
+                    appendOutput("Switching to 3D view to show extruded geometry.");
+                    
+                    // Switch to 3D view to show the result
+                    glRenderer.setShowSketch(false);
+                    resetView(); // Reset view to fit the new geometry
+                    glCanvas.repaint();
+                    glCanvas.requestFocusInWindow();
+                } else {
+                    appendOutput("Warning: No extrudable geometry found in sketch.");
+                    appendOutput("Tip: Create polygons or circles to extrude into 3D shapes.");
+                }
                 
-    //         } catch (NumberFormatException e) {
-    //             appendOutput("Error: Invalid height value. Please provide a numeric value.");
-    //         } catch (Exception e) {
-    //             appendOutput("Error during extrusion: " + e.getMessage());
-    //         }
-    //     }
-    // }
+                extrudeDialog.close();
+                
+            } catch (NumberFormatException ex) {
+                appendOutput("Error: Invalid height value. Please enter a valid number.");
+            } catch (Exception ex) {
+                appendOutput("Error during extrusion: " + ex.getMessage());
+            }
+        });
+
+        cancelButton.setOnAction(e -> extrudeDialog.close());
+
+        // Allow Enter key to trigger extrude
+        heightField.setOnAction(e -> extrudeButton.fire());
+
+        // Create scene and show dialog
+        Scene scene = new Scene(layout, 300, 200);
+        extrudeDialog.setScene(scene);
+        
+        // Center the dialog on the main window
+        extrudeDialog.initOwner(outputArea.getScene().getWindow());
+        
+        // Focus on the text field when dialog opens
+        Platform.runLater(() -> heightField.requestFocus());
+        
+        extrudeDialog.showAndWait();
+    }
 
     /**
      * Main method to launch the JavaFX application.
