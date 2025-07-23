@@ -464,7 +464,15 @@ public class Cli {
      * Lists all entities currently in the sketch.
      */
     private static void sketchList() {
-        sketch.listSketch();
+        List<String> items = sketch.listSketch();
+        if (items.isEmpty()) {
+            System.out.println("Sketch is empty.");
+        } else {
+            System.out.println("Sketch contains:");
+            for (String item : items) {
+                System.out.println("  " + item);
+            }
+        }
     }
 
     /**

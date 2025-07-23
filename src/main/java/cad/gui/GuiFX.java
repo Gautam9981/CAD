@@ -451,8 +451,8 @@ public class GuiFX extends Application {
             createButton("Sketch Point", e -> sketchPoint()),
             createButton("Sketch Line", e -> sketchLine()),
             createButton("Sketch Circle", e -> sketchCircle()),
-            createButton("Sketch Polygon", e -> sketchPolygon()),
-            createButton("Extrude Sketch", e -> extrudeSketch())
+            createButton("Sketch Polygon", e -> sketchPolygon())
+            // createButton("Extrude Sketch", e -> extrudeSketch())
         );
 
         ScrollPane scrollPane = new ScrollPane(commandsBox);
@@ -640,11 +640,7 @@ public class GuiFX extends Application {
                 gl.glRotatef(rotationX, 1.0f, 0.0f, 0.0f);
                 gl.glRotatef(rotationY, 0.0f, 1.0f, 0.0f);
 
-                // Check if we have extruded geometry to render
-                if (!sketch.extrudedFaces.isEmpty()) {
-                    // Render the extruded 3D geometry from the sketch
-                    sketch.draw3D(gl);
-                } else if (stlTriangles != null) {
+                if (stlTriangles != null) {
                     renderStlTriangles(gl); // Render loaded STL triangles
                 } else {
                     renderDefaultCube(gl); // Render a default cube if no STL is loaded
@@ -1313,7 +1309,6 @@ public class GuiFX extends Application {
         appendOutput("   Sketch Line");
         appendOutput("   Sketch Circle");
         appendOutput("   Sketch Polygon");
-        appendOutput("   Extrude Sketch");
         appendOutput("   Version");
         appendOutput("   Exit");
         appendOutput("");
@@ -1692,76 +1687,18 @@ public class GuiFX extends Application {
      * then adds the polygon to the sketch and updates the view.
      */
     private void sketchPolygon() {
-        // Get text values and check which fields are empty or invalid
-        String xText = sketchPolygonX.getText().trim();
-        String yText = sketchPolygonY.getText().trim();
-        String rText = sketchPolygonR.getText().trim();
-        String sidesText = sketchPolygonSides.getText().trim();
-        
-        // Check for empty fields first
-        if (xText.isEmpty() || yText.isEmpty() || rText.isEmpty() || sidesText.isEmpty()) {
-            appendOutput("Error: All polygon fields must be filled:");
-            if (xText.isEmpty()) appendOutput("  - Polygon Center X is empty");
-            if (yText.isEmpty()) appendOutput("  - Polygon Center Y is empty");
-            if (rText.isEmpty()) appendOutput("  - Polygon Radius is empty");
-            if (sidesText.isEmpty()) appendOutput("  - Polygon Sides is empty");
-            appendOutput("Please enter values in all four polygon parameter fields.");
-            return;
-        }
-        
         try {
-            // Parse each field individually to give specific error messages
-            float x, y, r;
-            int sides;
-            
-            try {
-                x = Float.parseFloat(xText);
-            } catch (NumberFormatException e) {
-                appendOutput("Error: Invalid Polygon Center X value: '" + xText + "'. Please enter a decimal number (e.g., 0.0).");
-                return;
-            }
-            
-            try {
-                y = Float.parseFloat(yText);
-            } catch (NumberFormatException e) {
-                appendOutput("Error: Invalid Polygon Center Y value: '" + yText + "'. Please enter a decimal number (e.g., 0.0).");
-                return;
-            }
-            
-            try {
-                r = Float.parseFloat(rText);
-            } catch (NumberFormatException e) {
-                appendOutput("Error: Invalid Polygon Radius value: '" + rText + "'. Please enter a positive decimal number (e.g., 5.0).");
-                return;
-            }
-            
-            try {
-                sides = Integer.parseInt(sidesText);
-            } catch (NumberFormatException e) {
-                appendOutput("Error: Invalid Polygon Sides value: '" + sidesText + "'. Please enter an integer between 3 and 25 (e.g., 6).");
-                return;
-            }
-            
-            // Validate value ranges
-            if (r <= 0) {
-                appendOutput("Error: Polygon Radius must be greater than 0. Current value: " + r);
-                return;
-            }
-            
-            if (sides < 3 || sides > 25) {
-                appendOutput("Error: Polygon Sides must be between 3 and 25. Current value: " + sides);
-                return;
-            }
-            
-            // All values are valid, create the polygon
+            float x = Float.parseFloat(sketchPolygonX.getText());
+            float y = Float.parseFloat(sketchPolygonY.getText());
+            float r = Float.parseFloat(sketchPolygonR.getText());
+            int sides = Integer.parseInt(sketchPolygonSides.getText());
             sketch.addNSidedPolygon(x, y, r, sides);
             appendOutput("Polygon added at (" + x + ", " + y + ") with radius " + r + " and " + sides + " sides.");
             glRenderer.setShowSketch(true); // Ensure sketch view is shown
             glCanvas.repaint(); // Repaint canvas after adding element
             glCanvas.requestFocusInWindow();
-            
-        } catch (Exception e) {
-            appendOutput("Unexpected error creating polygon: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            appendOutput("Invalid input. Please enter numbers for X, Y, Radius, and an integer for Sides for Polygon.");
         }
     }
 
@@ -1769,49 +1706,48 @@ public class GuiFX extends Application {
      * Extrudes the current 2D sketch into a 3D shape.
      * Opens a dialog to get the extrusion height from the user.
      */
-    private void extrudeSketch() {
-        // Check if sketch has any closed loops (polygons)
-        if (!sketch.isClosedLoop()) {
-            appendOutput("Error: Sketch must contain at least one polygon to extrude.");
-            appendOutput("Tip: Use 'Sketch Polygon' button to create polygons first.");
-            return;
-        }
+    // private void extrudeSketch() {
+    //     // Check if sketch has any closed loops (polygons)
+    //     if (!sketch.isClosedLoop()) {
+    //         appendOutput("Error: Sketch must contain at least one polygon to extrude.");
+    //         appendOutput("Tip: Use 'Sketch Polygon' button to create polygons first.");
+    //         return;
+    //     }
 
-        // Create a dialog to get the extrusion height
-        TextInputDialog dialog = new TextInputDialog("10.0");
-        dialog.setTitle("Extrude Sketch");
-        dialog.setHeaderText("Extrude 2D Sketch into 3D");
-        dialog.setContentText("Enter extrusion height:");
+    //     // Create a dialog to get the extrusion height
+    //     TextInputDialog dialog = new TextInputDialog("10.0");
+    //     dialog.setTitle("Extrude Sketch");
+    //     dialog.setHeaderText("Extrude 2D Sketch into 3D");
+    //     dialog.setContentText("Enter extrusion height:");
 
-        // Show dialog and process result
-        Optional<String> result = dialog.showAndWait();
-        if (result.isPresent()) {
-            try {
-                double height = Double.parseDouble(result.get());
-                if (height <= 0) {
-                    appendOutput("Error: Extrusion height must be greater than 0.");
-                    return;
-                }
+    //     // Show dialog and process result
+    //     Optional<String> result = dialog.showAndWait();
+    //     if (result.isPresent()) {
+    //         try {
+    //             float height = Float.parseFloat(result.get());
+    //             if (height <= 0) {
+    //                 appendOutput("Error: Extrusion height must be greater than 0.");
+    //                 return;
+    //             }
 
-                // Perform the extrusion using the sketch's built-in method
-                sketch.extrude(height);
+    //             // Perform the extrusion
+    //             Geometry.extrude(sketch, height);
                 
-                appendOutput("Successfully extruded sketch with height " + height);
-                appendOutput("Generated " + sketch.extrudedFaces.size() + " 3D faces.");
-                appendOutput("3D visualization ready! Switch to 3D view to see the extruded geometry.");
+    //             appendOutput("Successfully extruded sketch with height " + height);
+    //             appendOutput("Switching to 3D view to show extruded geometry.");
                 
-                // Automatically switch to 3D view to show the extruded geometry
-                glRenderer.setShowSketch(false); // Switch to 3D model view
-                glCanvas.repaint(); // Request repaint to show the extruded geometry
-                appendOutput("Switched to 3D view. Use mouse to rotate, wheel to zoom.");
+    //             // Switch to 3D view to show the result
+    //             glRenderer.setShowSketch(false);
+    //             glCanvas.repaint();
+    //             glCanvas.requestFocusInWindow();
                 
-            } catch (NumberFormatException e) {
-                appendOutput("Error: Invalid height value. Please provide a numeric value.");
-            } catch (Exception e) {
-                appendOutput("Error during extrusion: " + e.getMessage());
-            }
-        }
-    }
+    //         } catch (NumberFormatException e) {
+    //             appendOutput("Error: Invalid height value. Please provide a numeric value.");
+    //         } catch (Exception e) {
+    //             appendOutput("Error during extrusion: " + e.getMessage());
+    //         }
+    //     }
+    // }
 
     /**
      * Main method to launch the JavaFX application.

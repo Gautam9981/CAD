@@ -23,7 +23,6 @@ import java.io.IOException;
 public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
 
     private GLU glu; // OpenGL Utility Library for perspective transformations and sphere rendering
-    // Note: FPSAnimator is now managed by GuiFX class, not here to avoid conflicts
 
     // --- Camera/View parameters ---
     // These parameters control the position and orientation of the virtual camera
@@ -360,33 +359,40 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
          if (show3DModel) { // If in 3D view mode
             // --- Apply Camera Transformations using gluLookAt ---
             // Calculate the camera's eye position based on zoom and rotations.
-            // Initial distance:
+            // Initial distance with automatic adjustment for extruded geometry:
             float distance = -zoomZ; // zoomZ is negative, so distance will be positive
+            
+            // Auto-adjust distance for extruded geometry if needed
+            if (sketch != null && !sketch.extrudedFaces.isEmpty()) {
+                float geometrySize = calculateGeometrySize();
+                // Ensure minimum distance to see the entire geometry comfortably
+                float minDistance = geometrySize * 3.0f; // 3x the geometry size for good viewing
+                if (distance < minDistance) {
+                    distance = minDistance;
+                }
+            }
 
             // These calculations apply rotation to the camera's position around the origin (0,0,0)
             // relative to a base position along the Z axis, allowing your mouse controls to work.
             // You might need to fine-tune these rotation calculations based on exact desired behavior.
             // For simple rotation around the origin, we rotate the camera's view point.
 
-            // The target remains the center of your model: (0, 0, 0)
-            float centerX = 0.0f;
-            float centerY = 0.0f;
-            float centerZ = 0.0f;
+            // Calculate the center of the extruded geometry or use origin for default shapes
+            float[] geometryCenter = calculateGeometryCenter();
+            float centerX = geometryCenter[0];
+            float centerY = geometryCenter[1];
+            float centerZ = geometryCenter[2];
 
-            // Simple camera position based on rotation and distance
-            // We want to rotate the camera's view around the center (0,0,0)
-            // Let's calculate the eye position based on rotation angles.
-            // We'll effectively orbit the camera around (0,0,0).
-
+            // Calculate camera position to orbit around the geometry center
             // Convert degrees to radians for trigonometric functions
             float radX = (float) Math.toRadians(rotateX);
             float radY = (float) Math.toRadians(rotateY);
 
-            // Calculate eye position for orbiting effect
-            // Start with a point on the Z-axis, then rotate it.
+            // Calculate eye position for orbiting effect around the geometry center
+            // Start with a point at distance from the geometry center along Z-axis
             float currentEyeX = 0;
             float currentEyeY = 0;
-            float currentEyeZ = distance; // Base distance from origin
+            float currentEyeZ = distance; // Base distance from geometry center
 
             // Apply Y-rotation (around Y-axis)
             float tempX = (float) (currentEyeX * Math.cos(radY) + currentEyeZ * Math.sin(radY));
@@ -399,6 +405,11 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
             tempZ = (float) (currentEyeY * Math.sin(radX) + currentEyeZ * Math.cos(radX));
             currentEyeY = tempY;
             currentEyeZ = tempZ;
+            
+            // Offset the camera position by the geometry center
+            currentEyeX += centerX;
+            currentEyeY += centerY;
+            currentEyeZ += centerZ;
 
 
             // Apply the gluLookAt transformation
@@ -448,6 +459,82 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         }
 
         gl.glFlush(); // Ensures all OpenGL commands are executed immediately, sending them to the graphics hardware.
+    }
+
+    /**
+     * Calculates the center point of the current geometry.
+     * For extruded shapes, calculates the centroid of all vertices.
+     * For default shapes (cube, sphere, STL), returns the origin.
+     * 
+     * @return Array containing [centerX, centerY, centerZ] coordinates
+     */
+    private float[] calculateGeometryCenter() {
+        // If we have extruded geometry, calculate its center
+        if (sketch != null && !sketch.extrudedFaces.isEmpty()) {
+            float totalX = 0.0f;
+            float totalY = 0.0f;
+            float totalZ = 0.0f;
+            int vertexCount = 0;
+            
+            // Sum all vertex coordinates
+            for (Sketch.Face3D face : sketch.extrudedFaces) {
+                for (Sketch.Point3D vertex : face.getVertices()) {
+                    totalX += vertex.getX();
+                    totalY += vertex.getY();
+                    totalZ += vertex.getZ();
+                    vertexCount++;
+                }
+            }
+            
+            // Calculate average (centroid)
+            if (vertexCount > 0) {
+                return new float[]{
+                    totalX / vertexCount,
+                    totalY / vertexCount,
+                    totalZ / vertexCount
+                };
+            }
+        }
+        
+        // Default to origin for built-in shapes (cube, sphere, STL)
+        return new float[]{0.0f, 0.0f, 0.0f};
+    }
+    
+    /**
+     * Calculates the bounding box dimensions of extruded geometry to help with automatic zoom.
+     * 
+     * @return Maximum dimension (width, height, or depth) of the geometry
+     */
+    private float calculateGeometrySize() {
+        if (sketch != null && !sketch.extrudedFaces.isEmpty()) {
+            float minX = Float.MAX_VALUE, maxX = Float.MIN_VALUE;
+            float minY = Float.MAX_VALUE, maxY = Float.MIN_VALUE;
+            float minZ = Float.MAX_VALUE, maxZ = Float.MIN_VALUE;
+            
+            // Find bounding box
+            for (Sketch.Face3D face : sketch.extrudedFaces) {
+                for (Sketch.Point3D vertex : face.getVertices()) {
+                    float x = vertex.getX();
+                    float y = vertex.getY();
+                    float z = vertex.getZ();
+                    
+                    minX = Math.min(minX, x);
+                    maxX = Math.max(maxX, x);
+                    minY = Math.min(minY, y);
+                    maxY = Math.max(maxY, y);
+                    minZ = Math.min(minZ, z);
+                    maxZ = Math.max(maxZ, z);
+                }
+            }
+            
+            // Return the maximum dimension for zoom calculation
+            float width = maxX - minX;
+            float height = maxY - minY;
+            float depth = maxZ - minZ;
+            return Math.max(Math.max(width, height), depth);
+        }
+        
+        return 50.0f; // Default size for built-in shapes
     }
 
     /**
