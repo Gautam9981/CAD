@@ -7,16 +7,25 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>cad</groupId>
-    <artifactId>demo</artifactId>
-    <version>1.0</version>
-    <name>demo</name>
-    <url>http://www.example.com</url>
+    <artifactId>SketchApp</artifactId>
+    <version>2.5.0</version>
+    <name>SketchApp</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
+        <jogl.version>2.5.0</jogl.version>
     </properties>
+
+    <repositories>
+        <repository>
+            <id>jogamp-remote</id>
+            <name>jogamp test mirror</name>
+            <url>https://www.jogamp.org/deployment/maven/</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
 
     <dependencies>
         <!-- JavaFX (common) -->
@@ -216,30 +225,29 @@
         <dependency>
             <groupId>org.jogamp.jogl</groupId>
             <artifactId>jogl-all</artifactId>
-            <version>2.5.0</version>
+            <version>${jogl.version}</version>
         </dependency>
 
-        <!-- JOGL Native MacOS -->
+        <!-- JOGL Native - Essential platforms only -->
         <dependency>
             <groupId>org.jogamp.jogl</groupId>
-            <artifactId>jogl-all-natives-macosx-universal</artifactId>
-            <version>2.5.0</version>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>natives-linux-amd64</classifier>
             <scope>runtime</scope>
         </dependency>
-
-        <!-- JOGL Native Windows -->
         <dependency>
             <groupId>org.jogamp.jogl</groupId>
-            <artifactId>jogl-all-natives-windows-amd64</artifactId>
-            <version>2.5.0</version>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>natives-macosx-universal</classifier>
             <scope>runtime</scope>
         </dependency>
-
-        <!-- JOGL Native Linux -->
         <dependency>
             <groupId>org.jogamp.jogl</groupId>
-            <artifactId>jogl-all-natives-linux-amd64</artifactId>
-            <version>2.5.0</version>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>natives-windows-amd64</classifier>
             <scope>runtime</scope>
         </dependency>
 
@@ -247,30 +255,29 @@
         <dependency>
             <groupId>org.jogamp.gluegen</groupId>
             <artifactId>gluegen-rt</artifactId>
-            <version>2.5.0</version>
+            <version>${jogl.version}</version>
         </dependency>
 
-        <!-- Gluegen Native MacOS -->
+        <!-- Gluegen Native - Essential platforms only -->
         <dependency>
             <groupId>org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt-natives-macosx-universal</artifactId>
-            <version>2.5.0</version>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>natives-linux-amd64</classifier>
             <scope>runtime</scope>
         </dependency>
-
-        <!-- Gluegen Native Windows -->
         <dependency>
             <groupId>org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt-natives-windows-amd64</artifactId>
-            <version>2.5.0</version>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>natives-macosx-universal</classifier>
             <scope>runtime</scope>
         </dependency>
-
-        <!-- Gluegen Native Linux -->
         <dependency>
             <groupId>org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt-natives-linux-amd64</artifactId>
-            <version>2.5.0</version>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>natives-windows-amd64</classifier>
             <scope>runtime</scope>
         </dependency>
     </dependencies>
@@ -296,7 +303,7 @@
                         <!-- Default configuration for running -->
                         <id>default-cli</id>
                         <configuration>
-                            <runtimePathOption>MODULEPATH</runtimePathOption>
+                            <runtimePathOption>CLASSPATH</runtimePathOption>
                             <mainClass>cad.Main</mainClass>
                         </configuration>
                     </execution>
