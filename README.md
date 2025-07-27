@@ -84,6 +84,10 @@ Day 22 (7/20/25)
 
 Extrude functionality works, but it feels rather crude right now (just the basics). I will be updating ALL binaries to have this extrusion functionality ready
 
+Day 23 (7/22/25)
+
+I got the extruding functionality to work, maybe I should make more stylistic changes
+
 Instructions for Running the program:
 
 For Windows: 
