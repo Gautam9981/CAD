@@ -283,7 +283,9 @@
     </dependencies>
 
     <build>
-        <finalName>SketchApp</finalName>
+    <finalName>SketchApp</finalName>
+    <sourceDirectory>${project.basedir}</sourceDirectory>
+    <testSourceDirectory>${project.basedir}</testSourceDirectory>
         <plugins>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -291,6 +293,13 @@
                 <configuration>
                     <source>21</source>
                     <target>21</target>
+                    <includes>
+                        <include>cli/**/*.java</include>
+                        <include>core/**/*.java</include>
+                        <include>gui/**/*.java</include>
+                        <include>Main.java</include>
+                        <include>AppTest.java</include>
+                    </includes>
                 </configuration>
             </plugin>
 
@@ -383,5 +392,5 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-    </build>
-</project>
+        </build>
+    </project>
