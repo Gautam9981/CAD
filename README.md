@@ -88,6 +88,10 @@ Day 23 (7/22/25)
 
 I got the extruding functionality to work, maybe I should make more stylistic changes
 
+Day 24 (9/16/24)
+
+I got some kite creation functionality ready (sketching + extruding), it is in an interesting state currently
+
 Instructions for Running the program:
 
 For Windows: 
@@ -107,17 +111,7 @@ Requirements:
     java -version
   If not installed, download from Adoptium or Oracle
 
-lib/ folder must include:
-------------------------------
-- jogl-all.jar
-- gluegen-rt.jar
-- JOGL native .dll files:
-    e.g. jogl_desktop.dll, gluegen-rt.dll, etc.
-
-To Launch the App:
-------------------------------
-1. Ensure the `lib/` folder contains the required files.
-2. Double-click `SketchApp.exe`.
+Note: for Windows, it is a .bat file you have to run to run the application
 
 That's it!
 
@@ -125,7 +119,6 @@ Troubleshooting:
 ------------------------------
 - If the app doesn't start:
   → Ensure Java is installed.
-  → Check that all required JOGL files are in `lib/`.
 
 
 
