@@ -291,6 +291,66 @@ public class Sketch {
     }
 
     /**
+     * Adds a kite-shaped quadrilateral to the sketch.
+     * @param centerX X-coordinate of the kite's center.
+     * @param centerY Y-coordinate of the kite's center.
+     * @param mainDiagonal Length of the main (vertical) diagonal.
+     * @param crossDiagonal Length of the cross (horizontal) diagonal.
+     * @param angleDegrees Angle (in degrees) of the main diagonal with respect to the X-axis.
+     * @return 0 on success, 1 on error.
+     */
+    public int addKite(float centerX, float centerY, float mainDiagonal, float crossDiagonal, float angleDegrees) {
+        if (mainDiagonal <= 0 || crossDiagonal <= 0) {
+            System.out.println("Diagonals must be positive.");
+            return 1;
+        }
+        double angleRad = Math.toRadians(angleDegrees);
+        float dxMain = (float)(Math.cos(angleRad) * mainDiagonal / 2.0);
+        float dyMain = (float)(Math.sin(angleRad) * mainDiagonal / 2.0);
+        float dxCross = (float)(-Math.sin(angleRad) * crossDiagonal / 2.0);
+        float dyCross = (float)(Math.cos(angleRad) * crossDiagonal / 2.0);
+        // Four vertices: top, right, bottom, left (in order)
+        PointEntity p1 = new PointEntity(centerX + dxMain, centerY + dyMain); // tip of main diagonal (top)
+        PointEntity p2 = new PointEntity(centerX + dxCross, centerY + dyCross); // tip of cross diagonal (right)
+        PointEntity p3 = new PointEntity(centerX - dxMain, centerY - dyMain); // other tip of main diagonal (bottom)
+        PointEntity p4 = new PointEntity(centerX - dxCross, centerY - dyCross); // other tip of cross diagonal (left)
+        List<PointEntity> points = new ArrayList<>();
+        points.add(p1);
+        points.add(p2);
+        points.add(p3);
+        points.add(p4);
+        int result = addPolygon(points);
+        // Add spine (main diagonal)
+        addLine(p1.x, p1.y, p3.x, p3.y);
+        // Add crossbar (cross diagonal)
+        addLine(p2.x, p2.y, p4.x, p4.y);
+        // Add tail (from bottom vertex p3 downward, with bows)
+        float tailLength = mainDiagonal * 0.7f;
+        float tailAngle = (float)(angleRad + Math.PI); // tail points away from main diagonal
+        float tailEndX = p3.x + (float)(Math.cos(tailAngle) * tailLength);
+        float tailEndY = p3.y + (float)(Math.sin(tailAngle) * tailLength);
+        addLine(p3.x, p3.y, tailEndX, tailEndY);
+        // Add 3 bows along the tail
+        for (int i = 1; i <= 3; i++) {
+            float t = i / 4.0f;
+            float bx = p3.x + (float)(Math.cos(tailAngle) * tailLength * t);
+            float by = p3.y + (float)(Math.sin(tailAngle) * tailLength * t);
+            float bowSize = mainDiagonal * 0.07f;
+            // Draw a small X for each bow
+            addLine(bx - bowSize, by - bowSize, bx + bowSize, by + bowSize);
+            addLine(bx - bowSize, by + bowSize, bx + bowSize, by - bowSize);
+        }
+        // Add bridle lines (from p1 and p2 to a point in front of the kite)
+        float bridleLength = mainDiagonal * 0.5f;
+        float bridleAngle = (float)(angleRad - Math.PI / 2.0); // in front of kite
+        float bridleX = centerX + (float)(Math.cos(bridleAngle) * bridleLength);
+        float bridleY = centerY + (float)(Math.sin(bridleAngle) * bridleLength);
+        addLine(p1.x, p1.y, bridleX, bridleY);
+        addLine(p2.x, p2.y, bridleX, bridleY);
+        return result;
+    }
+
+    /**
      * Clears all entities from the sketch.
      */
     public void clearSketch() {
@@ -1131,6 +1191,54 @@ public class Sketch {
         List<List<Point2D>> closedLoops = findClosedLoopsFromLines();
         for (List<Point2D> loop : closedLoops) {
             extrudeClosedLoop(loop, height);
+        }
+
+        // Extrude all individual lines as thin plates (for kite features, etc.)
+        float plateWidth = 0.05f; // Thin plate width (adjust as needed)
+        for (Entity entity : sketchEntities) {
+            if (entity instanceof Line) {
+                Line line = (Line) entity;
+                // Compute direction vector
+                float dx = line.x2 - line.x1;
+                float dy = line.y2 - line.y1;
+                float length = (float)Math.sqrt(dx * dx + dy * dy);
+                if (length < 1e-6f) continue; // Skip degenerate lines
+                // Normalized perpendicular vector (for plate width)
+                float nx = -dy / length;
+                float ny = dx / length;
+                float w = plateWidth / 2.0f;
+                // Four corners of the plate (bottom)
+                float x1a = line.x1 + nx * w;
+                float y1a = line.y1 + ny * w;
+                float x1b = line.x1 - nx * w;
+                float y1b = line.y1 - ny * w;
+                float x2a = line.x2 + nx * w;
+                float y2a = line.y2 + ny * w;
+                float x2b = line.x2 - nx * w;
+                float y2b = line.y2 - ny * w;
+                // Bottom face
+                Point3D p1 = new Point3D(x1a, y1a, 0);
+                Point3D p2 = new Point3D(x1b, y1b, 0);
+                Point3D p3 = new Point3D(x2b, y2b, 0);
+                Point3D p4 = new Point3D(x2a, y2a, 0);
+                // Top face
+                Point3D q1 = new Point3D(x1a, y1a, (float)height);
+                Point3D q2 = new Point3D(x1b, y1b, (float)height);
+                Point3D q3 = new Point3D(x2b, y2b, (float)height);
+                Point3D q4 = new Point3D(x2a, y2a, (float)height);
+                // Side faces
+                extrudedFaces.add(new Face3D(p1, p2, q2, q1)); // side 1
+                extrudedFaces.add(new Face3D(p2, p3, q3, q2)); // side 2
+                extrudedFaces.add(new Face3D(p3, p4, q4, q3)); // side 3
+                extrudedFaces.add(new Face3D(p4, p1, q1, q4)); // side 4
+                // Top and bottom faces
+                List<Point3D> topFace = new ArrayList<>();
+                topFace.add(q1); topFace.add(q2); topFace.add(q3); topFace.add(q4);
+                extrudedFaces.add(new Face3D(topFace));
+                List<Point3D> bottomFace = new ArrayList<>();
+                bottomFace.add(p1); bottomFace.add(p2); bottomFace.add(p3); bottomFace.add(p4);
+                extrudedFaces.add(new Face3D(bottomFace));
+            }
         }
     }
     

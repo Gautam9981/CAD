@@ -93,6 +93,7 @@ public class GuiFX extends Application {
     private TextField sketchLineX1, sketchLineY1, sketchLineX2, sketchLineY2;
     private TextField sketchCircleX, sketchCircleY, sketchCircleR;
     private TextField sketchPolygonX, sketchPolygonY, sketchPolygonR, sketchPolygonSides;
+    private TextField sketchKiteCenterX, sketchKiteCenterY, sketchKiteDiagV, sketchKiteDiagH, sketchKiteAngle;
     private ComboBox<String> unitSelector;
     private JOGLCadCanvas glCanvas; // This is an AWT component where OpenGL rendering happens
     private SwingNode canvasNode; // This wraps the AWT GLCanvas for integration into JavaFX scene graph
@@ -243,7 +244,12 @@ public class GuiFX extends Application {
         sketchPolygonR = new TextField();
         sketchPolygonSides = new TextField();
 
-        // Initialize ComboBox for unit selection
+    sketchKiteCenterX = new TextField();
+    sketchKiteCenterY = new TextField();
+    sketchKiteDiagV = new TextField();
+    sketchKiteDiagH = new TextField();
+    sketchKiteAngle = new TextField();
+    // Initialize ComboBox for unit selection
         unitSelector = new ComboBox<>();
         unitSelector.getItems().addAll("mm", "cm", "m", "in", "ft");
         unitSelector.setValue("mm"); // Set default unit
@@ -454,6 +460,7 @@ public class GuiFX extends Application {
             createButton("Sketch Line", e -> sketchLine()),
             createButton("Sketch Circle", e -> sketchCircle()),
             createButton("Sketch Polygon", e -> sketchPolygon()),
+            createButton("Sketch Kite", e -> sketchKite()),
             createButton("Extrude Sketch", e -> extrudeSketch())
         );
 
@@ -530,17 +537,48 @@ public class GuiFX extends Application {
         parametersGrid.add(new Label("Polygon Sides (3-25):"), 0, row);
         parametersGrid.add(sketchPolygonSides, 1, row++);
 
-        parametersGrid.add(new Separator(), 0, row++, 2, 1);
 
-        // Units Selector
-        parametersGrid.add(new Label("Units:"), 0, row);
-        parametersGrid.add(unitSelector, 1, row++);
+    parametersGrid.add(new Separator(), 0, row++, 2, 1);
+
+    // Kite Parameters
+    parametersGrid.add(createSectionLabel("Kite Parameters"), 0, row++, 2, 1);
+    parametersGrid.add(new Label("Center X:"), 0, row);
+    parametersGrid.add(sketchKiteCenterX, 1, row++);
+    parametersGrid.add(new Label("Center Y:"), 0, row);
+    parametersGrid.add(sketchKiteCenterY, 1, row++);
+    parametersGrid.add(new Label("Vertical Diagonal:"), 0, row);
+    parametersGrid.add(sketchKiteDiagV, 1, row++);
+    parametersGrid.add(new Label("Horizontal Diagonal:"), 0, row);
+    parametersGrid.add(sketchKiteDiagH, 1, row++);
+    parametersGrid.add(new Label("Angle (deg):"), 0, row);
+    parametersGrid.add(sketchKiteAngle, 1, row++);
+
+    // Units Selector
+    parametersGrid.add(new Label("Units:"), 0, row);
+    parametersGrid.add(unitSelector, 1, row++);
+
 
         ScrollPane scrollPane = new ScrollPane(parametersGrid);
         scrollPane.setFitToWidth(true);
         scrollPane.setPrefHeight(400); // Set a preferred height
 
         return scrollPane;
+    }
+
+    // Handler for Sketch Kite button (must be outside of createParametersPane)
+    private void sketchKite() {
+        try {
+            double cx = Double.parseDouble(sketchKiteCenterX.getText());
+            double cy = Double.parseDouble(sketchKiteCenterY.getText());
+            double diagV = Double.parseDouble(sketchKiteDiagV.getText());
+            double diagH = Double.parseDouble(sketchKiteDiagH.getText());
+            double angle = Double.parseDouble(sketchKiteAngle.getText());
+            sketch.addKite((float)cx, (float)cy, (float)diagV, (float)diagH, (float)angle);
+            appendOutput(String.format("Kite sketched at (%.2f, %.2f) with diagonals %.2f, %.2f and angle %.2f", cx, cy, diagV, diagH, angle));
+            glCanvas.repaint();
+        } catch (NumberFormatException ex) {
+            appendOutput("Invalid input for kite parameters.");
+        }
     }
 
     /**
@@ -1685,7 +1723,7 @@ public class GuiFX extends Application {
 
     /**
      * Adds a regular polygon to the sketch from user input fields.
-     * It parses the center coordinates, radius, and number of sides,
+     * It parses thttps://www.linkedin.com/in/gautam-mahajan-68848427a/he center coordinates, radius, and number of sides,
      * then adds the polygon to the sketch and updates the view.
      */
     private void sketchPolygon() {

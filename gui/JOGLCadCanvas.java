@@ -7,6 +7,7 @@ import com.jogamp.opengl.glu.GLU;
 // Import your existing Geometry and Sketch classes
 import cad.core.Geometry;
 import cad.core.Sketch;
+import cad.gui.VBOManager;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
@@ -36,9 +37,9 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
 
     // --- Data for rendering ---
     private Sketch sketch; // Reference to the 2D sketch object that this canvas can render.
-                           // The Sketch class is assumed to have a `draw(GL2 gl)` method.
-    private boolean show3DModel = false; // Flag to determine whether to render the 3D model (true)
-                                         // or the 2D sketch (false).
+    private boolean show3DModel = false; // Flag to determine whether to render the 3D model (true) or the 2D sketch (false).
+    private VBOManager vboManager = new VBOManager();
+    private boolean vboDirty = true; // Track if VBO needs update
 
     /**
      * Creates OpenGL canvas with mouse and keyboard interaction support.
@@ -220,6 +221,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
      */
     public void show3DModel() {
         show3DModel = true;  // Set flag to render 3D model
+        vboDirty = true;     // Mark VBO as dirty (geometry may have changed)
         repaint();           // Request the canvas to redraw itself
     }
 
@@ -233,67 +235,35 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
      */
     @Override
     public void init(GLAutoDrawable drawable) {
-        // Obtain the GL2 object, which provides the OpenGL 2.0 API.
         GL2 gl = drawable.getGL().getGL2();
-        // Initialize GLU (OpenGL Utility Library) for functions like perspective setup and sphere drawing.
         glu = new GLU();
-
-        // Set the clear color for the color buffer (the background color of the canvas).
-        gl.glClearColor(0.2f, 0.2f, 0.2f, 1.0f); // Dark gray background (RGB A)
-        // Set the clear value for the depth buffer. 1.0f means furthest away.
+        gl.glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
         gl.glClearDepth(1.0f);
-        // Enable depth testing. This ensures that objects closer to the camera obscure
-        // objects further away, providing correct 3D perception.
         gl.glEnable(GL2.GL_DEPTH_TEST);
-        // Set the depth function. GL_LEQUAL means a fragment passes the depth test if
-        // its depth value is less than or equal to the stored depth value.
         gl.glDepthFunc(GL2.GL_LEQUAL);
-        // Hint to OpenGL for perspective correction (for better visual quality).
         gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL2.GL_NICEST);
-        // Set the shading model to smooth. This interpolates colors across faces for a smoother appearance.
         gl.glShadeModel(GL2.GL_SMOOTH);
-
-        // --- Important Rendering Mode Setting ---
-        // Set the polygon mode for both front and back faces to GL_FILL.
-        // This makes OpenGL render polygons as solid (filled) surfaces, rather than just wireframes.
         gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_FILL);
         gl.glEnable(GL2.GL_NORMALIZE);
-
-
-        // --- Lighting Setup ---
-        // Enable OpenGL's lighting engine. Without this, objects will appear flat and unlit.
         gl.glEnable(GL2.GL_LIGHTING);
-        // Enable a specific light source (Light 0). OpenGL supports multiple lights.
         gl.glEnable(GL2.GL_LIGHT0);
-        // Define the position of Light 0. The last component (0.0f) indicates a directional light.
-        // If it were 1.0f, it would be a positional light at (1,1,1).
         float[] lightPos = {1.0f, 1.0f, 1.0f, 0.0f};
         gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, lightPos, 0);
-        // Define the ambient, diffuse, and specular components of Light 0.
-        // Ambient: Light that has been scattered so much it comes from all directions.
         float[] ambientLight = {0.3f, 0.3f, 0.3f, 1.0f};
-        // Diffuse: Light that reflects equally in all directions (main component for color).
         float[] diffuseLight = {0.7f, 0.7f, 0.7f, 1.0f};
-        // Specular: Highlight from the light source, dependent on observer position and shininess.
         float[] specularLight = {1.0f, 1.0f, 1.0f, 1.0f};
         gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, ambientLight, 0);
         gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, diffuseLight, 0);
         gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_SPECULAR, specularLight, 0);
-
-        // --- Material Properties Setup ---
-        // These define how the surface of the object interacts with light.
-        // Set the ambient, diffuse, specular, and shininess properties for the front face of objects.
-        float[] materialAmbient = {0.1f, 0.1f, 0.1f, 1.0f}; // Base ambient color
-        float[] materialDiffuse = {0.8f, 0.8f, 0.8f, 1.0f}; // Base diffuse color (main object color)
-        float[] materialSpecular = {1.0f, 1.0f, 1.0f, 1.0f}; // Color of the highlight
-        float shininess = 100.0f; // How "shiny" the material is (higher values = smaller, more intense highlight)
+        float[] materialAmbient = {0.1f, 0.1f, 0.1f, 1.0f};
+        float[] materialDiffuse = {0.8f, 0.8f, 0.8f, 1.0f};
+        float[] materialSpecular = {1.0f, 1.0f, 1.0f, 1.0f};
+        float shininess = 100.0f;
         gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_AMBIENT, materialAmbient, 0);
         gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_DIFFUSE, materialDiffuse, 0);
         gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_SPECULAR, materialSpecular, 0);
         gl.glMaterialf(GL2.GL_FRONT, GL2.GL_SHININESS, shininess);
-
-        // Note: FPSAnimator is managed by GuiFX class, not here
-        // This prevents conflicts with multiple animators for the same drawable
+        vboDirty = true;
     }
 
     /**
@@ -356,86 +326,48 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         gl.glLoadIdentity(); // Reset the current modelview matrix to identity
 
         
-         if (show3DModel) { // If in 3D view mode
-            // --- Apply Camera Transformations using gluLookAt ---
-            // Calculate the camera's eye position based on zoom and rotations.
-            // Initial distance with automatic adjustment for extruded geometry:
-            float distance = -zoomZ; // zoomZ is negative, so distance will be positive
-            
-            // Auto-adjust distance for extruded geometry if needed
+        if (show3DModel) { // If in 3D view mode
+            float distance = -zoomZ;
             if (sketch != null && !sketch.extrudedFaces.isEmpty()) {
                 float geometrySize = calculateGeometrySize();
-                // Ensure minimum distance to see the entire geometry comfortably
-                float minDistance = geometrySize * 3.0f; // 3x the geometry size for good viewing
-                if (distance < minDistance) {
-                    distance = minDistance;
-                }
+                float minDistance = geometrySize * 3.0f;
+                if (distance < minDistance) distance = minDistance;
             }
-
-            // These calculations apply rotation to the camera's position around the origin (0,0,0)
-            // relative to a base position along the Z axis, allowing your mouse controls to work.
-            // You might need to fine-tune these rotation calculations based on exact desired behavior.
-            // For simple rotation around the origin, we rotate the camera's view point.
-
-            // Calculate the center of the extruded geometry or use origin for default shapes
             float[] geometryCenter = calculateGeometryCenter();
             float centerX = geometryCenter[0];
             float centerY = geometryCenter[1];
             float centerZ = geometryCenter[2];
-
-            // Calculate camera position to orbit around the geometry center
-            // Convert degrees to radians for trigonometric functions
             float radX = (float) Math.toRadians(rotateX);
             float radY = (float) Math.toRadians(rotateY);
-
-            // Calculate eye position for orbiting effect around the geometry center
-            // Start with a point at distance from the geometry center along Z-axis
             float currentEyeX = 0;
             float currentEyeY = 0;
-            float currentEyeZ = distance; // Base distance from geometry center
-
-            // Apply Y-rotation (around Y-axis)
+            float currentEyeZ = distance;
             float tempX = (float) (currentEyeX * Math.cos(radY) + currentEyeZ * Math.sin(radY));
             float tempZ = (float) (-currentEyeX * Math.sin(radY) + currentEyeZ * Math.cos(radY));
             currentEyeX = tempX;
             currentEyeZ = tempZ;
-
-            // Apply X-rotation (around X-axis)
             float tempY = (float) (currentEyeY * Math.cos(radX) - currentEyeZ * Math.sin(radX));
             tempZ = (float) (currentEyeY * Math.sin(radX) + currentEyeZ * Math.cos(radX));
             currentEyeY = tempY;
             currentEyeZ = tempZ;
-            
-            // Offset the camera position by the geometry center
             currentEyeX += centerX;
             currentEyeY += centerY;
             currentEyeZ += centerZ;
-
-
-            // Apply the gluLookAt transformation
             if (glu != null) {
-                // Camera position (eye), look-at point (center), and up vector
-                glu.gluLookAt(currentEyeX, currentEyeY, currentEyeZ, // Eye position
-                              centerX, centerY, centerZ,             // Look-at point (center of your model)
-                              0.0f, 1.0f, 0.0f);                      // Up vector (Y-axis up)
+                glu.gluLookAt(currentEyeX, currentEyeY, currentEyeZ, centerX, centerY, centerZ, 0.0f, 1.0f, 0.0f);
             } else {
                 System.err.println("GLU object not initialized!");
             }
-
-            // --- Set Default Material Color for 3D Objects ---
-            // Set a default color (light blue) for objects. This applies to primitives
-            // and STL models if they don't define their own material colors.
             float[] objectColor = {0.6f, 0.7f, 0.9f, 1.0f};
-            // Apply this color to both ambient and diffuse material properties.
             gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_AMBIENT_AND_DIFFUSE, objectColor, 0);
-
-            // --- Render 3D Geometry ---
-            // Check if we have extruded geometry from the sketch to render
-            if (!sketch.extrudedFaces.isEmpty()) {
-                // Render the extruded 3D geometry from the sketch
-                sketch.draw3D(gl);
+            // --- VBO-based rendering for extruded geometry ---
+            if (sketch != null && !sketch.extrudedFaces.isEmpty()) {
+                if (vboDirty) {
+                    vboManager.uploadFaces(gl, sketch.extrudedFaces);
+                    vboDirty = false;
+                }
+                vboManager.draw(gl);
             } else {
-                // Render the default 3D shapes (cube, sphere, STL) if no extruded geometry
                 Geometry.drawCurrentShape(gl);
             }
         } else { // If in 2D sketch view mode
@@ -546,5 +478,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
      */
     @Override
     public void dispose(GLAutoDrawable drawable) {
+        GL2 gl = drawable.getGL().getGL2();
+        vboManager.dispose(gl);
     }
 }
