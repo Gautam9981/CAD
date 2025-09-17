@@ -160,6 +160,8 @@ public class Sketch {
      */
     public static class Face3D {
         private List<Point3D> vertices;
+        // List of normals, one per vertex (for smooth shading)
+        private List<float[]> vertexNormals;
 
         // Constructor for a quad face (4 points)
         public Face3D(Point3D p1, Point3D p2, Point3D p3, Point3D p4) {
@@ -168,6 +170,7 @@ public class Sketch {
             this.vertices.add(p2);
             this.vertices.add(p3);
             this.vertices.add(p4);
+            this.vertexNormals = null; // To be set later
         }
 
         // Constructor for a general polygonal face (list of points)
@@ -176,10 +179,68 @@ public class Sketch {
                 throw new IllegalArgumentException("A Face3D must have at least 3 vertices.");
             }
             this.vertices = new ArrayList<>(vertices);
+            this.vertexNormals = null; // To be set later
         }
 
         public List<Point3D> getVertices() {
             return vertices;
+        }
+
+        public void setVertexNormals(List<float[]> normals) {
+            this.vertexNormals = normals;
+        }
+
+        public List<float[]> getVertexNormals() {
+            return vertexNormals;
+        }
+    }
+    /**
+     * Computes per-vertex normals for all extruded faces (for smooth shading).
+     * This method should be called after extrusion and before uploading to VBOManager.
+     * It averages the normals of all faces sharing a vertex.
+     */
+    public void computePerVertexNormals() {
+        // Map from Point3D to list of normals (accumulate for averaging)
+        java.util.Map<Point3D, List<float[]>> normalMap = new java.util.HashMap<>();
+        // First, compute face normals and accumulate for each vertex
+        for (Face3D face : extrudedFaces) {
+            List<Point3D> verts = face.getVertices();
+            int n = verts.size();
+            // Triangulate face (fan method)
+            for (int i = 1; i < n - 1; i++) {
+                Point3D p0 = verts.get(0);
+                Point3D p1 = verts.get(i);
+                Point3D p2 = verts.get(i + 1);
+                float[] normal = calculateFaceNormal(p0, p1, p2);
+                // Add this normal to each vertex's list
+                normalMap.computeIfAbsent(p0, k -> new java.util.ArrayList<>()).add(normal);
+                normalMap.computeIfAbsent(p1, k -> new java.util.ArrayList<>()).add(normal);
+                normalMap.computeIfAbsent(p2, k -> new java.util.ArrayList<>()).add(normal);
+            }
+        }
+        // Now, for each face, set its per-vertex normals (averaged)
+        for (Face3D face : extrudedFaces) {
+            List<Point3D> verts = face.getVertices();
+            List<float[]> normals = new java.util.ArrayList<>();
+            for (Point3D v : verts) {
+                List<float[]> nList = normalMap.get(v);
+                if (nList == null || nList.isEmpty()) {
+                    normals.add(new float[]{0,0,1});
+                } else {
+                    float nx = 0, ny = 0, nz = 0;
+                    for (float[] n : nList) {
+                        nx += n[0]; ny += n[1]; nz += n[2];
+                    }
+                    float len = (float)Math.sqrt(nx*nx + ny*ny + nz*nz);
+                    if (len > 1e-6) {
+                        nx /= len; ny /= len; nz /= len;
+                    } else {
+                        nx = 0; ny = 0; nz = 1;
+                    }
+                    normals.add(new float[]{nx, ny, nz});
+                }
+            }
+            face.setVertexNormals(normals);
         }
     }
     // End of new class definitions

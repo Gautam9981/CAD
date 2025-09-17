@@ -363,6 +363,8 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
             // --- VBO-based rendering for extruded geometry ---
             if (sketch != null && !sketch.extrudedFaces.isEmpty()) {
                 if (vboDirty) {
+                    // Compute per-vertex normals for smooth shading before uploading
+                    sketch.computePerVertexNormals();
                     vboManager.uploadFaces(gl, sketch.extrudedFaces);
                     vboDirty = false;
                 }
