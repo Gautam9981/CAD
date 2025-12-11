@@ -15,17 +15,10 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <jogl.version>2.5.0</jogl.version>
+        <jogl.version>2.6.0</jogl.version>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>jogamp-remote</id>
-            <name>jogamp test mirror</name>
-            <url>https://www.jogamp.org/deployment/maven/</url>
-            <layout>default</layout>
-        </repository>
-    </repositories>
+
 
     <dependencies>
         <!-- JavaFX (common) -->
@@ -221,64 +214,18 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- JOGL Core -->
+        <!-- JOGL Core & Natives (Main) -->
         <dependency>
             <groupId>org.jogamp.jogl</groupId>
-            <artifactId>jogl-all</artifactId>
+            <artifactId>jogl-all-main</artifactId>
             <version>${jogl.version}</version>
         </dependency>
 
-        <!-- JOGL Native - Essential platforms only -->
-        <dependency>
-            <groupId>org.jogamp.jogl</groupId>
-            <artifactId>jogl-all</artifactId>
-            <version>${jogl.version}</version>
-            <classifier>natives-linux-amd64</classifier>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jogamp.jogl</groupId>
-            <artifactId>jogl-all</artifactId>
-            <version>${jogl.version}</version>
-            <classifier>natives-macosx-universal</classifier>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jogamp.jogl</groupId>
-            <artifactId>jogl-all</artifactId>
-            <version>${jogl.version}</version>
-            <classifier>natives-windows-amd64</classifier>
-            <scope>runtime</scope>
-        </dependency>
-
-        <!-- Gluegen Core -->
+        <!-- Gluegen Core & Natives (Main) -->
         <dependency>
             <groupId>org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt</artifactId>
+            <artifactId>gluegen-rt-main</artifactId>
             <version>${jogl.version}</version>
-        </dependency>
-
-        <!-- Gluegen Native - Essential platforms only -->
-        <dependency>
-            <groupId>org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt</artifactId>
-            <version>${jogl.version}</version>
-            <classifier>natives-linux-amd64</classifier>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt</artifactId>
-            <version>${jogl.version}</version>
-            <classifier>natives-macosx-universal</classifier>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt</artifactId>
-            <version>${jogl.version}</version>
-            <classifier>natives-windows-amd64</classifier>
-            <scope>runtime</scope>
         </dependency>
     </dependencies>
 
