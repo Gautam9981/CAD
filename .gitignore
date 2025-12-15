@@ -1,5 +1,6 @@
 # Build output
 target/
+bin/
 *.jar
 *.class
 
