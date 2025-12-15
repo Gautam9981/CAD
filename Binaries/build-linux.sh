@@ -60,13 +60,22 @@ fi
 
 echo ""
 
+# Staging directory for jpackage input
+STAGING_DIR="staging"
+rm -rf "$STAGING_DIR"
+mkdir -p "$STAGING_DIR"
+cp "$JAR_FILE" "$STAGING_DIR/"
+cp "../resources/sketchapp-icon.png" "$STAGING_DIR/" || true
+
+echo "✓ Prepared staging directory with JAR and dependencies"
+
 # Build .deb package
 if [ "$DEB_AVAILABLE" = true ]; then
     echo "=== Building .deb package (Debian/Ubuntu) ==="
     
     jpackage \
       --type deb \
-      --input ../target \
+      --input "$STAGING_DIR" \
       --name "sketchapp" \
       --main-jar SketchApp.jar \
       --main-class "$MAIN_CLASS" \
@@ -92,7 +101,7 @@ if [ "$RPM_AVAILABLE" = true ]; then
     
     jpackage \
       --type rpm \
-      --input ../target \
+      --input "$STAGING_DIR" \
       --name "sketchapp" \
       --main-jar SketchApp.jar \
       --main-class "$MAIN_CLASS" \
@@ -111,6 +120,9 @@ if [ "$RPM_AVAILABLE" = true ]; then
     echo "✓ .rpm package created in $OUTPUT_DIR"
     echo ""
 fi
+
+# Cleanup
+rm -rf "$STAGING_DIR"
 
 echo "=== Build Complete ==="
 echo "Installers are located in: $OUTPUT_DIR"

@@ -39,13 +39,20 @@ else
     echo "Warning: Python not found. Skipping icon conversion check."
 fi
 
+# Staging directory for jpackage input
+STAGING_DIR="staging"
+rm -rf "$STAGING_DIR"
+mkdir -p "$STAGING_DIR"
+cp "$JAR_FILE" "$STAGING_DIR/"
+cp "../resources/sketchapp-icon.ico" "$STAGING_DIR/" || true
+
 echo "Creating Windows installer..."
 
 # Create the Windows installer
 # PER-USER INSTALLATION
 jpackage \
   --type exe \
-  --input ../target \
+  --input "$STAGING_DIR" \
   --name "$APP_NAME" \
   --main-jar SketchApp.jar \
   --main-class "$MAIN_CLASS" \
@@ -62,6 +69,9 @@ jpackage \
   --java-options "-Xmx2048m" \
   --java-options "-Dsun.java2d.opengl=true" \
   --arguments "--gui"
+
+# Cleanup
+rm -rf "$STAGING_DIR"
 
 echo ""
 echo "=== Build Complete ==="

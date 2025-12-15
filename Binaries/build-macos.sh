@@ -37,12 +37,19 @@ else
     echo "Warning: Python3 not found. Skipping icon conversion. Ensure .icns exists."
 fi
 
+# Staging directory for jpackage input
+STAGING_DIR="staging"
+rm -rf "$STAGING_DIR"
+mkdir -p "$STAGING_DIR"
+cp "$JAR_FILE" "$STAGING_DIR/"
+cp "../resources/sketchapp-icon.icns" "$STAGING_DIR/" || true
+
 echo "Creating macOS DMG installer..."
 
 # Create the macOS installer
 jpackage \
   --type dmg \
-  --input ../target \
+  --input "$STAGING_DIR" \
   --name "$APP_NAME" \
   --main-jar SketchApp.jar \
   --main-class "$MAIN_CLASS" \
@@ -56,6 +63,9 @@ jpackage \
   --java-options "-Dsun.java2d.opengl=true" \
   --java-options "-XstartOnFirstThread" \
   --arguments "--gui"
+
+# Cleanup
+rm -rf "$STAGING_DIR"
 
 echo ""
 echo "=== Build Complete ==="
