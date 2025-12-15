@@ -4,10 +4,23 @@
   <groupId>cad</groupId>
   <artifactId>SketchApp</artifactId>
   <name>SketchApp</name>
-  <version>2.5.0</version>
+  <version>4.0.0</version>
   <build>
     <sourceDirectory>${project.basedir}</sourceDirectory>
     <testSourceDirectory>${project.basedir}</testSourceDirectory>
+    <resources>
+      <resource>
+        <directory>${project.basedir}</directory>
+        <includes>
+          <include>gui/**/*.css</include>
+          <include>gui/**/*.fxml</include>
+          <include>gui/**/*.properties</include>
+          <include>**/*.png</include>
+          <include>**/*.jpg</include>
+          <include>**/*.gif</include>
+        </includes>
+      </resource>
+    </resources>
     <finalName>SketchApp</finalName>
     <pluginManagement>
       <plugins>
@@ -108,13 +121,6 @@
       </plugin>
     </plugins>
   </build>
-  <repositories>
-    <repository>
-      <id>jogamp-remote</id>
-      <name>jogamp test mirror</name>
-      <url>https://www.jogamp.org/deployment/maven/</url>
-    </repository>
-  </repositories>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -130,9 +136,9 @@
     </dependency>
   </dependencies>
   <properties>
-    <maven.compiler.target>21</maven.compiler.target>
-    <maven.compiler.source>21</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jogl.version>2.5.0</jogl.version>
+    <maven.compiler.target>21</maven.compiler.target>
+    <jogl.version>2.6.0</jogl.version>
+    <maven.compiler.source>21</maven.compiler.source>
   </properties>
 </project>

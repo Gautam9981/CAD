@@ -1,0 +1,153 @@
+name: Build Installers for All Platforms
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on version tags like v4.0.0
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+
+      - name: Install Python Dependencies
+        run: pip install pillow
+      
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+      
+      - name: Build Windows Installer
+        run: |
+          cd Binaries
+          bash build-windows.sh
+        shell: bash
+      
+      - name: Upload Windows Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: SketchApp-Windows
+          path: Binaries/*.exe
+          retention-days: 30
+
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+
+      - name: Install Python Dependencies
+        run: pip install pillow
+      
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+      
+      - name: Build macOS Installer
+        run: |
+          cd Binaries
+          bash build-macos.sh
+      
+      - name: Upload macOS Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: SketchApp-macOS
+          path: Binaries/*.dmg
+          retention-days: 30
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          cache: 'pip'
+
+      - name: Install Python Dependencies
+        run: pip install pillow
+      
+      - name: Install RPM tools
+        run: sudo apt-get update && sudo apt-get install -y rpm
+      
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+      
+      - name: Build Linux Installers (.deb and .rpm)
+        run: |
+          cd Binaries
+          bash build-linux.sh
+      
+      - name: Upload Linux .deb Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: SketchApp-Linux-deb
+          path: Binaries/*.deb
+          retention-days: 30
+      
+      - name: Upload Linux .rpm Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: SketchApp-Linux-rpm
+          path: Binaries/*.rpm
+          retention-days: 30
+
+  create-release:
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./installers
+      
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            ./installers/SketchApp-Windows/*.exe
+            ./installers/SketchApp-macOS/*.dmg
+            ./installers/SketchApp-Linux-deb/*.deb
+            ./installers/SketchApp-Linux-rpm/*.rpm
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

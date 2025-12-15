@@ -14,21 +14,38 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Spinner;
 import javafx.scene.control.TitledPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.SplitPane; // Explicitly import SplitPane
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.Window; // Import Window
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.ToolBar;
+import javafx.scene.control.Tooltip;
+import javafx.scene.control.RadioButton;
+import javafx.scene.control.ToggleGroup;
+import javafx.scene.control.TreeView;
+import javafx.scene.control.TreeItem;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
+import javafx.stage.Window;
 
 import java.util.Optional;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.input.MouseButton;
 
 // Swing/AWT imports (only for JOGL + file dialogs)
 import javax.swing.JPanel;
@@ -54,22 +71,39 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.FPSAnimator;
+import com.jogamp.opengl.util.awt.TextRenderer;
 
 // Project-specific imports
 import cad.core.Geometry;
 import cad.core.Point;
 import cad.core.Sketch;
+import cad.core.UnitSystem;
+import cad.core.CommandManager;
+import cad.core.AddConstraintCommand;
+import cad.core.AddDimensionCommand;
+import cad.core.Constraint;
+import cad.core.ConstraintType;
+import cad.core.CoincidentConstraint;
+import cad.core.HorizontalConstraint;
+import cad.core.VerticalConstraint;
+import cad.core.FixedConstraint;
+import cad.core.Sketch.Line;
+import cad.core.Sketch.PointEntity;
+import cad.core.Sketch.Entity;
 
 /**
  * GuiFX - Main JavaFX Application Class for CAD System
  * 
- * This class represents the primary GUI application for a Computer-Aided Design (CAD) system
- * built using JavaFX with an embedded JOGL (Java OpenGL) canvas for 3D rendering.
+ * This class represents the primary GUI application for a Computer-Aided Design
+ * (CAD) system
+ * built using JavaFX with an embedded JOGL (Java OpenGL) canvas for 3D
+ * rendering.
  * 
  * Key Features:
  * - Interactive 3D model viewing and manipulation using OpenGL
- * - Support for STL file import/export and DXF file operations  
- * - Real-time 3D model generation (cubes, spheres with customizable subdivisions)
+ * - Support for STL file import/export and DXF file operations
+ * - Real-time 3D model generation (cubes, spheres with customizable
+ * subdivisions)
  * - 2D sketching capabilities with various geometric primitives
  * - Dual-mode view switching between 3D models and 2D sketches
  * - Optimized layout with resizable panels and space-efficient design
@@ -81,44 +115,44 @@ import cad.core.Sketch;
  * - Space: Toggle between 3D and 2D views
  * - ESC: Restore canvas focus if needed
  * 
-
-*/
+ * 
+ */
 
 public class GuiFX extends Application {
 
     // === UI Components ===
     private TextArea outputArea;
-    private TextField cubeSizeField, sphereRadiusField, fileField, latField, lonField;
-    private TextField sketchPointX, sketchPointY;
-    private TextField sketchLineX1, sketchLineY1, sketchLineX2, sketchLineY2;
-    private TextField sketchCircleX, sketchCircleY, sketchCircleR;
-    private TextField sketchPolygonX, sketchPolygonY, sketchPolygonR, sketchPolygonSides;
-    private TextField sketchKiteCenterX, sketchKiteCenterY, sketchKiteDiagV, sketchKiteDiagH, sketchKiteAngle;
-    private ComboBox<String> unitSelector;
+    private TextArea helpText;
+    private ScrollPane helpScrollPane; // To maintain reference if needed
     private JOGLCadCanvas glCanvas; // This is an AWT component where OpenGL rendering happens
     private SwingNode canvasNode; // This wraps the AWT GLCanvas for integration into JavaFX scene graph
     private FPSAnimator animator; // Manages the animation loop for the GLCanvas
     private OpenGLRenderer glRenderer; // Reference to the OpenGLRenderer instance
+    private SketchInteractionManager interactionManager; // Handles interactive sketching logic
 
     // === Static fields for configuration and core objects ===
     public static int sphereLatDiv = 10; // Default latitude divisions for sphere
     public static int sphereLonDiv = 10; // Default longitude divisions for sphere
     public static int cubeDivisions = 10; // Default divisions for cube
     public static Sketch sketch; // The core object for 2D sketching operations
+    private CommandManager commandManager; // Undo/redo history manager
+    private UnitSystem currentUnits = UnitSystem.MMGS; // Default units (millimeters)
+    private boolean autoDimensionEnabled = false; // Auto-dimension toggle
 
     // === OpenGL rendering variables ===
-    private float rotationX = 0.0f; // Current rotation around the X-axis for 3D view
-    private float rotationY = 0.0f; // Current rotation around the Y-axis for 3D view
-    private float zoom = -5.0f; // Current zoom level for 3D view
+    private float rotationX = 35.264f; // Current rotation around the X-axis for 3D view (isometric default)
+    private float rotationY = -45.0f; // Current rotation around the Y-axis for 3D view (isometric default)
+    private float zoom = -30.0f; // Current zoom level for 3D view (negative = camera back from origin)
     private int lastMouseX, lastMouseY; // Last mouse coordinates for drag rotation
     private boolean isDragging = false; // Flag to indicate if mouse is being dragged for rotation
     private List<float[]> stlTriangles; // Stores triangles data from a loaded STL file
-    
+
     // === 2D Sketch view variables ===
     private float sketch2DPanX = 0.0f; // Pan offset in X direction for 2D sketch view
     private float sketch2DPanY = 0.0f; // Pan offset in Y direction for 2D sketch view
     private float sketch2DZoom = 1.0f; // Zoom level for 2D sketch view (1.0 = default, >1.0 = zoomed in)
-    // private boolean showSketch = false; // This field is now managed directly by OpenGLRenderer via setter
+    // private boolean showSketch = false; // This field is now managed directly by
+    // OpenGLRenderer via setter
 
     /**
      * The main entry point for the JavaFX application.
@@ -126,45 +160,372 @@ public class GuiFX extends Application {
      * It initializes the UI, sets up the scene, and displays the primary stage.
      *
      * 
-    */
+     */
+    /**
+     * The main entry point for the JavaFX application.
+     * Initializes the SolidWorks-style layout.
+     */
     @Override
     public void start(Stage primaryStage) {
         sketch = new Sketch(); // Initialize the Sketch object
+        commandManager = new CommandManager(); // Initialize undo/redo manager
+        
+        // Show unit selection dialog FIRST
+        List<UnitSystem> choices = java.util.Arrays.asList(UnitSystem.values());
+        ChoiceDialog<UnitSystem> dialog = new ChoiceDialog<>(UnitSystem.MMGS, choices); // Default to MMGS
+        dialog.setTitle("Unit System Selection");
+        dialog.setHeaderText("Select the Unit System for this session");
+        dialog.setContentText("Unit System:");
 
-        primaryStage.setTitle("CAD GUI");
+        Optional<UnitSystem> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            currentUnits = result.get();
+            sketch.setUnitSystem(currentUnits); // Configure sketch with selected units
+            System.out.println("Selected Unit System: " + currentUnits.toString());
+        } else {
+            // User cancelled - exit app
+            Platform.exit(); 
+            System.exit(0);
+        }
 
-        // Initialize UI components
+        // Initialize the Sketch Interaction Manager
+        interactionManager = new SketchInteractionManager(sketch, commandManager); // Init interaction manager
+
+        primaryStage.setTitle("SketchApp (4.0)");
+
+        // Initialize components (fields, etc.)
         initializeComponents();
 
-        // Create main layout
+        // Main Layout (BorderPane)
         BorderPane root = new BorderPane();
 
-        // Create split panes for layout organization
-        SplitPane mainSplitPane = createMainSplitPane();
-        SplitPane verticalSplitPane = new SplitPane();
-        verticalSplitPane.setOrientation(Orientation.VERTICAL);
-        verticalSplitPane.getItems().addAll(mainSplitPane, createConsolePane());
-        verticalSplitPane.setDividerPositions(0.85); // Give more space to main content, less to console
+        // 1. Top: Ribbon (CommandManager)
+        TabPane ribbon = createRibbon();
+        root.setTop(ribbon);
 
-        root.setCenter(verticalSplitPane);
+        // 2. Center: 3D Viewport with Heads-Up Toolbar
+        // We wrap the canvasNode in a StackPane to overlay the Heads-Up Toolbar
+        StackPane viewportStack = new StackPane();
+        viewportStack.getStyleClass().add("viewport-stack"); // Use CSS class instead of inline style
+
+        // Heads-Up View Toolbar (Floating in Viewport)
+        ToolBar headsUpToolbar = new ToolBar();
+        headsUpToolbar.setMaxWidth(180);
+        headsUpToolbar.setMaxHeight(30);
+        StackPane.setAlignment(headsUpToolbar, Pos.TOP_CENTER);
+        StackPane.setMargin(headsUpToolbar, new Insets(10));
+
+        Button btnIso = new Button("[ISO]");
+        btnIso.setTooltip(new Tooltip("Isometric View"));
+        btnIso.setOnAction(e -> setViewIsometric());
+
+        Button btnFront = new Button("[F]");
+        btnFront.setTooltip(new Tooltip("Front View"));
+        btnFront.setOnAction(e -> setViewFront());
+
+        Button btnTop = new Button("[T]");
+        btnTop.setTooltip(new Tooltip("Top View"));
+        btnTop.setOnAction(e -> setViewTop());
+
+        Button btnRight = new Button("[R]");
+        btnRight.setTooltip(new Tooltip("Right View"));
+        btnRight.setOnAction(e -> setViewRight());
+
+        headsUpToolbar.getItems().addAll(btnIso, btnFront, btnTop, btnRight);
+        viewportStack.getChildren().add(headsUpToolbar);
+
+        // Initialize JOGL Canvas (CanvasNode will be added async)
+        initializeCanvasAsync(viewportStack);
+
+        root.setCenter(viewportStack);
+
+        // 3. Left: Feature Manager Design Tree (now a TabPane)
+        TabPane featureManager = createControlPanel();
+
+        // 4. Right: Property Manager / Task Pane (Placeholder for now)
+        TabPane taskPane = createTaskPane();
+
+        // Combine Left, Center, Right using SplitPane for resizability
+        SplitPane horizontalSplit = new SplitPane();
+        horizontalSplit.getItems().addAll(featureManager, root.getCenter(), taskPane);
+        horizontalSplit.setDividerPositions(0.2, 0.85); // 20% Tree, 65% View, 15% Task Pane
+
+        // We need to re-set the center of BorderPane to this SplitPane
+        // But the Ribbon needs to stay at top.
+        // So root center is the split pane.
+        root.setCenter(horizontalSplit);
+
+        // 5. Bottom: Status Bar / Console
+        VBox bottomPane = new VBox();
+        bottomPane.getChildren().addAll(createStatusBar(), createConsolePane());
+        root.setBottom(bottomPane);
 
         // Create scene
-        Scene scene = new Scene(root, 1920, 1080);
-        // Load external CSS stylesheet for styling
-        //scene.getStylesheets().add(getClass().getResource("/styles.css").toExternalForm());
-
+        Scene scene = new Scene(root, 1600, 900);
+        // Load CSS
+        try {
+            String css = getClass().getResource("styles.css").toExternalForm();
+            scene.getStylesheets().add(css);
+        } catch (Exception e) {
+            System.err.println("Could not load CSS: " + e.getMessage());
+        }
         primaryStage.setScene(scene);
-        // Handle application close request to stop the OpenGL animator and exit gracefully
-        primaryStage.setOnCloseRequest(e -> {
-            cleanupAndExit();
-        });
-
+        primaryStage.setOnCloseRequest(e -> cleanupAndExit());
+        primaryStage.setMaximized(true); // Start maximized like SW
         primaryStage.show();
 
-        // Start OpenGL animation if the animator is initialized
+        // Start OpenGL animation
         if (animator != null) {
             animator.start();
         }
+    }
+
+    // === New SolidWorks-Style Layout Methods ===
+
+    private TabPane createRibbon() {
+        TabPane ribbon = new TabPane();
+        ribbon.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        // Style is now handled by CSS 'tab-pane' class mostly, but removing inline
+        // styles to let CSS take over completely
+        ribbon.getStyleClass().add("ribbon-pane");
+
+        // --- SKETCH TAB ---
+        Tab sketchTab = new Tab("Sketch");
+        ToolBar sketchToolbar = new ToolBar();
+        sketchToolbar.getItems().addAll(
+                createRibbonButton("Undo", "Undo (Ctrl+Z)", e -> performUndo()),
+                createRibbonButton("Redo", "Redo (Ctrl+Shift+Z)", e -> performRedo()),
+                new Separator(),
+                createRibbonButton("Sketch", "Create/Edit Sketch", e -> appendOutput("Sketch Mode Active")),
+                createRibbonButton("Load", "Open File", e -> showLoadDialog()),
+                createRibbonButton("Save", "Save STL", e -> showSaveDialog()),
+                new Separator(),
+                createRibbonButton("Line", "Line Entity", e -> activateSketchTool(SketchInteractionManager.InteractionMode.SKETCH_LINE, "Line: Click and drag to draw a line")),
+                createRibbonButton("Circle", "Circle Entity", e -> activateSketchTool(SketchInteractionManager.InteractionMode.SKETCH_CIRCLE, "Circle: Click center, drag to set radius")),
+                createRibbonButton("Polygon", "Polygon Entity", e -> showPolygonParametersDialog()),
+                createRibbonButton("Point", "Point Entity", e -> activateSketchTool(SketchInteractionManager.InteractionMode.SKETCH_POINT, "Point: Click to place points")),
+
+                createRibbonButton("Kite", "Kite Entity", e -> showKiteDialog()),
+                createRibbonButton("NACA", "NACA Airfoil", e -> showNacaDialog()), // New Dialog needed
+                new Separator(),
+                createRibbonButton("Trim", "Trim Entities", e -> appendOutput("Trim not implemented")),
+                createRibbonButton("Offset", "Offset Entities", e -> appendOutput("Offset not implemented")));
+        sketchTab.setContent(sketchToolbar);
+
+        // --- FEATURES TAB ---
+        Tab featuresTab = new Tab("Features");
+        ToolBar featuresToolbar = new ToolBar();
+        featuresToolbar.getItems().addAll(
+                createRibbonButton("Cube", "Create Cube", e -> showCubeDialog()),
+                createRibbonButton("Sphere", "Create Sphere", e -> showSphereDialog()),
+                new Separator(),
+                createRibbonButton("Extruded\nBoss/Base", "Extrude Sketch", e -> extrudeSketch()),
+                createRibbonButton("Revolved\nBoss/Base", "Revolve Sketch", e -> showRevolveDialog()), // New Dialog
+                createRibbonButton("Swept\nBoss/Base", "Sweep Sketch", e -> appendOutput("Sweep not implemented")),
+                createRibbonButton("Lofted\nBoss/Base", "Loft Sketches", e -> showLoftDialog()),
+                new Separator(),
+                createRibbonButton("Extruded\nCut", "Cut Material", e -> appendOutput("Cut not implemented")),
+                createRibbonButton("Fillet", "Round Edges", e -> appendOutput("Fillet not implemented")));
+        featuresTab.setContent(featuresToolbar);
+
+        // --- EVALUATE TAB ---
+        Tab evaluateTab = new Tab("Evaluate");
+        ToolBar evaluateToolbar = new ToolBar();
+        evaluateToolbar.getItems().addAll(
+                createRibbonButton("Dimension", "Measure Distance/Radius", e -> activateDimensionTool()),
+                createRibbonButton("Mass Properties", "Calculate Mass/CG", e -> calculateMassProperties()));
+        evaluateTab.setContent(evaluateToolbar);
+
+        // --- CONSTRAINTS TAB ---
+        Tab constraintsTab = new Tab("Constraints");
+        ToolBar constraintsToolbar = new ToolBar();
+        constraintsToolbar.getItems().addAll(
+                createRibbonButton("Select", "Select Entities", e -> activateSelectionTool()),
+                new Separator(),
+                createRibbonButton("Horizontal", "Make Horizontal", e -> applyHorizontalConstraint()),
+                createRibbonButton("Vertical", "Make Vertical", e -> applyVerticalConstraint()),
+                createRibbonButton("Coincident", "Make Coincident", e -> applyCoincidentConstraint()),
+                createRibbonButton("Fixed", "Fix Position", e -> applyFixedConstraint()),
+                new Separator(),
+                createRibbonButton("Solve", "Solve Constraints", e -> {
+                    sketch.solveConstraints();
+                    glCanvas.repaint();
+                    appendOutput("Constraints Solved.");
+                }));
+        constraintsTab.setContent(constraintsToolbar);
+
+        // --- TOOLS TAB (API/Macros) ---
+        Tab toolsTab = new Tab("Tools");
+        ToolBar toolsToolbar = new ToolBar();
+        toolsToolbar.getItems().addAll(
+                createRibbonButton("Record", "Record Macro", e -> appendOutput("Macro Recording Started...")),
+                createRibbonButton("Stop", "Stop Recording", e -> appendOutput("Macro Recording Stopped.")),
+                createRibbonButton("Run", "Run Macro", e -> appendOutput("Select Macro to Run...")),
+                new Separator(),
+                createRibbonButton("Add-Ins", "Manage Add-Ins", e -> appendOutput("Add-In Manager opened.")));
+        toolsTab.setContent(toolsToolbar);
+
+        ribbon.getTabs().addAll(sketchTab, featuresTab, constraintsTab, evaluateTab, toolsTab);
+        return ribbon;
+    }
+
+    private Button createRibbonButton(String text, String tooltipText,
+            javafx.event.EventHandler<javafx.event.ActionEvent> handler) {
+        Button btn = new Button(text);
+        btn.setTooltip(new Tooltip(tooltipText));
+        btn.setOnAction(handler);
+        // Remove inline style to let CSS handle it
+        btn.setMinWidth(60); // Slightly smaller width
+        btn.setMaxHeight(60); // Constrain height
+        btn.setPrefHeight(60);
+        return btn;
+    }
+
+    private VBox createFeatureManagerTree() {
+        VBox container = new VBox();
+        container.setMinWidth(250);
+        container.setStyle("-fx-background-color: white;");
+
+        // Tree View
+        TreeItem<String> rootItem = new TreeItem<>("Part1 (Default)");
+        rootItem.setExpanded(true);
+
+        TreeItem<String> history = new TreeItem<>("History");
+        TreeItem<String> sensors = new TreeItem<>("Sensors");
+        TreeItem<String> annotations = new TreeItem<>("Annotations");
+        TreeItem<String> material = new TreeItem<>("Material <not specified>");
+        TreeItem<String> frontPlane = new TreeItem<>("Front Plane");
+        TreeItem<String> topPlane = new TreeItem<>("Top Plane");
+        TreeItem<String> rightPlane = new TreeItem<>("Right Plane");
+        TreeItem<String> origin = new TreeItem<>("Origin");
+
+        rootItem.getChildren().addAll(history, sensors, annotations, material, frontPlane, topPlane, rightPlane,
+                origin);
+
+        TreeView<String> tree = new TreeView<>(rootItem);
+        tree.setShowRoot(true);
+        VBox.setVgrow(tree, Priority.ALWAYS);
+        
+        // Add double-click handler for plane orientation
+        tree.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {  // Double-click
+                TreeItem<String> selectedItem = tree.getSelectionModel().getSelectedItem();
+                if (selectedItem != null) {
+                    String itemName = selectedItem.getValue();
+                    orientViewToPlane(itemName);
+                }
+            }
+        });
+        
+        // Add right-click context menu for creating custom planes
+        ContextMenu contextMenu = new ContextMenu();
+        MenuItem createPlaneItem = new MenuItem("Create New Plane...");
+        createPlaneItem.setOnAction(e -> showCreatePlaneDialog(rootItem));
+        contextMenu.getItems().add(createPlaneItem);
+        tree.setContextMenu(contextMenu);
+
+        container.getChildren().add(tree);
+
+        return container;
+    }
+
+    private TabPane createTaskPane() {
+        TabPane taskPane = new TabPane();
+        taskPane.setSide(javafx.geometry.Side.RIGHT); // Tabs on the right side
+        taskPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        taskPane.setMinWidth(250); // Expanded width to show content
+
+        // Resources Tab
+        Tab resourcesTab = new Tab("Resources");
+        VBox resourcesContent = new VBox(10);
+        resourcesContent.setPadding(new Insets(10));
+        resourcesContent.setStyle("-fx-background-color: white;");
+
+        resourcesContent.getChildren().addAll(
+                new Label("SketchApp Tools"),
+                new Button("Property Tab Builder"),
+                new Button("Rx"),
+                new Separator(),
+                new Label("Online Resources"),
+                new Button("Customer Portal"),
+                new Button("MySketchApp"),
+                new Button("User Forums"));
+        resourcesTab.setContent(resourcesContent);
+
+        // Design Library Tab
+        Tab libraryTab = new Tab("Design Library");
+        VBox libraryContent = new VBox();
+        libraryContent.setPadding(new Insets(5));
+        TreeItem<String> libRoot = new TreeItem<>("Design Library");
+        libRoot.setExpanded(true);
+        libRoot.getChildren().addAll(
+                new TreeItem<>("Toolbox"),
+                new TreeItem<>("3D Interconnect"),
+                new TreeItem<>("Routing"),
+                new TreeItem<>("Smart Components"));
+        TreeView<String> libTree = new TreeView<>(libRoot);
+        libraryContent.getChildren().add(libTree);
+        libraryTab.setContent(libraryContent);
+
+        // Appearances Tab
+        Tab appearancesTab = new Tab("Appearances");
+        appearancesTab.setContent(new Label("  Appearances, Scenes,\n  and Decals"));
+
+        // Help Tab
+        Tab helpTab = new Tab("Help");
+        VBox helpContent = new VBox();
+        helpContent.setFillWidth(true);
+        helpContent.getChildren().add(createHelpPane());
+        helpTab.setContent(helpContent);
+
+        taskPane.getTabs().addAll(resourcesTab, libraryTab, appearancesTab, helpTab);
+
+        return taskPane;
+    }
+
+    // Helper for Async Canvas loading
+    private void initializeCanvasAsync(StackPane parent) {
+        Task<Void> canvasLoadTask = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                while (canvasNode == null) {
+                    Thread.sleep(50);
+                }
+                return null;
+            }
+        };
+
+        canvasLoadTask.setOnSucceeded(e -> {
+            parent.getChildren().add(canvasNode);
+            canvasNode.setFocusTraversable(true);
+            canvasNode.setOnKeyPressed(keyEvent -> {
+                // Forward keys to existing listener logic if possible,
+                // or just rely on GLCanvas focus which we requested in initializeGLCanvas
+                // But we need to consume arrow keys here to prevent focus traversal out of
+                // SwingNode
+                switch (keyEvent.getCode()) {
+                    case UP:
+                    case DOWN:
+                    case LEFT:
+                    case RIGHT:
+                    case SPACE:
+                    case Q:
+                    case E:
+                    case R:
+                        keyEvent.consume();
+                        break;
+                }
+            });
+
+            Platform.runLater(() -> {
+                canvasNode.requestFocus();
+                appendOutput("Ready.");
+            });
+        });
+
+        Thread canvasThread = new Thread(canvasLoadTask);
+        canvasThread.setDaemon(true);
+        canvasThread.start();
     }
 
     /**
@@ -183,17 +544,17 @@ public class GuiFX extends Application {
                 // Give a very short time for cleanup, but don't wait too long
                 Thread.sleep(50);
             }
-            
+
             // Dispose of the OpenGL context if possible
             if (glCanvas != null) {
                 glCanvas.destroy();
             }
-            
+
         } catch (Exception e) {
             // Ignore cleanup errors and force exit
             System.err.println("Warning during cleanup: " + e.getMessage());
         }
-        
+
         // Force immediate exit - don't wait for JavaFX platform
         Platform.runLater(() -> {
             Platform.exit();
@@ -207,7 +568,7 @@ public class GuiFX extends Application {
                 }
             }).start();
         });
-        
+
         // Also try to exit from this thread as backup
         new Thread(() -> {
             try {
@@ -224,50 +585,24 @@ public class GuiFX extends Application {
      * This method is called once during the application's startup.
      */
     private void initializeComponents() {
-        // Initialize all TextField components
-        cubeSizeField = new TextField();
-        sphereRadiusField = new TextField();
-        fileField = new TextField();
-        latField = new TextField();
-        lonField = new TextField();
-        sketchPointX = new TextField();
-        sketchPointY = new TextField();
-        sketchLineX1 = new TextField();
-        sketchLineY1 = new TextField();
-        sketchLineX2 = new TextField();
-        sketchLineY2 = new TextField();
-        sketchCircleX = new TextField();
-        sketchCircleY = new TextField();
-        sketchCircleR = new TextField();
-        sketchPolygonX = new TextField();
-        sketchPolygonY = new TextField();
-        sketchPolygonR = new TextField();
-        sketchPolygonSides = new TextField();
-
-    sketchKiteCenterX = new TextField();
-    sketchKiteCenterY = new TextField();
-    sketchKiteDiagV = new TextField();
-    sketchKiteDiagH = new TextField();
-    sketchKiteAngle = new TextField();
-    // Initialize ComboBox for unit selection
-        unitSelector = new ComboBox<>();
-        unitSelector.getItems().addAll("mm", "cm", "m", "in", "ft");
-        unitSelector.setValue("mm"); // Set default unit
-
         // Initialize TextArea for console output
         outputArea = new TextArea();
         outputArea.setEditable(false); // Make it read-only
         outputArea.setStyle("-fx-font-family: 'Courier New', monospace;"); // Apply font styling
 
-        // Initialize OpenGL canvas, which must be done on the Swing event dispatch thread
+        // Initialize OpenGL canvas, which must be done on the Swing event dispatch
+        // thread
         initializeGLCanvas();
     }
 
     /**
-     * Initializes the JOGL GLCanvas component. This involves setting up OpenGL capabilities,
-     * adding event listeners for mouse and keyboard interaction, and wrapping it in a SwingNode
+     * Initializes the JOGL GLCanvas component. This involves setting up OpenGL
+     * capabilities,
+     * adding event listeners for mouse and keyboard interaction, and wrapping it in
+     * a SwingNode
      * for integration into the JavaFX scene.
-     * This method uses SwingUtilities.invokeLater to ensure GLCanvas creation on the correct thread.
+     * This method uses SwingUtilities.invokeLater to ensure GLCanvas creation on
+     * the correct thread.
      */
     private void initializeGLCanvas() {
         SwingUtilities.invokeLater(() -> {
@@ -276,14 +611,14 @@ public class GuiFX extends Application {
             // Create OpenGL capabilities with double buffering and hardware acceleration
             GLCapabilities capabilities = new GLCapabilities(profile);
             capabilities.setDoubleBuffered(true);
-            capabilities.setHardwareAccelerated(false);
+            capabilities.setHardwareAccelerated(true);
 
             // Create the GLCanvas with the defined capabilities
             glCanvas = new JOGLCadCanvas(sketch);
             glCanvas.setMinimumSize(new Dimension(600, 450)); // Increased minimum size for larger models
             glCanvas.setPreferredSize(new Dimension(1200, 900)); // Much larger initial size for better viewing
             // Add custom OpenGL renderer and input listeners
-            glRenderer = new OpenGLRenderer(); // Instantiate the renderer
+            glRenderer = new OpenGLRenderer(interactionManager); // Pass Interaction Manager
             glCanvas.addGLEventListener(glRenderer); // Add the renderer to the canvas
             glCanvas.addMouseListener(new CanvasMouseListener());
             glCanvas.addMouseMotionListener(new CanvasMouseMotionListener());
@@ -295,7 +630,8 @@ public class GuiFX extends Application {
             // Initialize the FPSAnimator to continuously render the GLCanvas at 60 FPS
             animator = new FPSAnimator(glCanvas, 60);
 
-            // Create a JPanel to hold the GLCanvas, as SwingNode can only contain JComponent
+            // Create a JPanel to hold the GLCanvas, as SwingNode can only contain
+            // JComponent
             JPanel glPanel = new JPanel(new java.awt.BorderLayout());
             glPanel.add(glCanvas, java.awt.BorderLayout.CENTER);
             // Don't set fixed size on panel - let it grow with the window
@@ -321,14 +657,15 @@ public class GuiFX extends Application {
         splitPane.setOrientation(Orientation.HORIZONTAL);
 
         // Create the left panel (controls)
-        VBox leftPanel = createControlPanel();
+        TabPane leftPanel = createControlPanel();
 
         // Create the right panel (3D canvas)
         VBox rightPanel = new VBox();
         rightPanel.setPadding(new Insets(5.0)); // Reduced padding for more space
         rightPanel.setAlignment(Pos.CENTER);
 
-        // Use a Task to wait for the canvasNode to be initialized from the Swing thread,
+        // Use a Task to wait for the canvasNode to be initialized from the Swing
+        // thread,
         // then add it to the JavaFX scene on the JavaFX Application Thread.
         Task<Void> canvasLoadTask = new Task<Void>() {
             @Override
@@ -345,7 +682,7 @@ public class GuiFX extends Application {
             // Add canvasNode to rightPanel once it's ready
             rightPanel.getChildren().add(canvasNode);
             VBox.setVgrow(canvasNode, Priority.ALWAYS); // Allow canvas to grow with window
-            
+
             // Make the canvas focusable and consume key events to prevent focus traversal
             canvasNode.setFocusTraversable(true);
             canvasNode.setOnKeyPressed(keyEvent -> {
@@ -364,6 +701,7 @@ public class GuiFX extends Application {
                     case SPACE:
                     case ESCAPE:
                     case H:
+                        showHelp();
                         keyEvent.consume(); // Prevent JavaFX from handling these keys
                         break;
                     default:
@@ -371,7 +709,7 @@ public class GuiFX extends Application {
                         break;
                 }
             });
-            
+
             // Request initial focus on the canvas
             Platform.runLater(() -> {
                 canvasNode.requestFocus();
@@ -395,81 +733,83 @@ public class GuiFX extends Application {
      *
      * @return A VBox representing the control panel.
      */
-    private VBox createControlPanel() {
-        VBox controlPanel = new VBox(8.0); // Reduced spacing for compactness
-        controlPanel.setPadding(new Insets(8.0)); // Reduced padding
-        controlPanel.setMinWidth(280); // Further reduced minimum width for more canvas space
+    /**
+     * Creates and configures the control panel (left side of the main split pane).
+     * This panel contains TitledPanes for commands and parameters.
+     *
+     * @return A VBox representing the control panel.
+     */
+    private TabPane createControlPanel() {
+        TabPane controlTabs = new TabPane();
+        controlTabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+        controlTabs.setMinWidth(280);
 
-        // Create TitledPane for commands, make it non-collapsible
-        TitledPane commandsPane = new TitledPane("Commands", createCommandsPane());
-        commandsPane.setCollapsible(false);
+        // Tab 1: Feature Manager Tree
+        Tab treeTab = new Tab("Feature Tree");
+        treeTab.setContent(createFeatureManagerTree());
 
-        // Create TitledPane for parameters, make it non-collapsible
-        TitledPane parametersPane = new TitledPane("Parameters", createParametersPane());
-        parametersPane.setCollapsible(false);
+        // Tab 3: Configuration Manager
+        Tab configTab = new Tab("Configuration");
+        configTab.setContent(createConfigurationManager());
 
-        controlPanel.getChildren().addAll(commandsPane, parametersPane);
+        controlTabs.getTabs().addAll(treeTab, configTab);
+        return controlTabs;
+    }
 
-        return controlPanel;
+    private VBox createConfigurationManager() {
+        VBox container = new VBox();
+        container.setSpacing(5);
+        container.setPadding(new Insets(5));
+
+        // Toolbar for Config operations
+        ToolBar configTools = new ToolBar();
+        Button addConfigBtn = new Button("+");
+        addConfigBtn.setTooltip(new Tooltip("Add Configuration"));
+        Button delConfigBtn = new Button("-");
+        delConfigBtn.setTooltip(new Tooltip("Delete Configuration"));
+        configTools.getItems().addAll(addConfigBtn, delConfigBtn);
+
+        // Tree View for Configurations
+        TreeItem<String> rootConfig = new TreeItem<>("Part1 Configurations");
+        rootConfig.setExpanded(true);
+
+        TreeItem<String> defaultConfig = new TreeItem<>("Default [Active]");
+        TreeItem<String> description = new TreeItem<>("Description: Default configuration");
+        defaultConfig.getChildren().add(description);
+        defaultConfig.setExpanded(true);
+
+        rootConfig.getChildren().add(defaultConfig);
+
+        TreeView<String> configTree = new TreeView<>(rootConfig);
+        VBox.setVgrow(configTree, Priority.ALWAYS);
+
+        // Configuration Details Pane (Bottom)
+        GridPane detailsPane = new GridPane();
+        detailsPane.setHgap(5);
+        detailsPane.setVgap(5);
+        detailsPane.setPadding(new Insets(5));
+
+        detailsPane.add(new Label("Config Name:"), 0, 0);
+        detailsPane.add(new TextField("Default"), 1, 0);
+        detailsPane.add(new Label("Description:"), 0, 1);
+        detailsPane.add(new TextField("Standard Config"), 1, 1);
+
+        TitledPane detailsTitlePane = new TitledPane("Configuration Properties", detailsPane);
+        detailsTitlePane.setCollapsible(true);
+        detailsTitlePane.setExpanded(true);
+
+        container.getChildren().addAll(configTools, configTree, detailsTitlePane);
+        return container;
     }
 
     /**
      * Creates and populates the commands pane, which contains various buttons
-     * categorized into General, File Operations, 3D Model, and 2D Sketching commands.
+     * categorized into General, File Operations, 3D Model, and 2D Sketching
+     * commands.
      *
      * @return A ScrollPane containing the VBox of command buttons.
      */
-    private ScrollPane createCommandsPane() {
-        VBox commandsBox = new VBox(4.0); // Reduced spacing for compactness
-        commandsBox.setPadding(new Insets(8.0)); // Reduced padding
-
-        // General Commands section
-        commandsBox.getChildren().addAll(
-            createSectionLabel("General Commands"),
-            createButton("Help", e -> help()),
-            createButton("Version", e -> appendOutput("CAD System version 2.5")),
-            createButton("Exit", e -> cleanupAndExit()),
-            new Separator()
-        );
-
-        // File Operations section
-        commandsBox.getChildren().addAll(
-            createSectionLabel("File Operations"),
-            createButton("Save File", e -> saveFile()),
-            createButton("Load File", e -> loadFile()),
-            createButton("Export DXF", e -> exportDXF()),
-            new Separator()
-        );
-
-        // 3D Model Commands section
-        commandsBox.getChildren().addAll(
-            createSectionLabel("3D Model Commands"),
-            createButton("Create Cube", e -> createCube()),
-            createButton("Set Cube Div", e -> setCubeDivisions()),
-            createButton("Create Sphere", e -> createSphere()),
-            createButton("Set Sphere Div", e -> setSphereDivisions()),
-            new Separator()
-        );
-
-        // 2D Sketching Commands section
-        commandsBox.getChildren().addAll(
-            createSectionLabel("2D Sketching Commands"),
-            createButton("Sketch Clear", e -> sketchClear()),
-            createButton("Sketch List", e -> sketchList()),
-            createButton("Sketch Point", e -> sketchPoint()),
-            createButton("Sketch Line", e -> sketchLine()),
-            createButton("Sketch Circle", e -> sketchCircle()),
-            createButton("Sketch Polygon", e -> sketchPolygon()),
-            createButton("Sketch Kite", e -> sketchKite()),
-            createButton("Extrude Sketch", e -> extrudeSketch())
-        );
-
-        ScrollPane scrollPane = new ScrollPane(commandsBox);
-        scrollPane.setFitToWidth(true); // Ensure content fits width
-        scrollPane.setPrefHeight(250); // Reduced height for compactness
-
-        return scrollPane;
-    }
+    // Old createCommandsPane removed (replaced by Ribbon)
 
     /**
      * Creates and populates the parameters pane, which contains input fields
@@ -477,119 +817,32 @@ public class GuiFX extends Application {
      *
      * @return A ScrollPane containing the GridPane of parameter input fields.
      */
-    private ScrollPane createParametersPane() {
-        GridPane parametersGrid = new GridPane();
-        parametersGrid.setHgap(8.0); // Reduced horizontal gap
-        parametersGrid.setVgap(4.0);  // Reduced vertical gap for compactness
-        parametersGrid.setPadding(new Insets(8.0)); // Reduced padding
-
-        int row = 0; // Row counter for grid layout
-
-        // 3D Object Parameters section
-        parametersGrid.add(createSectionLabel("3D Object Parameters"), 0, row++, 2, 1); // Span 2 columns
-        parametersGrid.add(new Label("Cube Size:"), 0, row);
-        parametersGrid.add(cubeSizeField, 1, row++);
-        parametersGrid.add(new Label("Sphere Radius:"), 0, row);
-        parametersGrid.add(sphereRadiusField, 1, row++);
-        parametersGrid.add(new Label("Sphere Lat Div:"), 0, row);
-        parametersGrid.add(latField, 1, row++);
-        parametersGrid.add(new Label("Sphere Lon Div:"), 0, row);
-        parametersGrid.add(lonField, 1, row++);
-
-        parametersGrid.add(new Separator(), 0, row++, 2, 1);
-
-        // File Operations section
-        parametersGrid.add(createSectionLabel("File Operations"), 0, row++, 2, 1);
-        parametersGrid.add(new Label("File Name:"), 0, row);
-        parametersGrid.add(fileField, 1, row++);
-
-        parametersGrid.add(new Separator(), 0, row++, 2, 1);
-
-        // 2D Sketching Parameters section
-        parametersGrid.add(createSectionLabel("2D Sketching Parameters"), 0, row++, 2, 1);
-        parametersGrid.add(new Label("Point X:"), 0, row);
-        parametersGrid.add(sketchPointX, 1, row++);
-        parametersGrid.add(new Label("Point Y:"), 0, row);
-        parametersGrid.add(sketchPointY, 1, row++);
-
-        parametersGrid.add(new Label("Line X1:"), 0, row);
-        parametersGrid.add(sketchLineX1, 1, row++);
-        parametersGrid.add(new Label("Line Y1:"), 0, row);
-        parametersGrid.add(sketchLineY1, 1, row++);
-        parametersGrid.add(new Label("Line X2:"), 0, row);
-        parametersGrid.add(sketchLineX2, 1, row++);
-        parametersGrid.add(new Label("Line Y2:"), 0, row);
-        parametersGrid.add(sketchLineY2, 1, row++);
-
-        parametersGrid.add(new Label("Circle X:"), 0, row);
-        parametersGrid.add(sketchCircleX, 1, row++);
-        parametersGrid.add(new Label("Circle Y:"), 0, row);
-        parametersGrid.add(sketchCircleY, 1, row++);
-        parametersGrid.add(new Label("Circle Radius:"), 0, row);
-        parametersGrid.add(sketchCircleR, 1, row++);
-
-        parametersGrid.add(new Label("Polygon Center X:"), 0, row);
-        parametersGrid.add(sketchPolygonX, 1, row++);
-        parametersGrid.add(new Label("Polygon Center Y:"), 0, row);
-        parametersGrid.add(sketchPolygonY, 1, row++);
-        parametersGrid.add(new Label("Polygon Radius:"), 0, row);
-        parametersGrid.add(sketchPolygonR, 1, row++);
-        parametersGrid.add(new Label("Polygon Sides (3-25):"), 0, row);
-        parametersGrid.add(sketchPolygonSides, 1, row++);
-
-
-    parametersGrid.add(new Separator(), 0, row++, 2, 1);
-
-    // Kite Parameters
-    parametersGrid.add(createSectionLabel("Kite Parameters"), 0, row++, 2, 1);
-    parametersGrid.add(new Label("Center X:"), 0, row);
-    parametersGrid.add(sketchKiteCenterX, 1, row++);
-    parametersGrid.add(new Label("Center Y:"), 0, row);
-    parametersGrid.add(sketchKiteCenterY, 1, row++);
-    parametersGrid.add(new Label("Vertical Diagonal:"), 0, row);
-    parametersGrid.add(sketchKiteDiagV, 1, row++);
-    parametersGrid.add(new Label("Horizontal Diagonal:"), 0, row);
-    parametersGrid.add(sketchKiteDiagH, 1, row++);
-    parametersGrid.add(new Label("Angle (deg):"), 0, row);
-    parametersGrid.add(sketchKiteAngle, 1, row++);
-
-    // Units Selector
-    parametersGrid.add(new Label("Units:"), 0, row);
-    parametersGrid.add(unitSelector, 1, row++);
-
-
-        ScrollPane scrollPane = new ScrollPane(parametersGrid);
-        scrollPane.setFitToWidth(true);
-        scrollPane.setPrefHeight(400); // Set a preferred height
-
-        return scrollPane;
-    }
-
-    // Handler for Sketch Kite button (must be outside of createParametersPane)
-    private void sketchKite() {
-        try {
-            double cx = Double.parseDouble(sketchKiteCenterX.getText());
-            double cy = Double.parseDouble(sketchKiteCenterY.getText());
-            double diagV = Double.parseDouble(sketchKiteDiagV.getText());
-            double diagH = Double.parseDouble(sketchKiteDiagH.getText());
-            double angle = Double.parseDouble(sketchKiteAngle.getText());
-            sketch.addKite((float)cx, (float)cy, (float)diagV, (float)diagH, (float)angle);
-            appendOutput(String.format("Kite sketched at (%.2f, %.2f) with diagonals %.2f, %.2f and angle %.2f", cx, cy, diagV, diagH, angle));
-            glCanvas.repaint();
-        } catch (NumberFormatException ex) {
-            appendOutput("Invalid input for kite parameters.");
-        }
-    }
+    // Old property manager removed
 
     /**
      * Creates and configures the console output pane at the bottom of the window.
      *
      * @return A TitledPane containing the TextArea for console output.
      */
-    private TitledPane createConsolePane() {
+    private Label statusLabel;
+    
+    private BorderPane createStatusBar() {
+        BorderPane statusBar = new BorderPane();
+        statusBar.setStyle("-fx-background-color: #f0f0f0; -fx-padding: 5px; -fx-border-color: #cccccc; -fx-border-width: 1px 0 0 0;");
+        
+        statusLabel = new Label("Ready");
+        statusLabel.setStyle("-fx-font-family: 'Segoe UI', sans-serif; -fx-font-size: 12px;");
+        statusBar.setLeft(statusLabel);
+        
+        return statusBar;
+    }
+    
+    private TitledPane createConsolePane() { // Create Console Output (Bottom)
         TitledPane consolePane = new TitledPane("Console Output", outputArea);
-        consolePane.setCollapsible(false); // Make it non-collapsible
-        consolePane.setPrefHeight(120); // Reduced height to give more space to main content
+        consolePane.setCollapsible(true);
+        consolePane.setExpanded(true);
+        consolePane.setMaxHeight(150); // Reduced height for console
+        consolePane.setPrefHeight(100);
 
         return consolePane;
     }
@@ -610,7 +863,7 @@ public class GuiFX extends Application {
      * Helper method to create a button with specified text and action handler.
      * The button is set to fill the maximum available width.
      *
-     * @param text The text to display on the button.
+     * @param text    The text to display on the button.
      * @param handler The EventHandler for the button's action.
      * @return A configured Button object.
      */
@@ -627,7 +880,24 @@ public class GuiFX extends Application {
      */
     private class OpenGLRenderer implements GLEventListener {
         private GLU glu = new GLU(); // GLU utility object for perspective projection
-        private boolean showSketch = false; // Flag to switch between rendering 3D models (STL/default cube) and 2D sketch
+        
+        // Cached matrices for picking
+        private double[] modelviewMatrix = new double[16];
+        private double[] projectionMatrix = new double[16];
+        private int[] viewport = new int[4];
+        
+        // 3D Selection State
+        private float[] firstPoint3D = null; // For distance measurement
+        
+
+        private boolean showSketch = false; // Flag to switch between rendering 3D models (STL/default cube) and 2D
+        private float[] modelCentroid = null; // Centroid of the currently loaded STL model (null if no model)
+        private SketchInteractionManager interactionManager;
+        private TextRenderer textRenderer; // For rendering axis labels
+
+        public OpenGLRenderer(SketchInteractionManager interactionManager) {
+            this.interactionManager = interactionManager;
+        }
 
         /**
          * Called once when the OpenGL context is initialized.
@@ -641,15 +911,18 @@ public class GuiFX extends Application {
 
             gl.glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // Set background color (white)
             gl.glEnable(GL2.GL_DEPTH_TEST); // Enable depth testing for 3D objects
-            gl.glEnable(GL2.GL_LIGHTING);   // Enable lighting
-            gl.glEnable(GL2.GL_LIGHT0);     // Enable light source 0
+            gl.glEnable(GL2.GL_LIGHTING); // Enable lighting
+            gl.glEnable(GL2.GL_LIGHT0); // Enable light source 0
             gl.glEnable(GL2.GL_COLOR_MATERIAL); // Enable material color tracking GL_FRONT_AND_BACK
 
             // Set up lighting properties (position and diffuse color)
-            float[] lightPos = {1.0f, 1.0f, 1.0f, 0.0f}; // Directional light from top-right-front
-            float[] lightColor = {1.0f, 1.0f, 1.0f, 1.0f}; // White light
+            float[] lightPos = { 1.0f, 1.0f, 1.0f, 0.0f }; // Directional light from top-right-front
+            float[] lightColor = { 1.0f, 1.0f, 1.0f, 1.0f }; // White light
             gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, lightPos, 0);
             gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, lightColor, 0);
+            
+            // Initialize text renderer for axis labels
+            textRenderer = new TextRenderer(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 24));
         }
 
         /**
@@ -664,15 +937,15 @@ public class GuiFX extends Application {
             GL2 gl = drawable.getGL().getGL2();
 
             gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT); // Clear color and depth buffers
-            
+
             // Conditional rendering based on the showSketch flag and loaded STL data
             if (this.showSketch) {
                 // For 2D sketch rendering, don't apply 3D transformations
-                renderSketch(gl); // Render 2D sketch elements
+                renderSketch(gl, drawable); // Render 2D sketch elements
             } else {
                 // For 3D rendering, apply transformations and update projection matrix
                 updateProjectionMatrix(drawable);
-                
+
                 gl.glLoadIdentity(); // Reset the model-view matrix
 
                 // Apply transformations for viewing (zoom, rotation)
@@ -680,17 +953,28 @@ public class GuiFX extends Application {
                 gl.glRotatef(rotationX, 1.0f, 0.0f, 0.0f);
                 gl.glRotatef(rotationY, 0.0f, 1.0f, 0.0f);
 
+                // Always render coordinate axes for reference (CAD convention: X=Red, Y=Green, Z=Blue)
+                renderAxes(drawable);
+
                 if (stlTriangles != null) {
                     renderStlTriangles(gl); // Render loaded STL triangles
+                    renderModelAxes(gl); // Render small axes at model centroid
                 } else {
-                    renderDefaultCube(gl); // Render a default cube if no STL is loaded
+                    renderPlanes(gl); // Render reference planes if no STL is loaded
                 }
             }
+            
+            // Cache matrices for picking (capture state after all transformations)
+            gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, modelviewMatrix, 0);
+            gl.glGetDoublev(GL2.GL_PROJECTION_MATRIX, projectionMatrix, 0);
+            gl.glGetIntegerv(GL2.GL_VIEWPORT, viewport, 0);
         }
 
         /**
-         * Updates the projection matrix with adaptive clipping planes based on current zoom and model size.
-         * This prevents clipping artifacts when rotating large models or when zoomed far out.
+         * Updates the projection matrix with adaptive clipping planes based on current
+         * zoom and model size.
+         * This prevents clipping artifacts when rotating large models or when zoomed
+         * far out.
          *
          * @param drawable The GLAutoDrawable object to get dimensions from.
          */
@@ -698,15 +982,17 @@ public class GuiFX extends Application {
             GL2 gl = drawable.getGL().getGL2();
             int width = drawable.getSurfaceWidth();
             int height = drawable.getSurfaceHeight();
-            
-            if (height == 0) height = 1; // Prevent division by zero
+
+            if (height == 0)
+                height = 1; // Prevent division by zero
             float aspect = (float) width / height;
 
             // Calculate adaptive clipping planes based on model size and zoom
             float modelSize = Geometry.getModelMaxDimension();
             float nearPlane = Math.max(0.01f, Math.abs(zoom) * 0.005f); // More conservative near plane
-            float farPlane = Math.max(1000.0f, Math.abs(zoom) + modelSize * 5.0f); // Increased far plane for large models
-            
+            float farPlane = Math.max(1000.0f, Math.abs(zoom) + modelSize * 5.0f); // Increased far plane for large
+                                                                                   // models
+
             gl.glMatrixMode(GL2.GL_PROJECTION);
             gl.glLoadIdentity();
             glu.gluPerspective(45.0, aspect, nearPlane, farPlane);
@@ -718,28 +1004,31 @@ public class GuiFX extends Application {
          * Sets up the viewport and the projection matrix with adaptive clipping planes.
          *
          * @param drawable The GLAutoDrawable object that triggered the event.
-         * @param x The x-coordinate of the viewport.
-         * @param y The y-coordinate of the viewport.
-         * @param width The width of the viewport.
-         * @param height The height of the viewport.
+         * @param x        The x-coordinate of the viewport.
+         * @param y        The y-coordinate of the viewport.
+         * @param width    The width of the viewport.
+         * @param height   The height of the viewport.
          */
         @Override
         public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
             GL2 gl = drawable.getGL().getGL2();
 
-            if (height == 0) height = 1; // Prevent division by zero
+            if (height == 0)
+                height = 1; // Prevent division by zero
             float aspect = (float) width / height;
 
             gl.glViewport(0, 0, width, height); // Set the viewport to the entire drawable area
             gl.glMatrixMode(GL2.GL_PROJECTION); // Switch to projection matrix mode
             gl.glLoadIdentity(); // Reset the projection matrix
-            
+
             // Calculate adaptive clipping planes based on model size and zoom
             float modelSize = Geometry.getModelMaxDimension();
             float nearPlane = Math.max(0.01f, Math.abs(zoom) * 0.005f); // More conservative near plane
-            float farPlane = Math.max(1000.0f, Math.abs(zoom) + modelSize * 5.0f); // Increased far plane for large models
-            
-            glu.gluPerspective(45.0, aspect, nearPlane, farPlane); // Set up perspective projection with adaptive clipping
+            float farPlane = Math.max(1000.0f, Math.abs(zoom) + modelSize * 5.0f); // Increased far plane for large
+                                                                                   // models
+
+            glu.gluPerspective(45.0, aspect, nearPlane, farPlane); // Set up perspective projection with adaptive
+                                                                   // clipping
             gl.glMatrixMode(GL2.GL_MODELVIEW); // Switch back to model-view matrix mode
         }
 
@@ -754,59 +1043,222 @@ public class GuiFX extends Application {
             // Cleanup resources if any (e.g., VBOs, textures)
         }
 
+
         /**
-         * Renders a simple default cube using immediate mode OpenGL (GL_QUADS).
-         *
-         * @param gl The GL2 object for OpenGL drawing commands.
+         * Renders XYZ coordinate axes for orientation reference with labels.
+         * X = Red, Y = Green, Z = Blue
          */
-        private void renderDefaultCube(GL2 gl) {
-            gl.glColor3f(0.7f, 0.7f, 0.7f); // Set color to grey
-            gl.glBegin(GL2.GL_QUADS); // Begin drawing quadrilaterals
+        private void renderAxes(GLAutoDrawable drawable) {
+            GL2 gl = drawable.getGL().getGL2();
+            float axisLength = 15.0f;
+            gl.glDisable(GL2.GL_LIGHTING);
+            gl.glLineWidth(2.0f);
+            
+            gl.glBegin(GL2.GL_LINES);
+            // X-axis (Red)
+            gl.glColor3f(1.0f, 0.0f, 0.0f);
+            gl.glVertex3f(0, 0, 0);
+            gl.glVertex3f(axisLength, 0, 0);
+            
+            // Y-axis (Green)
+            gl.glColor3f(0.0f, 1.0f, 0.0f);
+            gl.glVertex3f(0, 0, 0);
+            gl.glVertex3f(0, axisLength, 0);
+            
+            // Z-axis (Blue)
+            gl.glColor3f(0.0f, 0.0f, 1.0f);
+            gl.glVertex3f(0, 0, 0);
+            gl.glVertex3f(0, 0, axisLength);
+            gl.glEnd();
+            
+            gl.glLineWidth(1.0f);
+            
+            // Render text labels if textRenderer is initialized
+            if (textRenderer != null) {
+                renderAxisLabels(drawable, axisLength);
+            }
+            
+            gl.glEnable(GL2.GL_LIGHTING);
+        }
+        
+        /**
+         * Renders axis labels (X, Y, Z) at the end of each coordinate axis.
+         */
+        private void renderAxisLabels(GLAutoDrawable drawable, float axisLength) {
+            GL2 gl = drawable.getGL().getGL2();
+            
+            // Get modelview and projection matrices
+            double[] modelview = new double[16];
+            double[] projection = new double[16];
+            int[] viewport = new int[4];
+            
+            gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, modelview, 0);
+            gl.glGetDoublev(GL2.GL_PROJECTION_MATRIX, projection, 0);
+            gl.glGetIntegerv(GL2.GL_VIEWPORT, viewport, 0);
+            
+            double[] winCoords = new double[3];
+            
+            // Offset distance for text from axis endpoint
+            float labelOffset = 2.0f;
+            
+            // Begin 2D rendering with larger font
+            textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
+            
+            // Get text dimensions for centering (approximate)
+            int charWidth = 18;  // Approximate character width for size 24 font
+            int charHeight = 24;
+            
+            // X-axis label (Red) - positioned along positive X
+            boolean xProjected = glu.gluProject(axisLength + labelOffset, 0, 0, 
+                                               modelview, 0, projection, 0, viewport, 0, 
+                                               winCoords, 0);
+            if (xProjected && winCoords[2] >= 0 && winCoords[2] <= 1) { // Check if in front of camera
+                textRenderer.setColor(1.0f, 0.0f, 0.0f, 1.0f); // Bright red
+                int x = (int)winCoords[0] - charWidth/2;  // Center text
+                int y = (int)winCoords[1] - charHeight/2;
+                textRenderer.draw("X", x, y);
+            }
+            
+            // Y-axis label (Green) - positioned along positive Y
+            boolean yProjected = glu.gluProject(0, axisLength + labelOffset, 0, 
+                                               modelview, 0, projection, 0, viewport, 0, 
+                                               winCoords, 0);
+            if (yProjected && winCoords[2] >= 0 && winCoords[2] <= 1) {
+                textRenderer.setColor(0.0f, 0.8f, 0.0f, 1.0f); // Bright green
+                int x = (int)winCoords[0] - charWidth/2;
+                int y = (int)winCoords[1] - charHeight/2;
+                textRenderer.draw("Y", x, y);
+            }
+            
+            // Z-axis label (Blue) - positioned along positive Z
+            boolean zProjected = glu.gluProject(0, 0, axisLength + labelOffset, 
+                                               modelview, 0, projection, 0, viewport, 0, 
+                                               winCoords, 0);
+            if (zProjected && winCoords[2] >= 0 && winCoords[2] <= 1) {
+                textRenderer.setColor(0.0f, 0.4f, 1.0f, 1.0f); // Bright blue
+                int x = (int)winCoords[0] - charWidth/2;
+                int y = (int)winCoords[1] - charHeight/2;
+                textRenderer.draw("Z", x, y);
+            }
+            
+            textRenderer.endRendering();
+        }
+        
+        /**
+         * Renders small coordinate axes at the model's centroid.
+         * Similar to SolidWorks model-space axes indicator.
+         * X = Red, Y = Green, Z = Blue
+         */
+        private void renderModelAxes(GL2 gl) {
+            if (modelCentroid == null) {
+                return; // No model loaded
+            }
+            
+            // Scale axis length based on model size (20% of max dimension)
+            float modelSize = Geometry.getModelMaxDimension();
+            float axisLength = Math.max(modelSize * 0.2f, 2.0f); // At least 2 units
+            
+            float cx = modelCentroid[0];
+            float cy = modelCentroid[1];
+            float cz = modelCentroid[2];
+            
+            gl.glPushAttrib(GL2.GL_ALL_ATTRIB_BITS);
+            try {
+                gl.glDisable(GL2.GL_LIGHTING);
+                gl.glDisable(GL2.GL_DEPTH_TEST); // Draw on top
+                gl.glLineWidth(4.0f); // Thicker lines for visibility
+                
+                gl.glBegin(GL2.GL_LINES);
+                // X-axis (Red)
+                gl.glColor3f(1.0f, 0.0f, 0.0f);
+                gl.glVertex3f(cx, cy, cz);
+                gl.glVertex3f(cx + axisLength, cy, cz);
+                
+                // Y-axis (Green)
+                gl.glColor3f(0.0f, 1.0f, 0.0f);
+                gl.glVertex3f(cx, cy, cz);
+                gl.glVertex3f(cx, cy + axisLength, cz);
+                
+                // Z-axis (Blue)
+                gl.glColor3f(0.0f, 0.0f, 1.0f);
+                gl.glVertex3f(cx, cy, cz);
+                gl.glVertex3f(cx, cy, cz + axisLength);
+                gl.glEnd();
+                
+                // Draw larger point at centroid for visibility
+                gl.glColor3f(1.0f, 1.0f, 0.0f); // Yellow
+                gl.glPointSize(12.0f);
+                gl.glBegin(GL2.GL_POINTS);
+                gl.glVertex3f(cx, cy, cz);
+                gl.glEnd();
+            } finally {
+                gl.glPopAttrib();
+            }
+        }
 
-            // Define cube faces with normals and vertices
-            // Front face
-            gl.glNormal3f(0.0f, 0.0f, 1.0f);
-            gl.glVertex3f(-1.0f, -1.0f, 1.0f);
-            gl.glVertex3f(1.0f, -1.0f, 1.0f);
-            gl.glVertex3f(1.0f, 1.0f, 1.0f);
-            gl.glVertex3f(-1.0f, 1.0f, 1.0f);
+        private void renderPlanes(GL2 gl) {
+            gl.glPushAttrib(GL2.GL_ALL_ATTRIB_BITS); // Save all attributes
+            try {
+                gl.glDisable(GL2.GL_LIGHTING); // Planes are often better seen unlit
+                gl.glEnable(GL2.GL_BLEND);
+                gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
 
-            // Back face
-            gl.glNormal3f(0.0f, 0.0f, -1.0f);
-            gl.glVertex3f(-1.0f, -1.0f, -1.0f);
-            gl.glVertex3f(-1.0f, 1.0f, -1.0f);
-            gl.glVertex3f(1.0f, 1.0f, -1.0f);
-            gl.glVertex3f(1.0f, -1.0f, -1.0f);
+                float size = 10.0f; // Plane size
 
-            // Top face
-            gl.glNormal3f(0.0f, 1.0f, 0.0f);
-            gl.glVertex3f(-1.0f, 1.0f, -1.0f);
-            gl.glVertex3f(-1.0f, 1.0f, 1.0f);
-            gl.glVertex3f(1.0f, 1.0f, 1.0f);
-            gl.glVertex3f(1.0f, 1.0f, -1.0f);
+                // Front Plane (XY) - Transparent Blue
+                gl.glColor4f(0.0f, 0.0f, 0.8f, 0.2f); // Blue tint
+                gl.glBegin(GL2.GL_QUADS);
+                gl.glVertex3f(-size, -size, 0);
+                gl.glVertex3f(size, -size, 0);
+                gl.glVertex3f(size, size, 0);
+                gl.glVertex3f(-size, size, 0);
+                gl.glEnd();
+                // Border
+                gl.glColor3f(0.0f, 0.0f, 1.0f);
+                gl.glBegin(GL2.GL_LINE_LOOP);
+                gl.glVertex3f(-size, -size, 0);
+                gl.glVertex3f(size, -size, 0);
+                gl.glVertex3f(size, size, 0);
+                gl.glVertex3f(-size, size, 0);
+                gl.glEnd();
 
-            // Bottom face
-            gl.glNormal3f(0.0f, -1.0f, 0.0f);
-            gl.glVertex3f(-1.0f, -1.0f, -1.0f);
-            gl.glVertex3f(1.0f, -1.0f, -1.0f);
-            gl.glVertex3f(1.0f, -1.0f, 1.0f);
-            gl.glVertex3f(-1.0f, -1.0f, 1.0f);
+                // Top Plane (XZ) - Transparent Green
+                gl.glColor4f(0.0f, 0.8f, 0.0f, 0.2f); // Green tint
+                gl.glBegin(GL2.GL_QUADS);
+                gl.glVertex3f(-size, 0, -size);
+                gl.glVertex3f(size, 0, -size);
+                gl.glVertex3f(size, 0, size);
+                gl.glVertex3f(-size, 0, size);
+                gl.glEnd();
+                // Border
+                gl.glColor3f(0.0f, 1.0f, 0.0f);
+                gl.glBegin(GL2.GL_LINE_LOOP);
+                gl.glVertex3f(-size, 0, -size);
+                gl.glVertex3f(size, 0, -size);
+                gl.glVertex3f(size, 0, size);
+                gl.glVertex3f(-size, 0, size);
+                gl.glEnd();
 
-            // Right face
-            gl.glNormal3f(1.0f, 0.0f, 0.0f);
-            gl.glVertex3f(1.0f, -1.0f, -1.0f);
-            gl.glVertex3f(1.0f, 1.0f, -1.0f);
-            gl.glVertex3f(1.0f, 1.0f, 1.0f);
-            gl.glVertex3f(1.0f, -1.0f, 1.0f);
+                // Right Plane (YZ) - Transparent Red
+                gl.glColor4f(0.8f, 0.0f, 0.0f, 0.2f); // Red tint
+                gl.glBegin(GL2.GL_QUADS);
+                gl.glVertex3f(0, -size, -size);
+                gl.glVertex3f(0, size, -size);
+                gl.glVertex3f(0, size, size);
+                gl.glVertex3f(0, -size, size);
+                gl.glEnd();
+                // Border
+                gl.glColor3f(1.0f, 0.0f, 0.0f);
+                gl.glBegin(GL2.GL_LINE_LOOP);
+                gl.glVertex3f(0, -size, -size);
+                gl.glVertex3f(0, size, -size);
+                gl.glVertex3f(0, size, size);
+                gl.glVertex3f(0, -size, size);
+                gl.glEnd();
 
-            // Left face
-            gl.glNormal3f(-1.0f, 0.0f, 0.0f);
-            gl.glVertex3f(-1.0f, -1.0f, -1.0f);
-            gl.glVertex3f(-1.0f, -1.0f, 1.0f);
-            gl.glVertex3f(-1.0f, 1.0f, 1.0f);
-            gl.glVertex3f(-1.0f, 1.0f, -1.0f);
-
-            gl.glEnd(); // End drawing
+            } finally {
+                gl.glPopAttrib(); // Restore all attributes
+            }
         }
 
         /**
@@ -843,7 +1295,7 @@ public class GuiFX extends Application {
          *
          * @param gl The GL2 object for OpenGL drawing commands.
          */
-        private void renderSketch(GL2 gl) {
+        public void renderSketch(GL2 gl, GLAutoDrawable drawable) {
             gl.glDisable(GL2.GL_LIGHTING); // Disable lighting for 2D elements
             gl.glColor3f(0.0f, 0.0f, 0.0f); // Set color to black for sketch elements
 
@@ -851,18 +1303,18 @@ public class GuiFX extends Application {
             gl.glMatrixMode(GL2.GL_PROJECTION);
             gl.glPushMatrix();
             gl.glLoadIdentity();
-            
+
             // Get current viewport dimensions to calculate aspect ratio
             int[] viewport = new int[4];
             gl.glGetIntegerv(GL2.GL_VIEWPORT, viewport, 0);
             int width = viewport[2];
             int height = viewport[3];
-            
+
             // Calculate aspect ratio and set up orthographic projection with zoom
             double aspectRatio = (double) width / height;
             double baseSize = 50.0; // Base coordinate system size
             double size = baseSize / sketch2DZoom; // Apply zoom (smaller size = more zoomed in)
-            
+
             if (aspectRatio >= 1.0) {
                 // Wide screen - extend horizontal range
                 gl.glOrtho(-size * aspectRatio, size * aspectRatio, -size, size, -1.0, 1.0);
@@ -870,18 +1322,31 @@ public class GuiFX extends Application {
                 // Tall screen - extend vertical range
                 gl.glOrtho(-size, size, -size / aspectRatio, size / aspectRatio, -1.0, 1.0);
             }
-            
+
             // Set up modelview matrix with 2D transformations
             gl.glMatrixMode(GL2.GL_MODELVIEW);
             gl.glPushMatrix();
             gl.glLoadIdentity();
-            
+
             // Apply 2D pan transformations
             gl.glTranslatef(sketch2DPanX, sketch2DPanY, 0.0f);
 
             // Use the sketch's built-in draw method instead of parsing strings
             sketch.draw(gl);
+
+            // Draw interactive ghost shape if drawing
+            if (interactionManager != null && interactionManager.isDrawing()) {
+                renderGhost(gl, drawable);
+            }
             
+            // Render dimension text labels
+            if (textRenderer != null && sketch != null) {
+                renderDimensionText(gl, drawable);
+            }
+
+            // Highlighting for selected entities
+            renderSelectionHighlights(gl);
+
             // Restore matrices and lighting
             gl.glPopMatrix(); // Restore modelview matrix
             gl.glMatrixMode(GL2.GL_PROJECTION);
@@ -889,17 +1354,275 @@ public class GuiFX extends Application {
             gl.glMatrixMode(GL2.GL_MODELVIEW);
             gl.glEnable(GL2.GL_LIGHTING); // Re-enable lighting
         }
+        
+        /**
+         * Renders dimension text labels in 2D sketch view.
+         */
+        private void renderDimensionText(GL2 gl, GLAutoDrawable drawable) {
+            List<cad.core.Dimension> dims = sketch.getDimensions();
+            if (dims.isEmpty()) return;
+            
+            // Get matrices for projection
+            double[] modelview = new double[16];
+            double[] projection = new double[16];
+            int[] viewport = new int[4];
+            
+            gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, modelview, 0);
+            gl.glGetDoublev(GL2.GL_PROJECTION_MATRIX, projection, 0);
+            gl.glGetIntegerv(GL2.GL_VIEWPORT, viewport, 0);
+            
+            double[] winCoords = new double[3];
+            
+            textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
+            textRenderer.setColor(0.3f, 0.3f, 0.3f, 1.0f); // Professional dark gray
+            
+            for (cad.core.Dimension dim : dims) {
+                if (!dim.isVisible()) continue;
+                
+                // Project 3D text position to 2D screen coordinates
+                if (glu.gluProject(dim.getTextX(), dim.getTextY(), dim.getTextZ(), 
+                                  modelview, 0, projection, 0, viewport, 0, 
+                                  winCoords, 0)) {
+                    // Draw dimension label at projected position
+                    textRenderer.draw(dim.getLabel(), (int)winCoords[0], (int)winCoords[1]);
+                }
+            }
+            
+            textRenderer.endRendering();
+        }
+
+        private void renderGhost(GL2 gl, GLAutoDrawable drawable) {
+            // Use blue color for ghost preview (more visible)
+            gl.glColor3f(0.2f, 0.5f, 1.0f); // Bright blue
+            gl.glLineWidth(2.0f); // Thicker line for visibility
+
+            float x1 = interactionManager.getStartX();
+            float y1 = interactionManager.getStartY();
+            float x2 = interactionManager.getCurrentX();
+            float y2 = interactionManager.getCurrentY();
+            
+            String dimensionText = ""; // Will hold live dimension value
+
+            if (interactionManager.getMode() == SketchInteractionManager.InteractionMode.SKETCH_LINE) {
+                gl.glBegin(GL2.GL_LINES);
+                gl.glVertex2f(x1, y1);
+                gl.glVertex2f(x2, y2);
+                gl.glEnd();
+                
+                // Draw small circles at endpoints for better visibility
+                drawPoint(gl, x1, y1, 3.0f);
+                drawPoint(gl, x2, y2, 3.0f);
+                
+                // Calculate length for live dimension
+                float length = (float) Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                dimensionText = String.format("%.2f %s", length, currentUnits.getAbbreviation());
+            } else if (interactionManager.getMode() == SketchInteractionManager.InteractionMode.SKETCH_CIRCLE) {
+                float radius = (float) Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                gl.glBegin(GL2.GL_LINE_LOOP);
+                int segments = 50;
+                for (int i = 0; i < segments; i++) {
+                    double angle = 2.0 * Math.PI * i / segments;
+                    gl.glVertex2d(x1 + radius * Math.cos(angle), y1 + radius * Math.sin(angle));
+                }
+                gl.glEnd();
+                // Draw center point
+                drawPoint(gl, x1, y1, 4.0f);
+                
+                
+                // Live dimension for radius
+                dimensionText = String.format("R%.2f %s", radius, currentUnits.getAbbreviation());
+            } else if (interactionManager.getMode() == SketchInteractionManager.InteractionMode.SKETCH_POLYGON) {
+                float radius = (float) Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                gl.glBegin(GL2.GL_LINE_LOOP);
+                int sides = interactionManager.getPolygonSides(); // Use dynamic value
+                for (int i = 0; i < sides; i++) {
+                    double angle = 2.0 * Math.PI * i / sides;
+                    gl.glVertex2d(x1 + radius * Math.cos(angle), y1 + radius * Math.sin(angle));
+                }
+                gl.glEnd();
+                // Draw center point
+                drawPoint(gl, x1, y1, 4.0f);
+                
+                // Live dimension for radius
+                dimensionText = String.format("R%.2f %s", radius, currentUnits.getAbbreviation());
+            }
+            
+            gl.glLineWidth(1.0f); // Reset line width
+            
+            // Render live dimension text near cursor
+            if (!dimensionText.isEmpty() && textRenderer != null) {
+                // Project cursor position to screen
+                double[] modelview = new double[16];
+                double[] projection = new double[16];
+                int[] viewport = new int[4];
+                
+                gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, modelview, 0);
+                gl.glGetDoublev(GL2.GL_PROJECTION_MATRIX, projection, 0);
+                gl.glGetIntegerv(GL2.GL_VIEWPORT, viewport, 0);
+                
+                double[] winCoords = new double[3];
+                
+                if (glu.gluProject(x2, y2, 0, modelview, 0, projection, 0, viewport, 0, winCoords, 0)) {
+                    textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
+                    textRenderer.setColor(0.2f, 0.5f, 1.0f, 1.0f); // Blue like ghost
+                    
+                    // Offset text from cursor (right and above)
+                    int textX = (int)winCoords[0] + 15;
+                    int textY = (int)winCoords[1] + 15;
+                    
+                    textRenderer.draw(dimensionText, textX, textY);
+                    textRenderer.endRendering();
+                }
+            }
+        }
+
+        /**
+         * Renders highlights for selected entities.
+         */
+        private void renderSelectionHighlights(GL2 gl) {
+            List<Entity> selected = interactionManager.getSelectedEntities();
+            if (selected.isEmpty()) return;
+
+            gl.glDisable(GL2.GL_LIGHTING);
+            gl.glColor3f(1.0f, 0.5f, 0.0f); // Orange highlight
+            gl.glLineWidth(3.0f); // Thicker line
+
+            for (Entity e : selected) {
+                if (e instanceof PointEntity) {
+                    PointEntity p = (PointEntity) e;
+                    gl.glPointSize(8.0f);
+                    gl.glBegin(GL2.GL_POINTS);
+                    gl.glVertex2f(p.getX(), p.getY());
+                    gl.glEnd();
+                    gl.glPointSize(1.0f); // Reset
+                } else if (e instanceof Line) {
+                    Line l = (Line) e;
+                    gl.glBegin(GL2.GL_LINES);
+                    gl.glVertex2f(l.getX1(), l.getY1());
+                    gl.glVertex2f(l.getX2(), l.getY2());
+                    gl.glEnd();
+                } else if (e instanceof Sketch.Circle) {
+                    Sketch.Circle c = (Sketch.Circle) e;
+                    gl.glBegin(GL2.GL_LINE_LOOP);
+                    int segments = 50;
+                    for (int i = 0; i < segments; i++) {
+                        double angle = 2.0 * Math.PI * i / segments;
+                        float x = c.getX() + c.getRadius() * (float) Math.cos(angle);
+                        float y = c.getY() + c.getRadius() * (float) Math.sin(angle);
+                        gl.glVertex2f(x, y);
+                    }
+                    gl.glEnd();
+                }
+            }
+            gl.glLineWidth(1.0f); // Reset
+        }
+
+        /**
+         * Draw a small point (circle) at the given coordinates.
+         */
+        private void drawPoint(GL2 gl, float x, float y, float size) {
+            gl.glPointSize(size);
+            gl.glBegin(GL2.GL_POINTS);
+            gl.glVertex2f(x, y);
+            gl.glEnd();
+            gl.glPointSize(1.0f);
+        }
+
+        /**
+         * Handles mouse clicks in 3D mode for dimensioning.
+         */
+        public void handle3DDimensionClick(int mouseX, int mouseY) {
+            // Convert mouse Y to OpenGL Y (invert)
+            int glY = viewport[3] - mouseY;
+            
+            double[] nearPoint = new double[3];
+            double[] farPoint = new double[3];
+            
+            // UnProject Near Plane (z=0.0)
+            glu.gluUnProject(mouseX, glY, 0.0, modelviewMatrix, 0, projectionMatrix, 0, viewport, 0, nearPoint, 0);
+            
+            // UnProject Far Plane (z=1.0)
+            glu.gluUnProject(mouseX, glY, 1.0, modelviewMatrix, 0, projectionMatrix, 0, viewport, 0, farPoint, 0);
+            
+            float[] rayOrigin = { (float)nearPoint[0], (float)nearPoint[1], (float)nearPoint[2] };
+            float[] rayDir = { 
+                (float)(farPoint[0] - nearPoint[0]), 
+                (float)(farPoint[1] - nearPoint[1]), 
+                (float)(farPoint[2] - nearPoint[2]) 
+            };
+            
+            // Normalize direction
+            float len = (float)Math.sqrt(rayDir[0]*rayDir[0] + rayDir[1]*rayDir[1] + rayDir[2]*rayDir[2]);
+            if (len > 0) {
+                rayDir[0] /= len;
+                rayDir[1] /= len;
+                rayDir[2] /= len;
+            }
+            
+            // Perform intersection test
+            float[] triangle = Geometry.pickFace(rayOrigin, rayDir);
+            
+            if (triangle != null) {
+                // Determine what to calculate based on context (Simplicity: Area for single click)
+                float area = Geometry.calculateTriangleArea(triangle);
+                appendOutput(String.format("Selected Face Area: %.4f sq units", area));
+            } else {
+                appendOutput("No geometry selected.");
+            }
+        }
+
 
         /**
          * Sets the list of triangles to be rendered as an STL model.
          * Automatically switches the view to hide the sketch and shows the STL model.
+         * Also calculates the centroid of the model for display.
          *
-         * @param triangles The list of float arrays, where each array represents an STL triangle (normal + 3 vertices).
+         * @param triangles The list of float arrays, where each array represents an STL
+         *                  triangle (normal + 3 vertices).
          */
         public void setStlTriangles(List<float[]> triangles) {
             stlTriangles = triangles;
+            modelCentroid = calculateStlCentroid(triangles);
             setShowSketch(false); // When STL is loaded, hide sketch view
             glCanvas.repaint(); // Request a repaint of the canvas
+        }
+        
+        /**
+         * Calculates the geometric centroid of an STL model.
+         * 
+         * @param triangles List of STL triangles
+         * @return Array of [x, y, z] coordinates of the centroid, or null if no triangles
+         */
+        private float[] calculateStlCentroid(List<float[]> triangles) {
+            if (triangles == null || triangles.isEmpty()) {
+                return null;
+            }
+            
+            float sumX = 0, sumY = 0, sumZ = 0;
+            int vertexCount = 0;
+            
+            // Sum all vertex positions
+            for (float[] triangle : triangles) {
+                // Each triangle has: [nx, ny, nz, v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z]
+                // Vertices start at index 3
+                for (int i = 3; i < 12; i += 3) {
+                    sumX += triangle[i];
+                    sumY += triangle[i + 1];
+                    sumZ += triangle[i + 2];
+                    vertexCount++;
+                }
+            }
+            
+            // Calculate average
+            if (vertexCount > 0) {
+                return new float[] {
+                    sumX / vertexCount,
+                    sumY / vertexCount,
+                    sumZ / vertexCount
+                };
+            }
+            
+            return null;
         }
 
         /**
@@ -925,12 +1648,17 @@ public class GuiFX extends Application {
     // === Mouse and Keyboard Listeners for GLCanvas ===
 
     /**
-     * MouseListener implementation for the GLCanvas to handle mouse click events and focus management.
+     * MouseListener implementation for the GLCanvas to handle mouse click events
+     * and focus management.
      * 
-     * This class serves as the primary interface for mouse-based interaction with the 3D canvas,
-     * managing the critical focus system that enables keyboard controls to work properly.
-     * Due to the JavaFX-Swing integration complexity, this class implements a dual focus
-     * strategy to ensure arrow keys are captured by the canvas instead of UI components.
+     * This class serves as the primary interface for mouse-based interaction with
+     * the 3D canvas,
+     * managing the critical focus system that enables keyboard controls to work
+     * properly.
+     * Due to the JavaFX-Swing integration complexity, this class implements a dual
+     * focus
+     * strategy to ensure arrow keys are captured by the canvas instead of UI
+     * components.
      * 
      * Focus Strategy:
      * The dual focus approach is necessary because:
@@ -944,6 +1672,25 @@ public class GuiFX extends Application {
     private class CanvasMouseListener implements MouseListener {
         @Override
         public void mouseClicked(MouseEvent e) {
+            // Check if in dimension tool mode
+            if (interactionManager != null && 
+                interactionManager.getMode() == SketchInteractionManager.InteractionMode.DIMENSION_TOOL &&
+                glRenderer != null && glRenderer.isShowingSketch()) {
+                
+                float[] worldCoords = getSketchWorldCoordinates(e.getX(), e.getY());
+                handleDimensionClick(worldCoords[0], worldCoords[1]);
+                return;
+            }
+            
+            // Check if in 3D dimensioning mode
+             if (interactionManager != null && 
+                interactionManager.getMode() == SketchInteractionManager.InteractionMode.DIMENSION_TOOL &&
+                glRenderer != null && !glRenderer.isShowingSketch()) {
+                 
+                 glRenderer.handle3DDimensionClick(e.getX(), e.getY());
+                 return;
+            }
+            
             glCanvas.requestFocusInWindow(); // Request focus on click to enable keyboard controls
             // Also request focus on the JavaFX SwingNode to capture arrow keys
             Platform.runLater(() -> {
@@ -956,6 +1703,34 @@ public class GuiFX extends Application {
 
         @Override
         public void mousePressed(MouseEvent e) {
+            // Check if we are in 2D mode but no tool is selected
+            if (glRenderer != null && glRenderer.isShowingSketch() &&
+                    interactionManager != null &&
+                    (interactionManager.getMode() == SketchInteractionManager.InteractionMode.IDLE ||
+                            interactionManager.getMode() == SketchInteractionManager.InteractionMode.VIEW_ROTATE)) {
+                appendOutput("Select a tool from the ribbon to draw.");
+            }
+
+            // Check if we are in an interactive sketching mode
+            if (interactionManager != null &&
+                    interactionManager.getMode() != SketchInteractionManager.InteractionMode.IDLE &&
+                    interactionManager.getMode() != SketchInteractionManager.InteractionMode.VIEW_ROTATE) {
+
+                // Calculate world coordinates
+                float[] worldCoords = getSketchWorldCoordinates(e.getX(), e.getY());
+                // Use Press to START drawing
+                interactionManager.handleMousePress(worldCoords[0], worldCoords[1]);
+                glCanvas.repaint();
+                // Do NOT return here, we still want to capture focus, but maybe NOT Set
+                // isDragging for VIEW rotation
+                // But we DO want 'isDragging' to be true so mouseDragged event fires to update
+                // preview
+                // isDragging variable in GuiFX seems to control VIEW rotation/pan.
+                // We should separate View Dragging from Sketch Dragging.
+                isDragging = false; // Disable view dragging when sketching
+                return;
+            }
+
             lastMouseX = e.getX(); // Store initial mouse X coordinate for dragging
             lastMouseY = e.getY(); // Store initial mouse Y coordinate for dragging
             isDragging = true; // Set dragging flag
@@ -970,14 +1745,26 @@ public class GuiFX extends Application {
 
         @Override
         public void mouseReleased(MouseEvent e) {
-            isDragging = false; // Clear dragging flag
+            isDragging = false; // Clear view dragging flag
+
+            // Handle Sketch Release
+            if (interactionManager != null &&
+                    interactionManager.getMode() != SketchInteractionManager.InteractionMode.IDLE &&
+                    interactionManager.getMode() != SketchInteractionManager.InteractionMode.VIEW_ROTATE) {
+
+                float[] worldCoords = getSketchWorldCoordinates(e.getX(), e.getY());
+                interactionManager.handleMouseRelease(worldCoords[0], worldCoords[1]);
+                glCanvas.repaint();
+            }
         }
 
         @Override
-        public void mouseEntered(MouseEvent e) {} // Not used
+        public void mouseEntered(MouseEvent e) {
+        } // Not used
 
         @Override
-        public void mouseExited(MouseEvent e) {} // Not used
+        public void mouseExited(MouseEvent e) {
+        } // Not used
     }
 
     /**
@@ -987,6 +1774,13 @@ public class GuiFX extends Application {
     private class CanvasMouseMotionListener implements MouseMotionListener {
         @Override
         public void mouseDragged(MouseEvent e) {
+            if (interactionManager != null && interactionManager.isDrawing()) {
+                float[] worldCoords = getSketchWorldCoordinates(e.getX(), e.getY());
+                interactionManager.handleMouseMove(worldCoords[0], worldCoords[1]);
+                glCanvas.repaint();
+                return; // Don't view-pan/rotate if we are drawing
+            }
+
             if (isDragging) {
                 int deltaX = e.getX() - lastMouseX; // Calculate change in X
                 int deltaY = e.getY() - lastMouseY; // Calculate change in Y
@@ -1011,7 +1805,13 @@ public class GuiFX extends Application {
         }
 
         @Override
-        public void mouseMoved(MouseEvent e) {} // Not used
+        public void mouseMoved(MouseEvent e) {
+            if (interactionManager != null && glRenderer != null && glRenderer.isShowingSketch()) {
+                float[] worldCoords = getSketchWorldCoordinates(e.getX(), e.getY());
+                interactionManager.handleMouseMove(worldCoords[0], worldCoords[1]);
+                glCanvas.repaint();
+            }
+        }
     }
 
     /**
@@ -1032,49 +1832,106 @@ public class GuiFX extends Application {
                     sketch2DZoom /= zoomFactor;
                 }
                 // Clamp zoom to reasonable range
-                if (sketch2DZoom < 0.1f) sketch2DZoom = 0.1f; // Max zoom out
-                if (sketch2DZoom > 20.0f) sketch2DZoom = 20.0f; // Max zoom in
+                if (sketch2DZoom < 0.1f)
+                    sketch2DZoom = 0.1f; // Max zoom out
+                if (sketch2DZoom > 20.0f)
+                    sketch2DZoom = 20.0f; // Max zoom in
             } else {
                 // 3D model mode: adjust 3D zoom
                 zoom += e.getWheelRotation() * 0.5f; // Adjust zoom based on wheel rotation
                 // Clamp zoom values to a reasonable range for large models
-                if (zoom > -1.0f) zoom = -1.0f;
-                if (zoom < -800.0f) zoom = -800.0f; // Increased limit for large models
+                if (zoom > -1.0f)
+                    zoom = -1.0f;
+                if (zoom < -800.0f)
+                    zoom = -800.0f; // Increased limit for large models
             }
             glCanvas.repaint(); // Request a repaint to show new zoom level
         }
     }
 
+    // === View Control Methods ===
+
+    public void setViewFront() {
+        // Front View: Look at XY plane from Z
+        if (glRenderer != null) {
+            glRenderer.setShowSketch(false); // Ensure 3D mode
+        }
+        rotationX = 0;
+        rotationY = 0;
+        glCanvas.repaint();
+        glCanvas.requestFocusInWindow();
+        appendOutput("View: Front (XY Plane)");
+    }
+
+    public void setViewTop() {
+        // Top View: Look at XZ plane from Y
+        if (glRenderer != null) {
+            glRenderer.setShowSketch(false); // Ensure 3D mode
+        }
+        rotationX = 90;
+        rotationY = 0;
+        glCanvas.repaint();
+        glCanvas.requestFocusInWindow();
+        appendOutput("View: Top (XZ Plane)");
+    }
+
+    public void setViewRight() {
+        // Right View: Look at YZ plane from X
+        if (glRenderer != null) {
+            glRenderer.setShowSketch(false); // Ensure 3D mode
+        }
+        rotationX = 0;
+        rotationY = -90;
+        glCanvas.repaint();
+        glCanvas.requestFocusInWindow();
+        appendOutput("View: Right (YZ Plane)");
+    }
+
+    public void setViewIsometric() {
+        // Isometric View
+        if (glRenderer != null) {
+            glRenderer.setShowSketch(false); // Ensure 3D mode
+        }
+        rotationX = 35.264f;
+        rotationY = -45.0f;
+        glCanvas.repaint();
+        glCanvas.requestFocusInWindow();
+        appendOutput("View: Isometric (3D)");
+    }
+
     /**
-     * KeyListener implementation for comprehensive keyboard-based 3D navigation and control.
+     * KeyListener implementation for comprehensive keyboard-based 3D navigation and
+     * control.
      * 
      * This class provides the primary keyboard interface for 3D model manipulation,
-     * offering intuitive controls for rotation, zoom, view management, and mode switching.
-     * It implements a performance-optimized approach by only triggering repaints when
+     * offering intuitive controls for rotation, zoom, view management, and mode
+     * switching.
+     * It implements a performance-optimized approach by only triggering repaints
+     * when
      * the view actually changes, reducing unnecessary GPU overhead.
      * 
      * Control Categories:
      * 
      * 1. ROTATION CONTROLS (Arrow Keys):
-     *    - Up/Down: Rotate around X-axis (pitch) in 3° increments
-     *    - Left/Right: Rotate around Y-axis (yaw) in 3° increments
-     *    - Smooth, predictable rotation for precise model positioning
+     * - Up/Down: Rotate around X-axis (pitch) in 3° increments
+     * - Left/Right: Rotate around Y-axis (yaw) in 3° increments
+     * - Smooth, predictable rotation for precise model positioning
      * 
      * 2. ZOOM CONTROLS (Multiple key options):
-     *    - Q/+ : Zoom in (move closer to model)
-     *    - E/- : Zoom out (move away from model)
-     *    - Clamped between -1.0f (very close) and -50.0f (very far)
+     * - Q/+ : Zoom in (move closer to model)
+     * - E/- : Zoom out (move away from model)
+     * - Clamped between -1.0f (very close) and -50.0f (very far)
      * 
      * 3. VIEW MANAGEMENT:
-     *    - R: Reset view to default position with auto-scaling zoom
-     *    - ESC: Restore canvas focus if keyboard controls stop working
+     * - R: Reset view to default position with auto-scaling zoom
+     * - ESC: Restore canvas focus if keyboard controls stop working
      * 
      * 4. MODE SWITCHING:
-     *    - SPACE: Toggle between 3D model view and 2D sketch view
-     *    - Automatic mode feedback in console
+     * - SPACE: Toggle between 3D model view and 2D sketch view
+     * - Automatic mode feedback in console
      * 
      * 5. HELP SYSTEM:
-     *    - Ctrl+H: Display detailed keyboard controls help
+     * - Ctrl+H: Display detailed keyboard controls help
      * 
      * 
      */
@@ -1108,7 +1965,7 @@ public class GuiFX extends Application {
         public void keyPressed(KeyEvent e) {
             boolean viewChanged = false;
             boolean is2DSketchMode = (glRenderer != null && glRenderer.isShowingSketch());
-            
+
             // Adjust view based on current mode and key presses
             switch (e.getKeyCode()) {
                 // Arrow Keys - Context-sensitive controls
@@ -1152,7 +2009,7 @@ public class GuiFX extends Application {
                     }
                     viewChanged = true;
                     break;
-                    
+
                 // Zoom Controls - Context-sensitive
                 case KeyEvent.VK_Q:
                 case KeyEvent.VK_PLUS:
@@ -1160,11 +2017,13 @@ public class GuiFX extends Application {
                     if (is2DSketchMode) {
                         // 2D mode: zoom in
                         sketch2DZoom *= 1.2f; // 20% zoom step
-                        if (sketch2DZoom > 20.0f) sketch2DZoom = 20.0f; // Clamp max zoom
+                        if (sketch2DZoom > 20.0f)
+                            sketch2DZoom = 20.0f; // Clamp max zoom
                     } else {
                         // 3D mode: zoom in
                         zoom += 0.5f;
-                        if (zoom > -1.0f) zoom = -1.0f; // Clamp zoom
+                        if (zoom > -1.0f)
+                            zoom = -1.0f; // Clamp zoom
                     }
                     viewChanged = true;
                     break;
@@ -1173,15 +2032,17 @@ public class GuiFX extends Application {
                     if (is2DSketchMode) {
                         // 2D mode: zoom out
                         sketch2DZoom /= 1.2f; // 20% zoom step
-                        if (sketch2DZoom < 0.1f) sketch2DZoom = 0.1f; // Clamp min zoom
+                        if (sketch2DZoom < 0.1f)
+                            sketch2DZoom = 0.1f; // Clamp min zoom
                     } else {
                         // 3D mode: zoom out
                         zoom -= 0.5f;
-                        if (zoom < -800.0f) zoom = -800.0f; // Increased clamp for large models
+                        if (zoom < -800.0f)
+                            zoom = -800.0f; // Increased clamp for large models
                     }
                     viewChanged = true;
                     break;
-                    
+
                 // Reset View - Context-sensitive
                 case KeyEvent.VK_R:
                     if (is2DSketchMode) {
@@ -1197,27 +2058,28 @@ public class GuiFX extends Application {
                     }
                     viewChanged = true;
                     break;
-                    
+
                 // Toggle between 2D sketch and 3D model
                 case KeyEvent.VK_SPACE:
-                    if (glRenderer != null) {
-                        boolean currentSketchMode = glRenderer.isShowingSketch();
-                        glRenderer.setShowSketch(!currentSketchMode);
-                        if (!currentSketchMode) {
-                            appendOutput("Switched to 2D sketch view - Use arrow keys to pan, Q/E to zoom");
-                        } else {
-                            appendOutput("Switched to 3D model view - Use arrow keys to rotate, Q/E to zoom");
-                        }
+                    toggleSketchView();
+                    break;
+
+                // Cancel drawing or request focus
+                case KeyEvent.VK_ESCAPE:
+                    // If a sketch tool is active, cancel it
+                    if (interactionManager != null && 
+                        interactionManager.getMode() != SketchInteractionManager.InteractionMode.IDLE &&
+                        interactionManager.getMode() != SketchInteractionManager.InteractionMode.VIEW_ROTATE) {
+                        interactionManager.setMode(SketchInteractionManager.InteractionMode.VIEW_ROTATE);
+                        appendOutput("Drawing cancelled. Select a tool to draw again.");
                         viewChanged = true;
+                    } else {
+                        // Otherwise just restore focus
+                        glCanvas.requestFocusInWindow();
+                        appendOutput("Canvas focus restored");
                     }
                     break;
-                    
-                // Request focus (useful if keyboard stops responding)
-                case KeyEvent.VK_ESCAPE:
-                    glCanvas.requestFocusInWindow();
-                    appendOutput("Canvas focus restored");
-                    break;
-                    
+
                 // Help
                 case KeyEvent.VK_H:
                     if (e.isControlDown()) {
@@ -1225,7 +2087,7 @@ public class GuiFX extends Application {
                     }
                     break;
             }
-            
+
             // Only repaint if the view actually changed
             if (viewChanged && glCanvas != null) {
                 glCanvas.repaint(); // Request a repaint to show new view
@@ -1233,13 +2095,220 @@ public class GuiFX extends Application {
         }
 
         @Override
-        public void keyReleased(KeyEvent e) {} // Not used
+        public void keyReleased(KeyEvent e) {
+        } // Not used
 
         @Override
-        public void keyTyped(KeyEvent e) {} // Not used
+        public void keyTyped(KeyEvent e) {
+        } // Not used
     }
 
     // === Helper methods ===
+
+    /**
+     * Activates a sketch tool and automatically switches to sketch view if needed.
+     * Provides user feedback about the selected tool.
+     * 
+     * @param mode The interaction mode to activate (SKETCH_LINE, SKETCH_CIRCLE, etc.)
+     * @param message The message to display to the user about how to use the tool
+     */
+    private void activateSketchTool(SketchInteractionManager.InteractionMode mode, String message) {
+        // Set the interaction mode
+        if (interactionManager != null) {
+            interactionManager.setMode(mode);
+        }
+        
+        // Auto-switch to sketch view if not already active
+        if (glRenderer != null) {
+            glRenderer.setShowSketch(true); // Ensure sketch view
+            appendOutput("Switched to 2D sketch mode");
+            if (statusLabel != null) statusLabel.setText(message);
+        }
+        
+        // Provide user feedback
+        appendOutput(message);
+        appendOutput("Press ESC to cancel drawing");
+        
+        // Request focus on canvas for immediate interaction
+        Platform.runLater(() -> {
+            if (canvasNode != null) {
+                canvasNode.requestFocus();
+            }
+        });
+        
+        // Repaint canvas
+        if (glCanvas != null) {
+            glCanvas.repaint();
+        }
+    }
+    
+    /**
+     * Performs undo operation.
+     */
+    private void performUndo() {
+        if (commandManager != null && commandManager.canUndo()) {
+            commandManager.undo();
+            appendOutput(commandManager.getUndoDescription());
+            if (glCanvas != null) {
+                glCanvas.repaint();
+            }
+        } else {
+            appendOutput("Nothing to undo");
+        }
+    }
+    
+    /**
+     * Performs redo operation.
+     */
+    private void performRedo() {
+        if (commandManager != null && commandManager.canRedo()) {
+            commandManager.redo();
+            appendOutput(commandManager.getRedoDescription());
+            if (glCanvas != null) {
+                glCanvas.repaint();
+            }
+        } else {
+            appendOutput("Nothing to redo");
+        }
+    }
+    
+    /**
+     * Activates the dimension tool for measuring entities.
+     * User can click entities to create dimensions.
+     */
+
+    private void activateDimensionTool() {
+        // Set the interaction mode
+        if (interactionManager != null) {
+            interactionManager.setMode(SketchInteractionManager.InteractionMode.DIMENSION_TOOL);
+        }
+        
+        // Update status
+        if (statusLabel != null) statusLabel.setText("Dimension Tool: Select Line/Circle/2 Points to measure");
+        
+        // Auto-switch to sketch view if not already active
+        if (glRenderer != null && !glRenderer.isShowingSketch()) {
+            glRenderer.setShowSketch(true);
+            appendOutput("Switched to 2D sketch mode for dimensioning");
+        }
+        
+        // Provide user feedback
+        appendOutput("Dimension Tool: Click an entity to measure it");
+        appendOutput("  - Line: shows length");
+        appendOutput("  - Circle: shows radius");
+        appendOutput("  - Polygon: shows edge length");
+        appendOutput("Press ESC to deactivate tool");
+        
+        // Request focus on canvas
+        Platform.runLater(() -> {
+            if (canvasNode != null) {
+                canvasNode.requestFocus();
+            }
+        });
+        
+        // Repaint canvas
+        if (glCanvas != null) {
+            glCanvas.repaint();
+        }
+    }
+    
+    /**
+     * Handles a click when dimension tool is active.
+     * Finds the closest entity and creates a dimension for it.
+     */
+    private void handleDimensionClick(float worldX, float worldY) {
+        if (sketch == null) {
+            appendOutput("No sketch to dimension");
+            return;
+        }
+        
+        // Find closest entity to click (within 2.0 units)
+        Sketch.Entity entity = sketch.findClosestEntity(worldX, worldY, 2.0f);
+        
+        if (entity != null) {
+            // Entity found - create dimension
+            cad.core.Dimension dim = sketch.createDimensionFor(entity);
+            if (dim != null) {
+                sketch.addDimension(dim);
+                appendOutput("Dimension added: " + dim.getLabel());
+                glCanvas.repaint();
+            } else {
+                appendOutput("Could not create dimension for this entity type");
+            }
+        } else {
+            appendOutput("No entity found at click location (click closer to an entity)");
+        }
+    }
+    
+    /**
+     * Orients the 3D view to align with the selected plane.
+     * Double-clicking a plane in the feature tree calls this method.
+     * 
+     * @param planeName The name of the plane (e.g., "Front Plane", "Top Plane", "Right Plane")
+     */
+    private void orientViewToPlane(String planeName) {
+        if (glRenderer == null) return;
+        
+        // Switch to 3D view if in sketch mode
+        if (glRenderer.isShowingSketch()) {
+            glRenderer.setShowSketch(false);
+        }
+        
+        // Set rotation based on plane
+        if (planeName.contains("Front")) {
+            // Front Plane (XY plane) - Look from +Z
+            rotationX = 0.0f;
+            rotationY = 0.0f;
+            appendOutput("View oriented to Front Plane (XY)");
+        } else if (planeName.contains("Top")) {
+            // Top Plane (XZ plane) - Look from +Y
+            rotationX = -90.0f;
+            rotationY = 0.0f;
+            appendOutput("View oriented to Top Plane (XZ)");
+        } else if (planeName.contains("Right")) {
+            // Right Plane (YZ plane) - Look from +X
+            rotationX = 0.0f;
+            rotationY = -90.0f;
+            appendOutput("View oriented to Right Plane (YZ)");
+        } else {
+            // Unknown plane, return to isometric view
+            rotationX = 35.264f;
+            rotationY = 45.0f;
+            appendOutput("View oriented to Isometric");
+        }
+        
+        // Reset zoom to default
+        zoom = -50.0f;
+        
+        // Repaint to show new orientation
+        if (glCanvas != null) {
+            glCanvas.repaint();
+        }
+    }
+    
+    /**
+     * Toggles between 2D sketch view and 3D model view.
+     */
+    public void toggleSketchView() {
+        if (glRenderer != null) {
+            boolean currentSketchMode = glRenderer.isShowingSketch();
+            glRenderer.setShowSketch(!currentSketchMode);
+            if (!currentSketchMode) {
+                appendOutput("Switched to 2D sketch view - Use arrow keys to pan, Q/E to zoom");
+                // Hint user to select a tool if they haven't already
+                if (interactionManager != null &&
+                        (interactionManager.getMode() == SketchInteractionManager.InteractionMode.IDLE ||
+                                interactionManager.getMode() == SketchInteractionManager.InteractionMode.VIEW_ROTATE)) {
+                    appendOutput("Sketch Mode Active. Select a tool (Line, Circle, etc.) from the ribbon to draw.");
+                }
+            } else {
+                appendOutput("Switched to 3D model view - Use arrow keys to rotate, Q/E to zoom");
+            }
+            if (glCanvas != null) {
+                glCanvas.repaint();
+            }
+        }
+    }
 
     /**
      * Resets the 3D view to default position with auto-scaling zoom.
@@ -1248,7 +2317,7 @@ public class GuiFX extends Application {
     private void resetView() {
         rotationX = 0.0f;
         rotationY = 0.0f;
-        
+
         // Auto-scale zoom based on model size
         float maxDimension = Geometry.getModelMaxDimension();
         if (maxDimension > 0) {
@@ -1265,18 +2334,21 @@ public class GuiFX extends Application {
                 zoom = -(maxDimension * 1.2f);
             } else {
                 // Very large models: use more conservative scaling with logarithmic component
-                zoom = -(maxDimension * 0.8f + (float)Math.log10(maxDimension) * 15.0f);
+                zoom = -(maxDimension * 0.8f + (float) Math.log10(maxDimension) * 15.0f);
             }
-            
+
             // Clamp zoom to reasonable bounds
-            if (zoom < -800.0f) zoom = -800.0f;  // Further increased upper limit for very large models
-            if (zoom > -2.0f) zoom = -2.0f;
-            
-            appendOutput("View reset - zoom auto-adjusted to " + String.format("%.1f", zoom) + " for model size " + String.format("%.1f", maxDimension));
+            if (zoom < -800.0f)
+                zoom = -800.0f; // Further increased upper limit for very large models
+            if (zoom > -2.0f)
+                zoom = -2.0f;
+
+            appendOutput("View reset - zoom auto-adjusted to " + String.format("%.1f", zoom) + " for model size "
+                    + String.format("%.1f", maxDimension));
         } else {
             zoom = -5.0f; // Default zoom if no model
         }
-        
+
         if (glCanvas != null) {
             glCanvas.repaint();
         }
@@ -1328,7 +2400,81 @@ public class GuiFX extends Application {
         });
     }
 
+    /**
+     * Converts screen coordinates to sketch world coordinates.
+     * Assumes standard 2D orthographic projection matches current pan/zoom.
+     */
+    private float[] getSketchWorldCoordinates(int screenX, int screenY) {
+        if (glCanvas == null)
+            return new float[] { 0, 0 };
+
+        float width = glCanvas.getWidth();
+        float height = glCanvas.getHeight();
+
+        // Match the logic in renderSketch:
+        // double baseSize = 50.0;
+        // double size = baseSize / sketch2DZoom;
+        // WorldUnitsPerPixel = (2 * size * aspect) / width = 2 * (50/zoom * w/h) / w =
+        // 100 / (zoom * height)
+        // Correct logic derived:
+        // Ortho Height = 2 * size = 100 / zoom
+        // Pixel Height = height
+        // Scale = (100 / zoom) / height
+
+        float scale = 100.0f / (sketch2DZoom * height);
+
+        // Center-relative screen coords
+        float relX = screenX - width / 2.0f;
+        float relY = height / 2.0f - screenY; // Inverted Y for OpenGL
+
+        float worldX = (relX * scale) - sketch2DPanX;
+        float worldY = (relY * scale) - sketch2DPanY;
+
+        return new float[] { worldX, worldY };
+    }
+
     // === Command handlers ===
+
+    private TitledPane createHelpPane() {
+        helpText = new TextArea();
+        helpText.setEditable(false);
+        helpText.setWrapText(true);
+        helpText.setText("Shortcuts:\n" +
+                "Rotate: Arrow Keys\n" +
+                "Zoom: Mouse Scroll\n" +
+                "Reset: Double-click plane\n" +
+                "Undo: Ctrl+Z");
+
+        helpScrollPane = new ScrollPane(helpText);
+        helpScrollPane.setFitToWidth(true);
+
+        TitledPane helpPane = new TitledPane("Help / Shortcuts", helpScrollPane);
+        helpPane.setCollapsible(true);
+        helpPane.setExpanded(false); // Collapsed by default
+        return helpPane;
+    }
+    private void showHelp() {
+        if (helpText == null) return;
+        helpText.setText(
+                "Keyboard Shortcuts:\n" +
+                "-------------------\n" +
+                "Rotate View:   Arrow Keys\n" +
+                "Zoom View:     Mouse Scroll\n" +
+                "Reset View:    Double-click Planes in Tree\n" +
+                "Undo:          Ctrl + Z\n" +
+                "Redo:          Ctrl + Shift + Z\n" +
+                "Help:          H\n\n" +
+                "Features:\n" +
+                "---------\n" +
+                "Sketches:      Create 2D profiles on Z=0 plane\n" +
+                "Constraints:   Apply Geometric relations (Horiz, Vert)\n" +
+                "Dimensions:    Context-aware 2D and 3D measurements\n" +
+                "Extrude:       Convert closed sketch to 3D solid\n" +
+                "Revolve:       Revolve sketch (requires CL centerline)\n" +
+                "Tree View:     Manage history and view planes\n\n" +
+                "Tip: Switch to 'Sketch' tab to start drawing!"
+        );
+    }
 
     /**
      * Shows available commands and basic keyboard controls in console.
@@ -1356,88 +2502,21 @@ public class GuiFX extends Application {
         appendOutput("   Press Ctrl+H for detailed keyboard help");
     }
 
-    /**
-     * Creates a 3D cube with size from input field and current subdivision settings.
-     * Generates mesh, loads into renderer, resets view, and handles input errors.
-     */
-    private void createCube() {
-        try {
-            float size = Float.parseFloat(cubeSizeField.getText());
-            Geometry.createCube(size, cubeDivisions);
-            appendOutput("Cube created with size " + size);
-            // Retrieve the newly created cube's triangular data and set it for rendering
-            glRenderer.setStlTriangles(Geometry.getLoadedStlTriangles());
-            // Reset view to properly show the new model
-            resetView();
-            glCanvas.requestFocusInWindow(); // Request focus on the canvas for 3D navigation
-        } catch (NumberFormatException e) {
-            appendOutput("Invalid size value. Please enter a number for Cube Size.");
-        } catch (IllegalArgumentException e) {
-            appendOutput("Error creating cube: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Creates a 3D sphere with radius from input field and current subdivision settings.
-     * Uses max subdivision value for uniform detail, generates UV sphere mesh.
-     */
-    private void createSphere() {
-        try {
-            float radius = Float.parseFloat(sphereRadiusField.getText());
-            int maxDiv = Math.max(sphereLatDiv, sphereLonDiv); // Use the larger of the two divisions for complexity
-            Geometry.createSphere(radius, maxDiv);
-            appendOutput("Sphere created with radius " + radius);
-            // Retrieve the newly created sphere's triangular data and set it for rendering
-            glRenderer.setStlTriangles(Geometry.getLoadedStlTriangles());
-            // Reset view to properly show the new model
-            resetView();
-            glCanvas.requestFocusInWindow(); // Request focus on the canvas for 3D navigation
-        } catch (NumberFormatException e) {
-            appendOutput("Invalid radius value. Please enter a number for Sphere Radius.");
-        } catch (IllegalArgumentException e) {
-            appendOutput("Error creating sphere: " + e.getMessage());
-        }
-    }
+    // Old creation methods removed
 
     /**
      * Sets the number of subdivisions for future cube creations.
      * The value is read from `cubeSizeField` (repurposed for this input).
      * Validates that the input is an integer between 1 and 200.
      */
-    private void setCubeDivisions() {
-        try {
-            int count = Integer.parseInt(cubeSizeField.getText()); // Assuming this field is used for divisions
-            if (count < 1 || count > 200) {
-                appendOutput("Cube subdivisions must be between 1 and 200.");
-            } else {
-                cubeDivisions = count;
-                appendOutput("Cube subdivisions set to " + cubeDivisions);
-            }
-        } catch (NumberFormatException e) {
-            appendOutput("Invalid count value. Please enter an integer for Cube Size.");
-        }
-    }
+    // Legacy setCubeDivisions removed
 
     /**
      * Sets the latitude and longitude subdivisions for future sphere creations.
      * Values are read from `latField` and `lonField`.
      * Validates that inputs are integers between 1 and 200.
      */
-    private void setSphereDivisions() {
-        try {
-            int lat = Integer.parseInt(latField.getText());
-            int lon = Integer.parseInt(lonField.getText());
-            if (lat < 1 || lat > 200 || lon < 1 || lon > 200) {
-                appendOutput("Sphere subdivisions must be between 1 and 200.");
-            } else {
-                sphereLatDiv = lat;
-                sphereLonDiv = lon;
-                appendOutput("Sphere subdivisions set to " + lat + " lat, " + lon + " lon");
-            }
-        } catch (NumberFormatException e) {
-            appendOutput("Invalid subdivision values. Please enter integers for Lat Div and Lon Div.");
-        }
-    }
+    // Legacy division setters removed
 
     /**
      * Opens a file chooser dialog to allow the user to select a location
@@ -1455,8 +2534,8 @@ public class GuiFX extends Application {
      * 
      * @see #saveDXF(String) for DXF format saving
      */
-    private void saveFile() {
-        String filename = fileField.getText(); // Get initial filename from UI field
+    private void showSaveDialog() {
+        String filename = "model.stl"; // Default filename
         if (filename.isEmpty()) {
             appendOutput("Please enter a filename in the File Name field.");
             return;
@@ -1466,7 +2545,7 @@ public class GuiFX extends Application {
         fileChooser.setTitle("Save STL File");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("STL files (*.stl)", "*.stl"));
         fileChooser.setInitialFileName(filename);
-        
+
         // Get the window from a JavaFX component in the scene graph
         Window ownerWindow = outputArea.getScene().getWindow();
         File file = fileChooser.showSaveDialog(ownerWindow); // Show save dialog
@@ -1484,15 +2563,19 @@ public class GuiFX extends Application {
     }
 
     /**
-     * Opens a file chooser dialog to allow the user to select an STL or DXF file to load.
+     * Opens a file chooser dialog to allow the user to select an STL or DXF file to
+     * load.
      * Determines file type based on extension and calls appropriate loading methods
-     * (`Geometry.loadStl()` or `sketch.loadDXF()`). Updates the GLCanvas display accordingly.
+     * (`Geometry.loadStl()` or `sketch.loadDXF()`). Updates the GLCanvas display
+     * accordingly.
      */
     /**
-     * Initiates the file loading process with user-selected file and format detection.
+     * Initiates the file loading process with user-selected file and format
+     * detection.
      * 
-     * This method provides a comprehensive file loading interface that automatically
-     * detects supported formats and delegates to appropriate parsing methods. 
+     * This method provides a comprehensive file loading interface that
+     * automatically
+     * detects supported formats and delegates to appropriate parsing methods.
      * 
      * @see #loadDXF(String) for DXF format loading
      * @see #loadOBJ(String) for OBJ format loading
@@ -1503,18 +2586,17 @@ public class GuiFX extends Application {
         fileChooser.setTitle("Load 3D Model or 2D Sketch File");
         // Add extension filters for STL, DXF, and all files
         fileChooser.getExtensionFilters().addAll(
-            new FileChooser.ExtensionFilter("STL files (*.stl)", "*.stl"),
-            new FileChooser.ExtensionFilter("DXF files (*.dxf)", "*.dxf"),
-            new FileChooser.ExtensionFilter("All files", "*.*")
-        );
-        
+                new FileChooser.ExtensionFilter("STL files (*.stl)", "*.stl"),
+                new FileChooser.ExtensionFilter("DXF files (*.dxf)", "*.dxf"),
+                new FileChooser.ExtensionFilter("All files", "*.*"));
+
         // Get the window from a JavaFX component in the scene graph
         Window ownerWindow = outputArea.getScene().getWindow();
         File file = fileChooser.showOpenDialog(ownerWindow); // Show open dialog
 
         if (file != null) {
             String filePath = file.getAbsolutePath();
-            fileField.setText(filePath); // Update the fileField with the selected path
+            // fileField removed
             try {
                 if (filePath.toLowerCase().endsWith(".stl")) {
                     Geometry.loadStl(filePath); // Load STL data
@@ -1550,7 +2632,8 @@ public class GuiFX extends Application {
     /**
      * Exports current 3D model to AutoCAD DXF format with user-selected filename.
      * 
-     * This method provides a specialized export interface specifically for DXF format,
+     * This method provides a specialized export interface specifically for DXF
+     * format,
      * which is widely supported by CAD applications. It handles the complete export
      * process including file selection, format conversion, and error management.
      * 
@@ -1559,7 +2642,7 @@ public class GuiFX extends Application {
      * @see #saveDXF(String) for the actual DXF writing implementation
      */
     private void exportDXF() {
-        String filename = fileField.getText(); // Get initial filename from UI field
+        String filename = "sketch.dxf"; // Default filename
         if (filename.isEmpty()) {
             appendOutput("Please enter a filename in the File Name field for DXF export.");
             return;
@@ -1569,7 +2652,7 @@ public class GuiFX extends Application {
         fileChooser.setTitle("Export DXF File");
         fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("DXF files (*.dxf)", "*.dxf"));
         fileChooser.setInitialFileName(filename);
-        
+
         // Get the window from a JavaFX component in the scene graph
         Window ownerWindow = outputArea.getScene().getWindow();
         File file = fileChooser.showSaveDialog(ownerWindow); // Show save dialog
@@ -1644,103 +2727,58 @@ public class GuiFX extends Application {
         glCanvas.requestFocusInWindow(); // Request focus for interaction
     }
 
+    private void showLoadDialog() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open CAD File");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("CAD Files", "*.stl", "*.dxf"),
+                new FileChooser.ExtensionFilter("STL Files", "*.stl"),
+                new FileChooser.ExtensionFilter("DXF Files", "*.dxf"));
+        File selectedFile = fileChooser.showOpenDialog(null);
+        if (selectedFile != null) {
+            String path = selectedFile.getAbsolutePath();
+            String lowerPath = path.toLowerCase();
+            try {
+                if (lowerPath.endsWith(".stl")) {
+                    List<float[]> triangles = Geometry.loadStl(path);
+                    if (glRenderer != null)
+                        glRenderer.setStlTriangles(triangles);
+                    appendOutput("Loaded STL: " + path);
+                    // Auto-center and frame the loaded model
+                    resetView();
+                    setViewIsometric(); // Use isometric view for better 3D visualization
+                } else if (lowerPath.endsWith(".dxf")) {
+                    sketch.loadDXF(path);
+                    if (glRenderer != null)
+                        glRenderer.setShowSketch(true);
+                    appendOutput("Loaded DXF: " + path);
+                    // Reset 2D view for DXF
+                    sketch2DPanX = 0.0f;
+                    sketch2DPanY = 0.0f;
+                    sketch2DZoom = 1.0f;
+                    glCanvas.repaint();
+                }
+            } catch (Exception e) {
+                appendOutput("Error loading file: " + e.getMessage());
+            }
+        }
+    }
+
     /**
-     * Adds a point to the current 2D sketch based on X and Y coordinates
+     * Shows a dialog to revolve the current sketch. based on X and Y coordinates
      * entered in `sketchPointX` and `sketchPointY` text fields.
      * This method now passes String arguments to the Sketch object.
      */
     /**
      * Creates a new 2D point entity in the sketch from user input coordinates.
      * 
-     * This method handles the creation of point entities, which serve as fundamental
+     * This method handles the creation of point entities, which serve as
+     * fundamental
      * building blocks for more complex geometry. Points can be used as reference
-     * locations, endpoints for lines, centers for circles, or vertices for polygons.
+     * locations, endpoints for lines, centers for circles, or vertices for
+     * polygons.
      * 
-     * 
-     * @see Point class for point entity implementation
-     * @see Sketch class for entity management
-     * @see #sketchLine() for creating lines between points
-     */
-    private void sketchPoint() {
-        try {
-            float x = Float.parseFloat(sketchPointX.getText());
-            float y = Float.parseFloat(sketchPointY.getText());
-            sketch.addPoint(x, y);
-            appendOutput("Point added: (" + x + ", " + y + ")");
-            glRenderer.setShowSketch(true); // Ensure sketch view is active
-            glCanvas.repaint(); // Repaint canvas to show new point
-            glCanvas.requestFocusInWindow(); // Request focus for interaction
-        } catch (NumberFormatException e) {
-            appendOutput("Invalid input. Please enter numbers for X and Y for Point.");
-        } catch (IllegalArgumentException e) {
-            appendOutput("Error adding point: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Creates a line segment in the sketch using coordinates from input fields.
-     * Reads x1,y1,x2,y2 values, validates them, adds line to sketch, and updates display.
-     */
-    private void sketchLine() {
-        try {
-            float x1 = Float.parseFloat(sketchLineX1.getText());
-            float y1 = Float.parseFloat(sketchLineY1.getText());
-            float x2 = Float.parseFloat(sketchLineX2.getText());
-            float y2 = Float.parseFloat(sketchLineY2.getText());
-            sketch.addLine(x1, y1, x2, y2);
-            appendOutput("Line added: (" + x1 + ", " + y1 + ") to (" + x2 + ", " + y2 + ")");
-            glRenderer.setShowSketch(true); // Ensure sketch view is active
-            glCanvas.repaint(); // Repaint canvas to show new line
-            glCanvas.requestFocusInWindow(); // Request focus for interaction
-        } catch (NumberFormatException e) {
-            appendOutput("Invalid input. Please enter numbers for X1, Y1, X2, and Y2 for Line.");
-        } catch (IllegalArgumentException e) {
-            appendOutput("Error adding line: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Adds a circle to the sketch from user input fields.
-     * It parses the center coordinates (x, y) and the radius,
-     * then adds the circle to the sketch and updates the view.
-     */
-    private void sketchCircle() {
-        try {
-            float x = Float.parseFloat(sketchCircleX.getText());
-            float y = Float.parseFloat(sketchCircleY.getText());
-            float r = Float.parseFloat(sketchCircleR.getText());
-            sketch.addCircle(x, y, r);
-            appendOutput("Circle added at (" + x + ", " + y + ") with radius " + r);
-            glRenderer.setShowSketch(true); // Ensure sketch view is shown
-            glCanvas.repaint(); // Repaint canvas after adding element
-            glCanvas.requestFocusInWindow();
-        } catch (NumberFormatException e) {
-            appendOutput("Invalid input. Please enter numbers for X, Y, and Radius for Circle.");
-        } catch (IllegalArgumentException e) {
-            appendOutput("Error adding circle: " + e.getMessage());
-        }
-    }
-
-    /**
-     * Adds a regular polygon to the sketch from user input fields.
-     * It parses thttps://www.linkedin.com/in/gautam-mahajan-68848427a/he center coordinates, radius, and number of sides,
-     * then adds the polygon to the sketch and updates the view.
-     */
-    private void sketchPolygon() {
-        try {
-            float x = Float.parseFloat(sketchPolygonX.getText());
-            float y = Float.parseFloat(sketchPolygonY.getText());
-            float r = Float.parseFloat(sketchPolygonR.getText());
-            int sides = Integer.parseInt(sketchPolygonSides.getText());
-            sketch.addNSidedPolygon(x, y, r, sides);
-            appendOutput("Polygon added at (" + x + ", " + y + ") with radius " + r + " and " + sides + " sides.");
-            glRenderer.setShowSketch(true); // Ensure sketch view is shown
-            glCanvas.repaint(); // Repaint canvas after adding element
-            glCanvas.requestFocusInWindow();
-        } catch (NumberFormatException e) {
-            appendOutput("Invalid input. Please enter numbers for X, Y, Radius, and an integer for Sides for Polygon.");
-        }
-    }
+    // Legacy sketch methods (sketchPoint, sketchLine, sketchCircle, sketchPolygon) removed
 
     /**
      * Extrudes the current 2D sketch into a 3D shape.
@@ -1780,10 +2818,10 @@ public class GuiFX extends Application {
         // Create buttons
         HBox buttonBox = new HBox(10);
         buttonBox.setAlignment(Pos.CENTER);
-        
+
         Button extrudeButton = new Button("Extrude");
         Button cancelButton = new Button("Cancel");
-        
+
         extrudeButton.setPrefWidth(80);
         cancelButton.setPrefWidth(80);
 
@@ -1803,18 +2841,18 @@ public class GuiFX extends Application {
 
                 // Perform the extrusion using the sketch's built-in method
                 sketch.extrude(height);
-                
+
                 // Get the extruded faces and convert them to triangles for rendering
                 List<float[]> extrudedTriangles = sketch.getExtrudedTriangles();
-                
+
                 if (extrudedTriangles != null && !extrudedTriangles.isEmpty()) {
                     // Set the extruded geometry for rendering
                     glRenderer.setStlTriangles(extrudedTriangles);
-                    
+
                     appendOutput("Successfully extruded sketch with height " + height);
                     appendOutput("Generated " + extrudedTriangles.size() + " triangles from extrusion.");
                     appendOutput("Switching to 3D view to show extruded geometry.");
-                    
+
                     // Switch to 3D view to show the result
                     glRenderer.setShowSketch(false);
                     resetView(); // Reset view to fit the new geometry
@@ -1824,9 +2862,9 @@ public class GuiFX extends Application {
                     appendOutput("Warning: No extrudable geometry found in sketch.");
                     appendOutput("Tip: Create polygons or circles to extrude into 3D shapes.");
                 }
-                
+
                 extrudeDialog.close();
-                
+
             } catch (NumberFormatException ex) {
                 appendOutput("Error: Invalid height value. Please enter a valid number.");
             } catch (Exception ex) {
@@ -1842,23 +2880,678 @@ public class GuiFX extends Application {
         // Create scene and show dialog
         Scene scene = new Scene(layout, 300, 200);
         extrudeDialog.setScene(scene);
-        
+
         // Center the dialog on the main window
         extrudeDialog.initOwner(outputArea.getScene().getWindow());
-        
+
         // Focus on the text field when dialog opens
         Platform.runLater(() -> heightField.requestFocus());
-        
+
         extrudeDialog.showAndWait();
+    }
+
+    // === New Dialog methods for Features ===
+    
+    /**
+     * Shows a dialog to collect polygon parameters before drawing.
+     */
+    private void showKiteDialog() {
+        Stage dialog = new Stage();
+        dialog.setTitle("Create Kite");
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20));
+        
+        TextField cxField = new TextField("0");
+        TextField cyField = new TextField("0");
+        TextField vField = new TextField("10"); // Vertical diagonal
+        TextField hField = new TextField("6");  // Horizontal diagonal
+        TextField angleField = new TextField("0");
+        
+        grid.add(new Label("Center X:"), 0, 0); grid.add(cxField, 1, 0);
+        grid.add(new Label("Center Y:"), 0, 1); grid.add(cyField, 1, 1);
+        grid.add(new Label("Vertical Diag:"), 0, 2); grid.add(vField, 1, 2);
+        grid.add(new Label("Horizontal Diag:"), 0, 3); grid.add(hField, 1, 3);
+        grid.add(new Label("Angle (deg):"), 0, 4); grid.add(angleField, 1, 4);
+        
+        Button btnCreate = new Button("Create");
+        btnCreate.setOnAction(e -> {
+            try {
+                float cx = Float.parseFloat(cxField.getText());
+                float cy = Float.parseFloat(cyField.getText());
+                float v = Float.parseFloat(vField.getText());
+                float h = Float.parseFloat(hField.getText());
+                float a = Float.parseFloat(angleField.getText());
+                sketch.addKite(cx, cy, v, h, a);
+                appendOutput("Kite created at (" + cx + "," + cy + ")");
+                glCanvas.repaint();
+                dialog.close();
+            } catch (NumberFormatException ex) {
+                appendOutput("Invalid number format for Kite");
+            }
+        });
+        
+        grid.add(btnCreate, 1, 5);
+        Scene scene = new Scene(grid);
+        dialog.setScene(scene);
+        dialog.show();
+    }
+
+    private void showCubeDialog() {
+        Stage dialog = new Stage();
+        dialog.setTitle("Create Cube");
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        
+        VBox layout = new VBox(10);
+        layout.setPadding(new Insets(20));
+        
+        TextField sizeField = new TextField("10.0");
+        TextField divField = new TextField(String.valueOf(cubeDivisions));
+        
+        layout.getChildren().addAll(
+            new Label("Size:"), sizeField,
+            new Label("Divisions:"), divField,
+            new Button("Create") {{
+                setOnAction(e -> {
+                    try {
+                        float size = Float.parseFloat(sizeField.getText());
+                        int divs = Integer.parseInt(divField.getText());
+                        cubeDivisions = divs;
+                        Geometry.createCube(size, divs);
+                        appendOutput("Cube created: size=" + size + ", divs=" + divs);
+                        glCanvas.repaint();
+                        dialog.close();
+                    } catch (Exception ex) {
+                        appendOutput("Invalid input for Cube");
+                    }
+                });
+            }}
+        );
+        
+        dialog.setScene(new Scene(layout, 250, 200));
+        dialog.show();
+    }
+
+    private void showSphereDialog() {
+        Stage dialog = new Stage();
+        dialog.setTitle("Create Sphere");
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        
+        VBox layout = new VBox(10);
+        layout.setPadding(new Insets(20));
+        
+        TextField radiusField = new TextField("5.0");
+        TextField latField = new TextField(String.valueOf(sphereLatDiv));
+        TextField lonField = new TextField(String.valueOf(sphereLonDiv));
+        
+        layout.getChildren().addAll(
+            new Label("Radius:"), radiusField,
+            new Label("Lat. Divisions:"), latField,
+            new Label("Lon. Divisions:"), lonField,
+            new Button("Create") {{
+                setOnAction(e -> {
+                    try {
+                        float r = Float.parseFloat(radiusField.getText());
+                        int lat = Integer.parseInt(latField.getText());
+                        int lon = Integer.parseInt(lonField.getText());
+                        sphereLatDiv = lat;
+                        sphereLonDiv = lon;
+                        Geometry.createSphere(r, lat, lon);
+                        appendOutput("Sphere created: r=" + r);
+                        glCanvas.repaint();
+                        dialog.close();
+                    } catch (Exception ex) {
+                        appendOutput("Invalid input for Sphere");
+                    }
+                });
+            }}
+        );
+        
+        dialog.setScene(new Scene(layout, 250, 250));
+        dialog.show();
+    }
+
+    private void showPolygonParametersDialog() {
+        Stage dialog = new Stage();
+        dialog.setTitle("Polygon Parameters");
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        
+        GridPane layout = new GridPane();
+        layout.setHgap(10);
+        layout.setVgap(10);
+        layout.setPadding(new Insets(15));
+        
+        // Number of sides spinner
+        Label sidesLabel = new Label("Number of Sides:");
+        javafx.scene.control.Spinner<Integer> sidesSpinner = new javafx.scene.control.Spinner<>(3, 20, 6);
+        sidesSpinner.setEditable(true);
+        sidesSpinner.setPrefWidth(100);
+        
+        layout.add(sidesLabel, 0, 0);
+        layout.add(sidesSpinner, 1, 0);
+        
+        // Buttons
+        HBox buttons = new HBox(10);
+        buttons.setAlignment(Pos.CENTER_RIGHT);
+        Button okButton = new Button("OK");
+        Button cancelButton = new Button("Cancel");
+        buttons.getChildren().addAll(okButton, cancelButton);
+        
+        layout.add(buttons, 0, 1, 2, 1);
+        
+        // Button handlers
+        okButton.setOnAction(e -> {
+            int sides = sidesSpinner.getValue();
+            if (interactionManager != null) {
+                interactionManager.setPolygonSides(sides);
+            }
+            activateSketchTool(
+                SketchInteractionManager.InteractionMode.SKETCH_POLYGON,
+                sides + "-sided Polygon: Click center, drag to set radius"
+            );
+            dialog.close();
+        });
+        
+        cancelButton.setOnAction(e -> dialog.close());
+        
+        // Create scene and show dialog
+        Scene scene = new Scene(layout, 280, 120);
+        dialog.setScene(scene);
+        dialog.initOwner(outputArea.getScene().getWindow());
+        
+        // Focus on spinner when dialog opens
+        Platform.runLater(() -> sidesSpinner.requestFocus());
+        
+        dialog.showAndWait();
+    }
+    
+    /**
+     * Shows dialog for creating a custom reference plane.
+     * User can define name and orientation angles.
+     */
+    private void showCreatePlaneDialog(TreeItem<String> rootItem) {
+        Stage dialog = new Stage();
+        dialog.setTitle("Create Custom Plane");
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setResizable(false);
+        
+        GridPane layout = new GridPane();
+        layout.setHgap(10);
+        layout.setVgap(10);
+        layout.setPadding(new Insets(20));
+        
+        // Plane Name
+        Label nameLabel = new Label("Plane Name:");
+        TextField nameField = new TextField("Custom Plane 1");
+        nameField.setPrefWidth(200);
+        layout.add(nameLabel, 0, 0);
+        layout.add(nameField, 1, 0);
+        
+        // Reference Plane selector
+        Label refLabel = new Label("Parallel To:");
+        javafx.scene.control.ComboBox<String> refCombo = new javafx.scene.control.ComboBox<>();
+        refCombo.getItems().addAll("Front Plane", "Top Plane", "Right Plane");
+        refCombo.setValue("Front Plane");
+        layout.add(refLabel, 0, 1);
+        layout.add(refCombo, 1, 1);
+        
+        // Offset distance
+        Label offsetLabel = new Label("Offset Distance:");
+        Spinner<Double> offsetSpinner = new Spinner<>(-1000.0, 1000.0, 0.0, 1.0);
+        offsetSpinner.setEditable(true);
+        offsetSpinner.setPrefWidth(120);
+        Label unitLabel = new Label(currentUnits.getAbbreviation());
+        HBox offsetBox = new HBox(5, offsetSpinner, unitLabel);
+        layout.add(offsetLabel, 0, 2);
+        layout.add(offsetBox, 1, 2);
+        
+        // Buttons
+        HBox buttons = new HBox(10);
+        buttons.setAlignment(Pos.CENTER_RIGHT);
+        Button okButton = new Button("Create");
+        okButton.setDefaultButton(true);
+        okButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white;");
+        Button cancelButton = new Button("Cancel");
+        buttons.getChildren().addAll(okButton, cancelButton);
+        layout.add(buttons, 0, 3, 2, 1);
+        
+        // Create action
+        okButton.setOnAction(e -> {
+            String planeName = nameField.getText().trim();
+            if (!planeName.isEmpty()) {
+                // Add new plane to tree
+                TreeItem<String> newPlane = new TreeItem<>(planeName + " Plane");
+                rootItem.getChildren().add(newPlane);
+                
+                // Store plane data for orientation
+                String refPlane = refCombo.getValue();
+                double offset = offsetSpinner.getValue();
+                
+                appendOutput("Created custom plane: " + planeName + 
+                            " (parallel to " + refPlane + ", offset " + offset + " " + currentUnits.getAbbreviation() + ")");
+                
+                dialog.close();
+            }
+        });
+        
+        cancelButton.setOnAction(e -> dialog.close());
+        
+        Scene scene = new Scene(layout, 350, 180);
+        dialog.setScene(scene);
+        dialog.showAndWait();
+    }
+    
+    /**
+     * Shows the unit selection dialog at application startup.
+     * Allows user to choose their preferred unit system.
+     */
+    private void showUnitSelectionDialog() {
+        Stage dialog = new Stage();
+        dialog.setTitle("Select Units - SketchApp 4.0");
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setResizable(false);
+        
+        VBox layout = new VBox(12);
+        layout.setPadding(new Insets(20));
+        layout.setAlignment(Pos.CENTER);
+        layout.setStyle("-fx-background-color: #f9f9f9;");
+        
+        Label promptLabel = new Label("Choose your preferred unit system:");
+        promptLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+        
+        // Create radio buttons for each unit system
+        ToggleGroup unitGroup = new ToggleGroup();
+        
+        RadioButton mmButton = new RadioButton("Millimeters (mm) - Precision engineering");
+        mmButton.setToggleGroup(unitGroup);
+        mmButton.setUserData(UnitSystem.MMGS);
+        mmButton.setSelected(true); // Default
+        mmButton.setStyle("-fx-font-size: 12px;");
+        
+        RadioButton cmButton = new RadioButton("Centimeters (cm) - General use");
+        cmButton.setToggleGroup(unitGroup);
+        cmButton.setUserData(UnitSystem.CMGS);
+        cmButton.setStyle("-fx-font-size: 12px;");
+        
+        RadioButton mButton = new RadioButton("Meters (m) - Large scale");
+        mButton.setToggleGroup(unitGroup);
+        mButton.setUserData(UnitSystem.MGS);
+        mButton.setStyle("-fx-font-size: 12px;");
+        
+        RadioButton inButton = new RadioButton("Inches (in) - Imperial");
+        inButton.setToggleGroup(unitGroup);
+        inButton.setUserData(UnitSystem.IPS);
+        inButton.setStyle("-fx-font-size: 12px;");
+        
+        RadioButton ftButton = new RadioButton("Feet (ft) - Architecture");
+        ftButton.setToggleGroup(unitGroup);
+        ftButton.setUserData(UnitSystem.FTLBFS);
+        ftButton.setStyle("-fx-font-size: 12px;");
+        
+        // OK button
+        Button okButton = new Button("OK");
+        okButton.setDefaultButton(true);
+        okButton.setPrefWidth(100);
+        okButton.setStyle("-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;");
+        okButton.setOnAction(e -> {
+            UnitSystem selected = (UnitSystem) unitGroup.getSelectedToggle().getUserData();
+            setApplicationUnits(selected);
+            dialog.close();
+        });
+        
+        layout.getChildren().addAll(
+            promptLabel,
+            mmButton, cmButton, mButton, inButton, ftButton,
+            okButton
+        );
+        
+        Scene scene = new Scene(layout, 350, 300);
+        dialog.setScene(scene);
+        dialog.showAndWait();
+    }
+    
+    /**
+     * Sets the application-wide unit system.
+     * Updates sketch and current units field.
+     */
+    private void setApplicationUnits(UnitSystem units) {
+        this.currentUnits = units;
+        if (sketch != null) {
+            sketch.setUnitSystem(units);
+        }
+        appendOutput("Units set to: " + units.getAbbreviation() + " (" + units.name() + ")");
+    }
+
+    private void showNacaDialog() {
+        Stage dialog = new Stage();
+        dialog.setTitle("NACA Airfoil Generator");
+        dialog.initModality(Modality.APPLICATION_MODAL);
+
+        VBox layout = new VBox(10);
+        layout.setPadding(new Insets(15));
+
+        TextField codeField = new TextField("2412");
+        TextField chordField = new TextField("1.0");
+
+        layout.getChildren().addAll(
+                new Label("NACA 4-Digit Code:"), codeField,
+                new Label("Chord Length:"), chordField,
+                new Button("Generate") {
+                    {
+                        setOnAction(e -> {
+                            String code = codeField.getText();
+                            try {
+                                float chord = Float.parseFloat(chordField.getText());
+                                int res = sketch.generateNaca4(code, chord, 50);
+                                if (res == 0) {
+                                    appendOutput("Generated NACA " + code);
+                                    glRenderer.setShowSketch(true);
+                                    glCanvas.repaint();
+                                    dialog.close();
+                                } else {
+                                    appendOutput("Error generating Airfoil.");
+                                }
+                            } catch (NumberFormatException nfe) {
+                                appendOutput("Invalid number format.");
+                            }
+                        });
+                    }
+                });
+
+        dialog.setScene(new Scene(layout, 250, 200));
+        dialog.show();
+    }
+
+    private void showRevolveDialog() {
+        Stage dialog = new Stage();
+        dialog.setTitle("Revolve Feature");
+        dialog.initModality(Modality.APPLICATION_MODAL);
+
+        VBox layout = new VBox(10);
+        layout.setPadding(new Insets(15));
+
+        TextField angleField = new TextField("360");
+
+        layout.getChildren().addAll(
+                new Label("Angle of Revolution (deg):"), angleField,
+                new Button("Revolve") {
+                    {
+                        setOnAction(e -> {
+                            try {
+                                float angle = Float.parseFloat(angleField.getText());
+                                Geometry.revolve(sketch, angle, 60);
+                                appendOutput("Revolved sketch " + angle + " degrees");
+
+                                // Revolve stores data in Geometry.extrudedTriangles
+                                glRenderer.setStlTriangles(Geometry.getExtrudedTriangles());
+
+                                glRenderer.setShowSketch(false);
+                                resetView();
+                                glCanvas.repaint();
+                                dialog.close();
+                            } catch (NumberFormatException nfe) {
+                                appendOutput("Invalid angle.");
+                            }
+                        });
+                    }
+                });
+
+        dialog.setScene(new Scene(layout, 250, 150));
+        dialog.show();
+    }
+
+    private void showLoftDialog() {
+        Stage dialog = new Stage();
+        dialog.setTitle("Loft Feature");
+        dialog.initModality(Modality.APPLICATION_MODAL);
+
+        VBox layout = new VBox(10);
+        layout.setPadding(new Insets(15));
+
+        TextField heightField = new TextField("30.0");
+
+        layout.getChildren().addAll(
+                new Label("Loft Height:"), heightField,
+                new Label("(Lofts between the first two polygons in sketch)"),
+                new Button("Loft") {
+                    {
+                        setOnAction(e -> {
+                            try {
+                                float height = Float.parseFloat(heightField.getText());
+                                Geometry.loft(sketch, height);
+                                appendOutput("Loft created with height " + height);
+
+                                glRenderer.setStlTriangles(Geometry.getExtrudedTriangles());
+
+                                glRenderer.setShowSketch(false);
+                                resetView();
+                                glCanvas.repaint();
+                                dialog.close();
+                            } catch (NumberFormatException nfe) {
+                                appendOutput("Invalid height.");
+                            }
+                        });
+                    }
+                });
+
+        dialog.setScene(new Scene(layout, 300, 200));
+        dialog.show();
+    }
+
+    private void calculateMassProperties() {
+        float[] cent = Geometry.calculateCentroid();
+        if (cent != null) {
+            appendOutput(String.format("Center of Gravity: X=%.4f, Y=%.4f, Z=%.4f", cent[0], cent[1], cent[2]));
+        } else {
+            appendOutput("Center of Gravity: N/A");
+        }
+        
+        float volume = Geometry.calculateVolume();
+        float area = Geometry.calculateSurfaceArea();
+        
+        appendOutput(String.format("Volume: %.4f cubic units", volume));
+        appendOutput(String.format("Surface Area: %.4f square units", area));
+    }
+
+    private void activateSelectionTool() {
+        interactionManager.setMode(SketchInteractionManager.InteractionMode.SELECT);
+        interactionManager.clearSelection();
+        appendOutput("Selection Mode Active. Click to select entities.");
+        if (statusLabel != null) statusLabel.setText("Select entities. Click to toggle selection.");
+    }
+
+    private void applyHorizontalConstraint() {
+        // Check if entities are already selected from a previous selection
+        List<Entity> selected = interactionManager.getSelectedEntities();
+        
+        if (selected.size() == 1 && selected.get(0) instanceof Line) {
+             // Apply constraint to selected line
+             Line line = (Line) selected.get(0);
+             Constraint c = new HorizontalConstraint(line.getStartPoint(), line.getEndPoint());
+             commandManager.executeCommand(new AddConstraintCommand(sketch, c));
+             appendOutput("Applied Horizontal Constraint to Line.");
+             interactionManager.clearSelection();
+             glCanvas.repaint();
+        } else if (selected.size() == 2 && selected.get(0) instanceof PointEntity && selected.get(1) instanceof PointEntity) {
+             // Apply constraint to selected points
+             PointEntity p1 = (PointEntity) selected.get(0);
+             PointEntity p2 = (PointEntity) selected.get(1);
+             Constraint c = new HorizontalConstraint(p1.getPoint(), p2.getPoint());
+             commandManager.executeCommand(new AddConstraintCommand(sketch, c));
+             appendOutput("Applied Horizontal Constraint to Points.");
+             interactionManager.clearSelection();
+             glCanvas.repaint();
+        } else {
+             // No valid selection - activate selection mode
+             interactionManager.clearSelection();
+             interactionManager.setMode(SketchInteractionManager.InteractionMode.SELECT);
+             
+             // Auto-switch to sketch view if not already active
+             if (glRenderer != null && !glRenderer.isShowingSketch()) {
+                 glRenderer.setShowSketch(true);
+                 appendOutput("Switched to 2D sketch mode");
+             }
+             
+             appendOutput("Horizontal Constraint: Click to select 1 Line or 2 Points, then click this button again.");
+             if (statusLabel != null) statusLabel.setText("Select 1 Line or 2 Points for Horizontal Constraint");
+             
+             // Request focus on canvas for interaction
+             Platform.runLater(() -> {
+                 if (canvasNode != null) {
+                     canvasNode.requestFocus();
+                 }
+             });
+        }
+    }
+
+    private void applyVerticalConstraint() {
+        // Check if entities are already selected from a previous selection
+        List<Entity> selected = interactionManager.getSelectedEntities();
+        
+        if (selected.size() == 1 && selected.get(0) instanceof Line) {
+             // Apply constraint to selected line
+             Line line = (Line) selected.get(0);
+             Constraint c = new VerticalConstraint(line.getStartPoint(), line.getEndPoint());
+             commandManager.executeCommand(new AddConstraintCommand(sketch, c));
+             appendOutput("Applied Vertical Constraint to Line.");
+             interactionManager.clearSelection();
+             glCanvas.repaint();
+        } else if (selected.size() == 2 && selected.get(0) instanceof PointEntity && selected.get(1) instanceof PointEntity) {
+             // Apply constraint to selected points
+             PointEntity p1 = (PointEntity) selected.get(0);
+             PointEntity p2 = (PointEntity) selected.get(1);
+             Constraint c = new VerticalConstraint(p1.getPoint(), p2.getPoint());
+             commandManager.executeCommand(new AddConstraintCommand(sketch, c));
+             appendOutput("Applied Vertical Constraint to Points.");
+             interactionManager.clearSelection();
+             glCanvas.repaint();
+        } else {
+             // No valid selection - activate selection mode
+             interactionManager.clearSelection();
+             interactionManager.setMode(SketchInteractionManager.InteractionMode.SELECT);
+             
+             // Auto-switch to sketch view if not already active
+             if (glRenderer != null && !glRenderer.isShowingSketch()) {
+                 glRenderer.setShowSketch(true);
+                 appendOutput("Switched to 2D sketch mode");
+             }
+             
+             appendOutput("Vertical Constraint: Click to select 1 Line or 2 Points, then click this button again.");
+             if (statusLabel != null) statusLabel.setText("Select 1 Line or 2 Points for Vertical Constraint");
+             
+             // Request focus on canvas for interaction
+             Platform.runLater(() -> {
+                 if (canvasNode != null) {
+                     canvasNode.requestFocus();
+                 }
+             });
+        }
+    }
+
+    private void applyCoincidentConstraint() {
+        // Check if entities are already selected from a previous selection
+        List<Entity> selected = interactionManager.getSelectedEntities();
+        
+        if (selected.size() == 2 && selected.get(0) instanceof PointEntity && selected.get(1) instanceof PointEntity) {
+             // Apply constraint to selected points
+             PointEntity p1 = (PointEntity) selected.get(0);
+             PointEntity p2 = (PointEntity) selected.get(1);
+             Constraint c = new CoincidentConstraint(p1.getPoint(), p2.getPoint());
+             commandManager.executeCommand(new AddConstraintCommand(sketch, c));
+             appendOutput("Applied Coincident Constraint.");
+             interactionManager.clearSelection();
+             glCanvas.repaint();
+        } else {
+             // No valid selection - activate selection mode
+             interactionManager.clearSelection();
+             interactionManager.setMode(SketchInteractionManager.InteractionMode.SELECT);
+             
+             // Auto-switch to sketch view if not already active
+             if (glRenderer != null && !glRenderer.isShowingSketch()) {
+                 glRenderer.setShowSketch(true);
+                 appendOutput("Switched to 2D sketch mode");
+             }
+             
+             appendOutput("Coincident Constraint: Click to select 2 Points, then click this button again.");
+             if (statusLabel != null) statusLabel.setText("Select 2 Points for Coincident Constraint");
+             
+             // Request focus on canvas for interaction
+             Platform.runLater(() -> {
+                 if (canvasNode != null) {
+                     canvasNode.requestFocus();
+                 }
+             });
+        }
+    }
+
+    private void applyFixedConstraint() {
+        // Check if entities are already selected from a previous selection
+        List<Entity> selected = interactionManager.getSelectedEntities();
+        
+        if (!selected.isEmpty()) {
+             int count = 0;
+             for (Entity e : selected) {
+                 if (e instanceof PointEntity) {
+                     PointEntity p = (PointEntity) e;
+                     Constraint c = new FixedConstraint(p.getPoint());
+                     commandManager.executeCommand(new AddConstraintCommand(sketch, c));
+                     count++;
+                 }
+             }
+             if (count > 0) {
+                 appendOutput("Fixed " + count + " points.");
+                 interactionManager.clearSelection();
+                 glCanvas.repaint();
+             } else {
+                 // Selection exists but no points - activate selection mode
+                 interactionManager.clearSelection();
+                 interactionManager.setMode(SketchInteractionManager.InteractionMode.SELECT);
+                 
+                 // Auto-switch to sketch view if not already active
+                 if (glRenderer != null && !glRenderer.isShowingSketch()) {
+                     glRenderer.setShowSketch(true);
+                     appendOutput("Switched to 2D sketch mode");
+                 }
+                 
+                 appendOutput("Fixed Constraint: Click to select Points, then click this button again.");
+                 if (statusLabel != null) statusLabel.setText("Select Points to Fix in Place");
+                 
+                 // Request focus on canvas for interaction
+                 Platform.runLater(() -> {
+                     if (canvasNode != null) {
+                         canvasNode.requestFocus();
+                     }
+                 });
+             }
+        } else {
+             // No selection - activate selection mode
+             interactionManager.setMode(SketchInteractionManager.InteractionMode.SELECT);
+             
+             // Auto-switch to sketch view if not already active
+             if (glRenderer != null && !glRenderer.isShowingSketch()) {
+                 glRenderer.setShowSketch(true);
+                 appendOutput("Switched to 2D sketch mode");
+             }
+             
+             appendOutput("Fixed Constraint: Click to select Points, then click this button again.");
+             if (statusLabel != null) statusLabel.setText("Select Points to Fix in Place");
+             
+             // Request focus on canvas for interaction
+             Platform.runLater(() -> {
+                 if (canvasNode != null) {
+                     canvasNode.requestFocus();
+                 }
+             });
+        }
     }
 
     /**
      * Main method to launch the JavaFX application.
      *
      * @param args Command line arguments passed to the application.
-     */
-    /**
-     * Application entry point. Launches the JavaFX application.
      */
     public static void main(String[] args) {
         launch(args);

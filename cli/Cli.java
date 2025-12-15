@@ -8,7 +8,8 @@ import java.util.ArrayList;
 
 /**
  * Command-line interface for the CAD application.
- * Supports commands to create shapes, manage sketches, save/load files, and configure settings.
+ * Supports commands to create shapes, manage sketches, save/load files, and
+ * configure settings.
  */
 public class Cli {
 
@@ -23,6 +24,9 @@ public class Cli {
 
     /** Sketch instance to manage 2D drawing entities */
     private static Sketch sketch = new Sketch();
+    
+    /** Command manager for undo/redo */
+    private static cad.core.CommandManager commandManager = new cad.core.CommandManager();
 
     /**
      * Launch the CLI application.
@@ -35,7 +39,8 @@ public class Cli {
     }
 
     /**
-     * Enum representing supported measurement units and their conversion to millimeters.
+     * Enum representing supported measurement units and their conversion to
+     * millimeters.
      */
     private enum Unit {
         MM(1.0f), CM(10.0f), M(1000.0f), IN(25.4f), FT(304.8f);
@@ -76,7 +81,8 @@ public class Cli {
                     }
 
                     String input = scanner.nextLine().trim();
-                    if (input.isEmpty()) continue;
+                    if (input.isEmpty())
+                        continue;
 
                     String[] argsArray = input.split("\\s+");
                     String command = argsArray[0].toLowerCase();
@@ -161,6 +167,32 @@ public class Cli {
                             setUnits(argsArray);
                             break;
 
+                        case "cg":
+                            handleCg();
+                            break;
+
+                        case "naca":
+                            handleNaca(argsArray);
+                            break;
+
+                        case "revolve":
+                            handleRevolve(argsArray);
+                            break;
+
+                        case "loft":
+                            handleLoft(argsArray);
+                            break;
+
+                        case "undo":
+                        case "u":
+                            handleUndo();
+                            break;
+
+                        case "redo":
+                        case "r":
+                            handleRedo();
+                            break;
+
                         default:
                             System.out.println("Unknown command: " + command + ". Type 'help' for a list.");
                     }
@@ -175,6 +207,23 @@ public class Cli {
             System.err.println("Unexpected error in CLI: " + e.getMessage());
             System.err.println("Exiting CLI due to error.");
             System.exit(1);
+        }
+    }
+
+    /**
+     * Helper method to handle loft command.
+     */
+    private static void handleLoft(String[] args) {
+        if (args.length < 2) {
+            System.out.println("Usage: loft <height>");
+            return;
+        }
+        try {
+            float height = Float.parseFloat(args[1]);
+            Geometry.loft(sketch, height);
+            System.out.println("Loft created between first two sketch polygons with height " + height);
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid height.");
         }
     }
 
@@ -196,12 +245,19 @@ public class Cli {
         System.out.println("  sketch_line <x1> <y1> <x2> <y2> - Add line to sketch");
         System.out.println("  sketch_circle <x> <y> <radius> - Add circle to sketch");
         System.out.println("  sketch_polygon <x> <y> <radius> <sides> - Add polygon (3-25 sides)");
-        System.out.println("  sketch_polygon <x1> <y1> <x2> <y2> ... <xn> <yn> - Add polygon from explicit points (3-25 points)");
+        System.out.println(
+                "  sketch_polygon <x1> <y1> <x2> <y2> ... <xn> <yn> - Add polygon from explicit points (3-25 points)");
         System.out.println("  sketch_clear                - Clear sketch");
         System.out.println("  sketch_list                 - List all sketch entities");
         System.out.println("  extrude                     - View extrusion info (use GUI for better experience)");
         System.out.println("  export_dxf <filename>       - Export sketch to DXF");
         System.out.println("  units <mm|cm|m|in|ft>       - Set units");
+        System.out.println("  cg                          - Calculate Center of Gravity");
+        System.out.println("  naca <digits> [chord]       - Generate NACA 4-digit airfoil (default chord=1.0)");
+        System.out.println("  revolve [angle] [steps]     - Revolve sketch 360deg around Y-axis");
+        System.out.println("  loft <height>               - Loft between first two polygons in sketch");
+        System.out.println("  undo (u)                    - Undo last operation");
+        System.out.println("  redo (r)                    - Redo last operation");
         System.out.println("  help (h), version (v), exit (e)");
     }
 
@@ -209,7 +265,7 @@ public class Cli {
      * Prints the version information.
      */
     private static void version() {
-        System.out.println("CAD, version 1.0 (Beta)");
+        System.out.println("SketchApp, version 2.5 (Beta)");
     }
 
     /**
@@ -289,7 +345,8 @@ public class Cli {
     /**
      * Sets latitude and longitude subdivisions for spheres.
      * 
-     * @param args Command arguments, expects lat and lon as second and third arguments
+     * @param args Command arguments, expects lat and lon as second and third
+     *             arguments
      */
     private static void setSphereDivisions(String[] args) {
         if (args.length < 3) {
@@ -366,10 +423,15 @@ public class Cli {
             System.out.println("Usage: sketch_point <x> <y>");
             return;
         }
-        String[] params = { args[1], args[2] };
-        int result = sketch.sketchPoint(params);
-        if (result == 0) System.out.println("Point added to sketch.");
-        else System.out.println("Failed to add point.");
+        try {
+            float x = Float.parseFloat(args[1]);
+            float y = Float.parseFloat(args[2]);
+            cad.core.Sketch.PointEntity point = new cad.core.Sketch.PointEntity(x, y);
+            commandManager.executeCommand(new cad.core.AddEntityCommand(sketch, point, "Point"));
+            System.out.println("Point added to sketch.");
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid coordinates.");
+        }
     }
 
     /**
@@ -382,10 +444,17 @@ public class Cli {
             System.out.println("Usage: sketch_line <x1> <y1> <x2> <y2>");
             return;
         }
-        String[] params = { args[1], args[2], args[3], args[4] };
-        int result = sketch.sketchLine(params);
-        if (result == 0) System.out.println("Line added to sketch.");
-        else System.out.println("Failed to add line.");
+        try {
+            float x1 = Float.parseFloat(args[1]);
+            float y1 = Float.parseFloat(args[2]);
+            float x2 = Float.parseFloat(args[3]);
+            float y2 = Float.parseFloat(args[4]);
+            cad.core.Sketch.Line line = new cad.core.Sketch.Line(x1, y1, x2, y2);
+            commandManager.executeCommand(new cad.core.AddEntityCommand(sketch, line, "Line"));
+            System.out.println("Line added to sketch.");
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid coordinates.");
+        }
     }
 
     /**
@@ -398,17 +467,23 @@ public class Cli {
             System.out.println("Usage: sketch_circle <x> <y> <radius>");
             return;
         }
-        String[] params = { args[1], args[2], args[3] };
-        int result = sketch.sketchCircle(params);
-        if (result == 0) System.out.println("Circle added to sketch.");
-        else System.out.println("Failed to add circle.");
+        try {
+            float x = Float.parseFloat(args[1]);
+            float y = Float.parseFloat(args[2]);
+            float r = Float.parseFloat(args[3]);
+            cad.core.Sketch.Circle circle = new cad.core.Sketch.Circle(x, y, r);
+            commandManager.executeCommand(new cad.core.AddEntityCommand(sketch, circle, "Circle"));
+            System.out.println("Circle added to sketch.");
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid parameters.");
+        }
     }
 
     /**
      * Adds a polygon to the sketch.
      * Supports two modes:
-     *  - Regular polygon defined by center (x,y), radius, and number of sides
-     *  - Polygon defined by explicit points (at least 3)
+     * - Regular polygon defined by center (x,y), radius, and number of sides
+     * - Polygon defined by explicit points (at least 3)
      * 
      * @param args Command arguments for polygon creation
      */
@@ -425,13 +500,22 @@ public class Cli {
                     System.out.println("Polygon sides must be between 3 and 25.");
                     return;
                 }
+                
+                List<cad.core.Sketch.PointEntity> points = new ArrayList<>();
+                for (int i = 0; i < sides; i++) {
+                    double angle = 2 * Math.PI * i / sides;
+                    float px = x + (float) (radius * Math.cos(angle));
+                    float py = y + (float) (radius * Math.sin(angle));
+                    points.add(new cad.core.Sketch.PointEntity(px, py));
+                }
 
-                int result = sketch.addNSidedPolygon(x, y, radius, sides);
-                System.out.println(result == 0 ? "Polygon added to sketch." : "Failed to add polygon to sketch.");
+                cad.core.Sketch.Polygon poly = new cad.core.Sketch.Polygon(points);
+                commandManager.executeCommand(new cad.core.AddEntityCommand(sketch, poly, "Polygon"));
+                System.out.println("Polygon added to sketch.");
             } catch (NumberFormatException e) {
                 System.out.println("Invalid numeric value in arguments.");
             }
-        } 
+        }
         // Polygon from explicit points: sketch_polygon <x1> <y1> ... <xn> <yn>
         else if (args.length >= 7 && args.length % 2 == 1) {
             try {
@@ -441,22 +525,24 @@ public class Cli {
                     return;
                 }
 
-                List<Sketch.PointEntity> points = new ArrayList<>();
+                List<cad.core.Sketch.PointEntity> points = new ArrayList<>();
                 for (int i = 1; i < args.length; i += 2) {
                     float px = Float.parseFloat(args[i]);
                     float py = Float.parseFloat(args[i + 1]);
-                    points.add(new Sketch.PointEntity(px, py));
+                    points.add(new cad.core.Sketch.PointEntity(px, py));
                 }
 
-                int result = sketch.addPolygon(points);
-                System.out.println(result == 0 ? "Polygon added to sketch." : "Failed to add polygon to sketch.");
+                cad.core.Sketch.Polygon poly = new cad.core.Sketch.Polygon(points);
+                commandManager.executeCommand(new cad.core.AddEntityCommand(sketch, poly, "Polygon"));
+                System.out.println("Polygon added to sketch.");
             } catch (NumberFormatException e) {
                 System.out.println("Invalid numeric value in polygon points.");
             }
         } else {
-            System.out.println("Usage:");
-            System.out.println("  sketch_polygon <x> <y> <radius> <sides>           - Regular polygon (3 to 25 sides)");
-            System.out.println("  sketch_polygon <x1> <y1> <x2> <y2> ... <xn> <yn>   - Polygon from explicit points (3 to 25 points)");
+             System.out.println("Usage:");
+             System.out.println("  sketch_polygon <x> <y> <radius> <sides>           - Regular polygon (3 to 25 sides)");
+             System.out.println(
+                     "  sketch_polygon <x1> <y1> <x2> <y2> ... <xn> <yn>   - Polygon from explicit points (3 to 25 points)");
         }
     }
 
@@ -476,8 +562,10 @@ public class Cli {
     }
 
     /**
-     * Displays information about extrusion and redirects users to the GUI for better experience.
-     * The CLI no longer supports extrusion functionality as it's better suited for the GUI.
+     * Displays information about extrusion and redirects users to the GUI for
+     * better experience.
+     * The CLI no longer supports extrusion functionality as it's better suited for
+     * the GUI.
      */
     private static void extrudeRedirectToGUI() {
         System.out.println("==========================================");
@@ -551,7 +639,113 @@ public class Cli {
             return;
         }
 
-        sketch.setUnits(unit);
-        System.out.println("Units set to: " + unit);
+        cad.core.UnitSystem sys = cad.core.UnitSystem.MMGS;
+        switch (unit) {
+            case "mm":
+                sys = cad.core.UnitSystem.MMGS;
+                break;
+            case "cm":
+                sys = cad.core.UnitSystem.CGS;
+                break;
+            case "m":
+                sys = cad.core.UnitSystem.MKS;
+                break;
+            case "in":
+                sys = cad.core.UnitSystem.IPS;
+                break;
+            default:
+                System.out.println("Unsupported CLI unit. Supported: mm, cm, m, in (mapped to standard systems)");
+                return;
+        }
+
+        sketch.setUnitSystem(sys);
+        System.out.println("Units set to: " + sys.name());
+    }
+
+    /**
+     * Calculates and displays the Center of Gravity (CG) of the current model.
+     */
+    private static void handleCg() {
+        float[] cg = Geometry.calculateCentroid();
+        System.out.printf("Center of Gravity (CG): X=%.4f, Y=%.4f, Z=%.4f%n", cg[0], cg[1], cg[2]);
+    }
+
+    /**
+     * Handles the 'naca' command to generate an airfoil.
+     * 
+     * @param args Command arguments.
+     */
+    private static void handleNaca(String[] args) {
+        if (args.length < 2) {
+            System.out.println("Usage: naca <4-digits> [chord]");
+            return;
+        }
+        String digits = args[1];
+        float chord = 1.0f;
+        if (args.length >= 3) {
+            try {
+                chord = Float.parseFloat(args[2]);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid chord length.");
+                return;
+            }
+        }
+
+        int result = sketch.generateNaca4(digits, chord, 50); // 50 points per side
+        if (result == 0) {
+            System.out.println("NACA " + digits + " airfoil generated with chord " + chord + ".");
+        } else {
+            System.out.println("Failed to generate airfoil.");
+        }
+    }
+
+    /**
+     * Handles the 'revolve' command.
+     * 
+     * @param args Command arguments.
+     */
+    private static void handleRevolve(String[] args) {
+        float angle = 360.0f;
+        int steps = 60;
+
+        if (args.length >= 2) {
+            try {
+                angle = Float.parseFloat(args[1]);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid angle.");
+            }
+        }
+        if (args.length >= 3) {
+            try {
+                steps = Integer.parseInt(args[2]);
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid steps.");
+            }
+        }
+
+        Geometry.revolve(sketch, angle, steps);
+        System.out.println("Revolve operation completed.");
+    }
+    
+    /**
+     * Handles undo command.
+     */
+    private static void handleUndo() {
+        if (commandManager.undo()) {
+            System.out.println("Undo successful: " + commandManager.getRedoDescription()); // Description of what was undone
+        } else {
+            System.out.println("Nothing to undo.");
+        }
+    }
+    
+    /**
+     * Handles redo command.
+     */
+    private static void handleRedo() {
+        if (commandManager.redo()) {
+            System.out.println("Redo successful: " + commandManager.getUndoDescription());
+        } else {
+            System.out.println("Nothing to redo.");
+        }
     }
 }

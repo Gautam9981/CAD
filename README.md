@@ -1,183 +1,351 @@
-CAD software (with CLI tools and a GUI tool (eventually) as well) 
+# CAD Software Development Journal
 
-Day 1 (5/31/25) 
+A lightweight CAD application with both CLI and GUI interfaces for creating and editing .stl and .dxf files compatible with professional CAD software like Fusion 360 and SolidWorks.
 
-So far, today was the groundbreaking day for this project. I didn’t get too far, however, I have a decent foundation. I intend to make a terminal application that can run a GUI (at the discretion of the user) and make .stl files that can be read by platforms such as Fusion or Solidworks. So far, it can generate cubes and sphere shapes, which shows up as meshes in Solidworks. I intend to make a gui for this as well, as lightweight as possible, with the assistance of others. 
+---
 
-Day 2 (6/1/25) 
+## Development Log
 
-Now I can sketch basic lines and circles and points! However, I can’t necessarily make it look exactly clean in Solidworks, but it exports it as a .dxf file and it loads. I realized that the biggest issue wouldn’t necessarily be the code, but, rather the documentation of the code, so I would need help documenting the code properly. This repo is public, so anyone can see it 
+### Day 1 (5/31/25) - Project Foundation
+Groundbreaking day for the project. Established basic foundation:
+- Created terminal application framework
+- Added optional GUI support
+- Implemented .stl file generation for Fusion/SolidWorks compatibility
+- Basic shape generation: cubes and spheres
+- Successfully displays as meshes in SolidWorks
 
-Day 3 (6/2/25) 
+**Goal:** Make a lightweight GUI with community assistance
 
-Today, I wasn’t really able to get much coding done, however, I will provide the necessary instructions to compile the program in its current state; So far, I have only tested it for Linux systems, or Windows systems with WSL (Windows Subsystem for Linux). Regardless, I will provide instructions for each type of operating system (to the best of my ability) (Instructions are in Compilation.txt) 
+---
 
-Day 4 (6/4/25) 
+### Day 2 (6/1/25) - Sketching Capabilities
+**New Features:**
+- Basic sketching: lines, circles, and points
+- .dxf file export (loads in SolidWorks, though not perfectly clean)
 
-Today, I started working on a very rudimentary undo/redo functionality for the geometries and the sketches. So far, it works perfectly for lines, however, I would prefer to not have to save it to the file everytime, it should be able to refer to the current file. As for the geometries, it functions even worse, keeping the geometries, despite typing undo and redo. I plan to fix it soon, and I should be able to undo and redo (with improved logic for other functions as well; I have made a separate subset of code called “Broken Code”, so that I can fix it later on, but for now, DO NOT TRY TO COMPILE THIS VERSION; It isn’t syntactically broken, the logic is broken, so it won’t work as expected (For now, the main culprit is history.c and history.h) 
+**Key Insight:** Documentation is the biggest challenge, not the code itself. Made repository public for collaboration.
 
-Day 5 (6/13/25) 
+---
 
-Upon a few days break, I have realized that if I continued to go with C, I think it would become too complicated to maintain the current state of functionality and simplicity in the code, so I have converted all of the C files into Java 
+### Day 3 (6/2/25) - Compilation Documentation
+**Focus:** Created comprehensive compilation instructions
+- Tested on Linux and Windows WSL
+- Added OS-specific instructions to `Compilation.txt`
+- Minimal coding progress today
 
-Day 6 (6/14/25) 
+---
 
-Made a basic load functionality, in the sense that for dxf, it says it is loaded, while for stl, it lists every vertice in the file. I haven’t been able to edit them as of yet, so that will be my next set of steps. I also made a feedback form, as shown below: [Feedback Form](https://forms.gle/6JeLGzmrWwT5CRcj8) (This form is fully optional, and will only be used to determine what set of features should be included) 
+### Day 4 (6/4/25) - Undo/Redo Functionality
+**New Feature:** Rudimentary undo/redo system
+- ✅ Works perfectly for lines
+- ⚠️ Issue: Currently saves to file each time (should reference current file in memory)
+- ❌ Geometries undo/redo not functioning correctly
 
-Day 7 (6/16/25) 
+**Created:** "Broken Code" subset
+- **WARNING:** DO NOT COMPILE THIS VERSION
+- Syntax correct, logic broken
+- Main culprits: `history.c` and `history.h`
 
-I’ve only edited the compilation documentation, by removing slackware (May add it back in the future, once I figure out the packaging instructions properly), and I edited the Nix compilation set of instructions, as there are at least two options of getting the same thing (nix-env and editing /etc/nixos/configuration.nix) 
+---
 
-Day 8 (6/17/25) 
+### Day 5 (6/13/25) - Major Architecture Change
+**Critical Decision:** Migrated from C to Java
+- **Reason:** C was becoming too complicated to maintain functionality and simplicity
+- Converted all C files to Java for better maintainability
 
-I’ve only revised the documenatation about how to compile the code, as I’ve noticed some strange behavior with Solus OS (As shown below step 3 for Solus compilation instructions), that it may lead to a broken symlink between the binary of java and javac, which may result in a command not found error, as it wouldn’t be able to find the binary files to connect to those commands. I have posted the fix that you can do to fix that issue (Fix is completely optional!). I will revise the compilation instructions further, as I test the software on other operating systems; I may make packages out of this project, so that the package manager of that system can handle installation, rather than having you compile them (not sure right now though)
+---
 
-Day 9 (6/18/25)
+### Day 6 (6/14/25) - File Loading
+**New Feature:** Basic load functionality
+- .dxf files: Confirms loaded status
+- .stl files: Lists all vertices in file
 
-I've somewhat rewritten the code a little bit, doing some light refactoring. That's about all I've done today
+**Next Steps:** Enable editing of loaded files
 
-Day 10 (6/20/25)
+**Created:** [Feedback Form](https://forms.gle/6JeLGzmrWwT5CRcj8) (optional)
+- Used to determine priority features
 
-I've updated the compilation.txt file to reflect the option for MacOS, if they decide to use Visual Studio Code, rather than doing XCode + Homebrew or Homebrew
+---
 
-Day 11 (6/23/25)
+### Day 7 (6/16/25) - Documentation Refinement
+**Updates:**
+- Removed Slackware instructions (may re-add after proper packaging research)
+- Updated Nix compilation with two installation options:
+  - `nix-env` method
+  - Editing `/etc/nixos/configuration.nix`
 
-I've heard from my collaborator that he has built a gui form of this application, so I immediately updated the files such that there would a Main class, where it would enable the user to select between the gui and the cli interfaces for their use of the application. I've also updated Compilation.txt for the set of new compilation instructions for multiple classes and separate folders. I have the gui stuff, changed the structure of the repo such that gui and cli are their own thing, but the set of classes they share (such as Geometry and Sketch), remain separate, to support modularity down the line
+---
 
-Day 12 (6/24/25)
+### Day 8 (6/17/25) - OS-Specific Bug Fixes
+**Documentation Updates:**
+- Revised compilation instructions for Solus OS
+- Identified broken symlink issue between Java and javac binaries
+- Added optional fix for "command not found" errors
 
-I am able to create different types of shapes using the CLI. I will expect my collaborator to incorporate such logic into the GUI, it can make sketches based off of points I made. 
+**Future Plans:** Consider creating OS-specific packages for automatic installation
 
-Day 13 (6/25/25)
+---
 
-I just updated the size of the GUI to match 1080p monitors and screens, so it should look better.
+### Day 9 (6/18/25) - Code Refactoring
+Light refactoring day - cleaned up code structure and improved readability.
 
-Day 14 (6/26/25)
+---
 
-I have update the CLI to show units and scale the sketches appropriately (says units when loaded the .dxf file); Will set it up for GUI for later, with necessary changes
+### Day 10 (6/20/25) - macOS Support
+Updated `Compilation.txt` with macOS options:
+- XCode + Homebrew method
+- Homebrew standalone
+- Visual Studio Code alternative
 
-Day 15 (7/1/25)
+---
 
-Now that sketch will show up in the GUI, once it is loaded. It is a very basic pane, I will include more functionality later on. I have also created a .exe file of the application, using launch4j (.jar, then .exe). I also created a .tar.gz file for MacOS and Linux Users, so that they can run the files using a run script (in .sh). Unless you are a developer, please ignore the compilation.txt instructions 
+### Day 11 (6/23/25) - GUI Integration
+**Major Update:** Collaborator built GUI interface
+- Created `Main` class for interface selection (CLI or GUI)
+- Restructured repository:
+  - `cli/` folder for terminal interface
+  - `gui/` folder for graphical interface
+  - Shared classes (`Geometry`, `Sketch`) remain separate for modularity
+- Updated compilation instructions for multi-class/multi-folder structure
 
-Day 16 (7/7/25)
+---
 
-We finished refactoring and adding comments, as necessary
+### Day 12 (6/24/25) - Shape Creation
+**Progress:**
+- CLI can create different types of shapes
+- Sketches can be generated from user-defined points
+- Collaborator will incorporate logic into GUI
 
-Day 17 (7/8/25)
+---
 
-I was able to set up the application such that it can also load .stl files as well, and allowing the manipulation of the view using the mouse and the keyboard
+### Day 13 (6/25/25) - UI Improvements
+Updated GUI dimensions to match 1080p monitors and screens for better display quality.
 
-Day 18 (7/15/25)
+---
 
-I got JOGL support included in the program (in terms of the .stl files and rendering), and I will provide instructions on how to run it in Windows; For Linux/Mac (The lib files should be there already for Linux/MacOS), there is a script that will run it for you, just run that. 
+### Day 14 (6/26/25) - Units and Scaling
+**CLI Updates:**
+- Shows units when loading .dxf files
+- Scales sketches appropriately
+- GUI implementation planned
 
-7/16/25-7/17/25 (Days 19 and 20)
+---
 
-For these two days, I was working to make sure that the binaries function as expected, as I have added OpenGL support through JOGL, and I can say that they do work properly (At least for Linux and Windows; Don't know about MacOS). For the Windows binary, I included the .jar file, as the .exe is basically a wrapper for the .jar file, should still run the .exe and it will work
+### Day 15 (7/1/25) - Binary Distribution
+**Major Milestone:** Created distributable binaries
+- Sketches now display in GUI after loading
+- Created `.exe` file using launch4j (.jar → .exe conversion)
+- Created `.tar.gz` file for macOS/Linux with run script (`.sh`)
 
-Day 21 (7/18/25)
+**Note:** Unless you're a developer, ignore `Compilation.txt` instructions
 
-I have completed a major architectural change to the Geometry.java file, essentially, adding support for other 3D shapes other than Cubes and Spheres. I may have to work on fixing those implementations for the Cli and Gui components of the program
+---
 
-Day 22 (7/20/25)
+### Day 16 (7/7/25) - Code Cleanup
+Completed refactoring and added comprehensive comments throughout codebase.
 
-Extrude functionality works, but it feels rather crude right now (just the basics). I will be updating ALL binaries to have this extrusion functionality ready
+---
 
-Day 23 (7/22/25)
+### Day 17 (7/8/25) - 3D Viewer Enhancement
+**New Features:**
+- .stl file loading support
+- Mouse and keyboard controls for view manipulation
 
-I got the extruding functionality to work, maybe I should make more stylistic changes
+---
 
-Instructions for Running the program:
+### Day 18 (7/15/25) - OpenGL Integration
+**Major Feature:** JOGL (Java OpenGL) support
+- Improved .stl rendering
+- Added Windows-specific run instructions
+- Linux/Mac: Run script handles JOGL libraries automatically
 
-For Windows: 
-1. Get the JDK (Download a JDK from Oracle or Adoptium) and install it
-2. Download the .exe file
-3. Run the .exe file (If you see this message: "Windows protected your PC — Microsoft Defender SmartScreen prevented an unrecognized app from starting…", Click "More info". Then click "Run anyway".)
+---
 
-JOGL Support:
-==============================
-SketchApp - Windows Instructions
-==============================
+### Days 19-20 (7/16/25 - 7/17/25) - Binary Testing
+**Testing Phase:** OpenGL/JOGL support verification
+- ✅ Linux binaries working
+- ✅ Windows binaries working
+- ❓ macOS binaries untested
 
-Requirements:
-------------------------------
-- Java 21+ must be installed.
-  To check: open Command Prompt and type:
-    java -version
-  If not installed, download from Adoptium or Oracle
+**Windows Distribution:** Included both .jar and .exe (`.exe` is a wrapper for `.jar`)
 
-lib/ folder must include:
-------------------------------
-- jogl-all.jar
-- gluegen-rt.jar
-- JOGL native .dll files:
-    e.g. jogl_desktop.dll, gluegen-rt.dll, etc.
+---
 
-To Launch the App:
-------------------------------
-1. Ensure the `lib/` folder contains the required files.
-2. Double-click `SketchApp.exe`.
+### Day 21 (7/18/25) - Architecture Overhaul
+**Major Change:** Restructured `Geometry.java`
+- Added support for 3D shapes beyond cubes and spheres
+- Need to update CLI and GUI implementations
 
-That's it!
+---
 
-Troubleshooting:
-------------------------------
-- If the app doesn't start:
-  → Ensure Java is installed.
-  → Check that all required JOGL files are in `lib/`.
+### Day 22 (7/20/25) - Extrusion Feature
+**New Feature:** Extrusion functionality
+- Currently works but feels crude (basic implementation)
+- Updating all binaries to include extrusion
 
+---
 
+### Day 23 (7/22/25) - Extrusion Refinement
+Got extrusion working properly. Considering stylistic improvements.
 
-For MacOS/Linux/FreeBSD:
-1. Download JDK (Oracle or Adoptium), and install it
-2. Download the .tar.gz file
-3. give the run.sh execution permissions (may do chmod +x run.sh for full execution, or chmod 744 run.sh; For safest use, calculate the number, then do chmod (your number) run.sh)
-4. Run it (./run.sh) (Note: for FreeBSD, change the shebang line (#!/bin/bash) to (#!/bin/sh))
+---
 
+### Day 24 (9/16/25) - Kite Shapes
+Implemented kite creation functionality (sketching + extruding). Feature in interesting/experimental state.
 
+---
 
+### Day 25 (12/11/25) - UI Modernization
+**Current Progress:**
+- UI now resembles production CAD software
+- Features behind UI not yet implemented
+- ⚠️ Click and drag support for sketchpad broken (investigating)
+- Planning color scheme improvements for better aesthetics
 
+---
 
+### Day 26 (12/14/25) - Undo/Redo Extensions
+**Major Update:** Comprehensive Undo/Redo support for constraints and dimensions
+- Implemented `AddConstraintCommand` and `AddDimensionCommand`
+- Integrated with `GuiFX` and `SketchInteractionManager`
+- Updated CLI to support new undoable actions
+- Added necessary removal methods to `Sketch` class
 
+---
 
+### Day 27 (12/15/25) - Build Automation & Distribution
+**Major Update:** Cross-platform build automation and package distribution
+- Implemented GitHub Actions workflow for automated builds
+  - Windows `.exe` installers
+  - macOS `.dmg` packages
+  - Linux `.deb` packages (Debian/Ubuntu)
+  - Linux `.rpm` packages (Fedora/RHEL/CentOS)
+- Created comprehensive build scripts:
+  - `build-all.sh` - Auto-detects platform and builds appropriate installer
+  - `build-linux.sh` - Builds both .deb and .rpm packages
+  - `build-windows.sh` - Windows installer generation
+  - `build-macos.sh` - macOS DMG creation
+- Added `.gitignore` for proper build artifact management
+- Automatic GitHub Releases on version tags
 
 
+---
 
+## Installation & Running
 
+### Windows
 
+1. **Install JDK 21+** from [Oracle](https://www.oracle.com/java/technologies/downloads/) or [Adoptium](https://adoptium.net/)
+2. **Download** the `.exe` installer
+3. **Run** the `.exe` file
+   - If Windows SmartScreen warning appears:
+     - Click "More info"
+     - Click "Run anyway"
+4. **Follow** the installation wizard
+5. **Launch** from Start Menu or Desktop shortcut
 
 
+---
 
+### Linux
 
+**Requirements:** JDK 21+ from [Oracle](https://www.oracle.com/java/technologies/downloads/) or [Adoptium](https://adoptium.net/)
 
+**For Debian/Ubuntu (.deb):**
+```bash
+sudo dpkg -i sketchapp_4.0.0-1_amd64.deb
+sudo apt-get install -f  # Install any missing dependencies
+```
 
+**For Fedora/RHEL/CentOS (.rpm):**
+```bash
+sudo dnf install sketchapp-4.0.0-1.x86_64.rpm
+# Or: sudo rpm -i sketchapp-4.0.0-1.x86_64.rpm
+```
 
+**Running the Application:**
+```bash
+/opt/sketchapp/bin/sketchapp
+```
 
+The installer creates:
+- Desktop launcher in application menu (under Graphics)
+- Installation in `/opt/sketchapp`
 
+---
 
+### macOS
 
+1. **Install JDK 21+** from [Oracle](https://www.oracle.com/java/technologies/downloads/) or [Adoptium](https://adoptium.net/)
+2. **Download** the `.dmg` installer
+3. **Double-click** the `.dmg` file
+4. **Drag** SketchApp.app to the Applications folder
+5. **Launch** from Launchpad or Applications folder
 
 
+---
 
+## Troubleshooting
 
+### Application Won't Start
+- Ensure Java is installed: `java -version`
+- Must have Java 21 or higher
+- Check execution permissions on run script (macOS/Linux/FreeBSD)
 
+### JOGL/OpenGL Issues
+- Verify JOGL libraries are in `lib/` folder
+- Windows: Use `.bat` file instead of `.exe`
+- Linux/macOS: Run script handles library paths automatically
 
+---
 
+## Feedback
 
+Help shape this project! [Feedback Form](https://forms.gle/6JeLGzmrWwT5CRcj8) (optional)
 
+---
 
+## Contributors
 
+- **Gautam9981** (Me) - Project Lead
+- **AdityaJha25** (Aditya) - GUI Development & Collaboration
 
+---
 
+## Current Features
 
+✅ **Implemented:**
+- Dual interface (CLI and GUI)
+- .stl and .dxf file export
+- File loading (.stl and .dxf)
+- 3D shapes (cubes, spheres, custom geometries, kites)
+- 2D sketching (lines, circles, points)
+- **Sketch Constraints:**
+  - Horizontal constraint
+  - Vertical constraint
+  - Fixed (lock) constraint
+  - Coincident constraint
+- **Dimensions:**
+  - Linear dimensions
+  - Radial dimensions
+- Extrusion functionality
+- OpenGL rendering (JOGL)
+- Mouse/keyboard view controls
+- Units and scaling support
+- Advanced Undo/Redo (Constraints & Dimensions)
+- **Cross-platform installers:**
+  - Windows `.exe`
+  - macOS `.dmg`
+  - Linux `.deb` and `.rpm`
+  - Automated builds via GitHub Actions
 
+⚠️ **In Progress:**
+- Click and drag in sketchpad
+- Feature implementation behind modern UI
+- File editing capabilities
 
+---
 
+## License
 
-
-
-
-
-
-Contributors: Gautam9981 (Me) and AdityaJha25 (Aditya)
+This repository is public and open for collaboration.

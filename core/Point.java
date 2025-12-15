@@ -7,8 +7,8 @@ import java.util.Objects;
  * Useful for geometric computations and sketch representations.
  */
 public class Point {
-    public final float x;
-    public final float y;
+    public float x;
+    public float y;
 
     /**
      * Constructs a Point with specified x and y coordinates.
@@ -19,6 +19,28 @@ public class Point {
     public Point(float x, float y) {
         this.x = x;
         this.y = y;
+    }
+
+    /**
+     * Updates the position of this point.
+     * Used by the ConstraintSolver.
+     * @param x New x-coordinate
+     * @param y New y-coordinate
+     */
+    public void set(float x, float y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    /**
+     * Moves the point to the specified coordinates.
+     * Alias for set(x, y).
+     * @param x New x-coordinate
+     * @param y New y-coordinate
+     */
+    public void move(double x, double y) {
+        this.x = (float) x;
+        this.y = (float) y;
     }
 
     /**
