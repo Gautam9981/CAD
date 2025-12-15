@@ -5,11 +5,11 @@ bin/
 *.class
 
 # Build installers and artifacts  
-Binaries/*.exe
-Binaries/*.dmg
-Binaries/*.deb
-Binaries/*.rpm
-Binaries/*.msi
+Binaries/**/*.exe
+Binaries/**/*.dmg
+Binaries/**/*.deb
+Binaries/**/*.rpm
+Binaries/**/*.msi
 Binaries/Windows/
 Binaries/macOS/
 Binaries/MacOS/
