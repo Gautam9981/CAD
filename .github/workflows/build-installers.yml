@@ -13,21 +13,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
-          cache: 'maven'
+          # cache: 'maven' # Temporarily disabled to avoid potential conflicts with matrix
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
           cache: 'pip'
+          cache-dependency-path: requirements.txt
 
       - name: Install Python Dependencies
-        run: pip install pillow
+        run: pip install -r requirements.txt
       
       - name: Build with Maven
         run: mvn clean package -DskipTests
@@ -41,36 +42,47 @@ jobs:
       - name: Upload Windows Installer
         uses: actions/upload-artifact@v4
         with:
-          name: SketchApp-Windows
+          name: SketchApp-Windows-x64
           path: Binaries/*.exe
           retention-days: 30
 
   build-macos:
-    runs-on: macos-latest
+    name: Build macOS (${{ matrix.architecture }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-15
+            architecture: x64
+          - os: macos-latest
+            architecture: arm64
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
-          cache: 'maven'
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
           cache: 'pip'
+          cache-dependency-path: requirements.txt
 
       - name: Install Python Dependencies
-        run: pip install pillow
+        run: pip install -r requirements.txt
       
       - name: Build with Maven
         run: mvn clean package -DskipTests
       
       - name: Build macOS Installer
+        env:
+          MACOSX_DEPLOYMENT_TARGET: '11.0'
         run: |
           cd Binaries
           bash build-macos.sh
@@ -78,31 +90,40 @@ jobs:
       - name: Upload macOS Installer
         uses: actions/upload-artifact@v4
         with:
-          name: SketchApp-macOS
+          name: SketchApp-macOS-${{ matrix.architecture }}
           path: Binaries/*.dmg
           retention-days: 30
 
   build-linux:
-    runs-on: ubuntu-latest
+    name: Build Linux (${{ matrix.architecture }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            architecture: x64
+          - os: ubuntu-24.04-arm
+            architecture: arm64
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Set up JDK 21
+      - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
-          cache: 'maven'
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.x'
           cache: 'pip'
+          cache-dependency-path: requirements.txt
 
       - name: Install Python Dependencies
-        run: pip install pillow
+        run: pip install -r requirements.txt
       
       - name: Install RPM tools
         run: sudo apt-get update && sudo apt-get install -y rpm
@@ -118,14 +139,14 @@ jobs:
       - name: Upload Linux .deb Package
         uses: actions/upload-artifact@v4
         with:
-          name: SketchApp-Linux-deb
+          name: SketchApp-Linux-${{ matrix.architecture }}-deb
           path: Binaries/*.deb
           retention-days: 30
       
       - name: Upload Linux .rpm Package
         uses: actions/upload-artifact@v4
         with:
-          name: SketchApp-Linux-rpm
+          name: SketchApp-Linux-${{ matrix.architecture }}-rpm
           path: Binaries/*.rpm
           retention-days: 30
 
@@ -143,10 +164,13 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            ./installers/SketchApp-Windows/*.exe
-            ./installers/SketchApp-macOS/*.dmg
-            ./installers/SketchApp-Linux-deb/*.deb
-            ./installers/SketchApp-Linux-rpm/*.rpm
+            ./installers/SketchApp-Windows-x64/*.exe
+            ./installers/SketchApp-macOS-x64/*.dmg
+            ./installers/SketchApp-macOS-arm64/*.dmg
+            ./installers/SketchApp-Linux-x64-deb/*.deb
+            ./installers/SketchApp-Linux-x64-rpm/*.rpm
+            ./installers/SketchApp-Linux-arm64-deb/*.deb
+            ./installers/SketchApp-Linux-arm64-rpm/*.rpm
           draft: false
           prerelease: false
         env:
