@@ -21,6 +21,7 @@ public class MacroRecorder {
         SKETCH_LINE,
         SKETCH_CIRCLE,
         SKETCH_POLYGON,
+        SKETCH_NACA,
         CREATE_CUBE,
         CREATE_SPHERE,
         EXTRUDE,
@@ -29,6 +30,7 @@ public class MacroRecorder {
         SET_UNITS,
         SAVE_FILE,
         CLEAR_SKETCH,
+        CLEAR_ALL,
         UNDO,
         REDO
     }

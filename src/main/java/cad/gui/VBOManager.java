@@ -1,6 +1,9 @@
 package cad.gui;
 
 import com.jogamp.opengl.*;
+import com.jogamp.opengl.glu.GLU;
+import com.jogamp.opengl.glu.GLUtessellator;
+import com.jogamp.opengl.glu.GLUtessellatorCallbackAdapter;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,48 +16,74 @@ public class VBOManager {
     private int normalVboHandle = 0;
     private int vertexCount = 0;
 
-    public void uploadFaces(GL2 gl, List<? extends Object> faces) {
-        // Flatten all Face3D vertices and normals into float arrays
+    public void uploadFaces(GL2 gl, GLU glu, List<? extends Object> faces) {
         List<Float> verts = new ArrayList<>();
         List<Float> norms = new ArrayList<>();
+
+        GLUtessellator tess = glu.gluNewTess();
+        TessCallback callback = new TessCallback(verts, norms);
+        glu.gluTessCallback(tess, GLU.GLU_TESS_BEGIN, callback);
+        glu.gluTessCallback(tess, GLU.GLU_TESS_VERTEX_DATA, callback);
+        glu.gluTessCallback(tess, GLU.GLU_TESS_END, callback);
+        glu.gluTessCallback(tess, GLU.GLU_TESS_COMBINE, callback);
+
         for (Object faceObj : faces) {
             List<?> vertices;
             List<?> normals = null;
             try {
                 vertices = (List<?>) faceObj.getClass().getMethod("getVertices").invoke(faceObj);
-                // Try to get normals if available
                 try {
                     normals = (List<?>) faceObj.getClass().getMethod("getVertexNormals").invoke(faceObj);
                 } catch (Exception e) {
-                    // Normals not present, fallback to (0,0,1)
                 }
             } catch (Exception e) {
                 continue;
             }
-            for (int i = 0; i < vertices.size(); i++) {
-                Object v = vertices.get(i);
-                float x, y, z;
-                try {
-                    x = (float) v.getClass().getMethod("getX").invoke(v);
-                    y = (float) v.getClass().getMethod("getY").invoke(v);
-                    z = (float) v.getClass().getMethod("getZ").invoke(v);
-                } catch (Exception e) {
-                    continue;
+
+            if (vertices.size() < 3)
+                continue;
+
+            if (vertices.size() == 3) {
+                // Optimized path for triangles
+                for (int i = 0; i < 3; i++) {
+                    addVertexData(verts, norms, vertices.get(i), (normals != null) ? normals.get(i) : null);
                 }
-                verts.add(x); verts.add(y); verts.add(z);
-                // Normals
-                if (normals != null && normals.size() == vertices.size()) {
-                    float[] n = (float[]) normals.get(i);
-                    norms.add(n[0]); norms.add(n[1]); norms.add(n[2]);
-                } else {
-                    norms.add(0f); norms.add(0f); norms.add(1f);
+            } else if (vertices.size() == 4) {
+                // Optimized path for Quads (split into 2 triangles)
+                // Tri 1: 0, 1, 2
+                addVertexData(verts, norms, vertices.get(0), (normals != null) ? normals.get(0) : null);
+                addVertexData(verts, norms, vertices.get(1), (normals != null) ? normals.get(1) : null);
+                addVertexData(verts, norms, vertices.get(2), (normals != null) ? normals.get(2) : null);
+                // Tri 2: 0, 2, 3
+                addVertexData(verts, norms, vertices.get(0), (normals != null) ? normals.get(0) : null);
+                addVertexData(verts, norms, vertices.get(2), (normals != null) ? normals.get(2) : null);
+                addVertexData(verts, norms, vertices.get(3), (normals != null) ? normals.get(3) : null);
+            } else {
+                // Use GLU Tessellator for complex polygons
+                callback.currentNormals = (List<float[]>) normals;
+                callback.currentVertices = (List<Object>) vertices;
+
+                glu.gluTessBeginPolygon(tess, null);
+                glu.gluTessBeginContour(tess);
+
+                for (int i = 0; i < vertices.size(); i++) {
+                    Object v = vertices.get(i);
+                    double[] coords = getCoords(v);
+                    // Pass index as user data to map back to normals
+                    glu.gluTessVertex(tess, coords, 0, Integer.valueOf(i));
                 }
+
+                glu.gluTessEndContour(tess);
+                glu.gluTessEndPolygon(tess);
             }
         }
+        glu.gluDeleteTess(tess);
+
         vertexCount = verts.size() / 3;
         // Vertex buffer
         FloatBuffer buffer = FloatBuffer.allocate(verts.size());
-        for (Float f : verts) buffer.put(f);
+        for (Float f : verts)
+            buffer.put(f);
         buffer.rewind();
         if (vboHandle == 0) {
             int[] handles = new int[1];
@@ -67,7 +96,8 @@ public class VBOManager {
 
         // Normal buffer
         FloatBuffer normalBuffer = FloatBuffer.allocate(norms.size());
-        for (Float n : norms) normalBuffer.put(n);
+        for (Float n : norms)
+            normalBuffer.put(n);
         normalBuffer.rewind();
         if (normalVboHandle == 0) {
             int[] handles = new int[1];
@@ -79,8 +109,65 @@ public class VBOManager {
         gl.glBindBuffer(GL.GL_ARRAY_BUFFER, 0);
     }
 
+    private void addVertexData(List<Float> verts, List<Float> norms, Object v, Object nObj) {
+        double[] c = getCoords(v);
+        verts.add((float) c[0]);
+        verts.add((float) c[1]);
+        verts.add((float) c[2]);
+        if (nObj != null) {
+            float[] n = (float[]) nObj;
+            norms.add(n[0]);
+            norms.add(n[1]);
+            norms.add(n[2]);
+        } else {
+            norms.add(0f);
+            norms.add(0f);
+            norms.add(1f);
+        }
+    }
+
+    private double[] getCoords(Object v) {
+        try {
+            float x = (float) v.getClass().getMethod("getX").invoke(v);
+            float y = (float) v.getClass().getMethod("getY").invoke(v);
+            float z = (float) v.getClass().getMethod("getZ").invoke(v);
+            return new double[] { x, y, z };
+        } catch (Exception e) {
+            return new double[] { 0, 0, 0 };
+        }
+    }
+
+    private class TessCallback extends com.jogamp.opengl.glu.GLUtessellatorCallbackAdapter {
+        private List<Float> verts;
+        private List<Float> norms;
+        public List<float[]> currentNormals;
+        public List<Object> currentVertices;
+
+        public TessCallback(List<Float> verts, List<Float> norms) {
+            this.verts = verts;
+            this.norms = norms;
+        }
+
+        @Override
+        public void vertexData(Object vertexData, Object polygonData) {
+            if (vertexData instanceof Integer) {
+                int index = (Integer) vertexData;
+                Object v = currentVertices.get(index);
+                Object n = (currentNormals != null && index < currentNormals.size()) ? currentNormals.get(index) : null;
+                addVertexData(verts, norms, v, n);
+            }
+        }
+
+        @Override
+        public void combine(double[] coords, Object[] data, float[] weight, Object[] outData) {
+            // interpolation not supported for now, just return index 0
+            outData[0] = data[0];
+        }
+    }
+
     public void draw(GL2 gl) {
-        if (vboHandle == 0 || normalVboHandle == 0 || vertexCount == 0) return;
+        if (vboHandle == 0 || normalVboHandle == 0 || vertexCount == 0)
+            return;
         // Vertex array
         gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vboHandle);
         gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
@@ -99,12 +186,12 @@ public class VBOManager {
 
     public void dispose(GL2 gl) {
         if (vboHandle != 0) {
-            int[] handles = {vboHandle};
+            int[] handles = { vboHandle };
             gl.glDeleteBuffers(1, handles, 0);
             vboHandle = 0;
         }
         if (normalVboHandle != 0) {
-            int[] handles = {normalVboHandle};
+            int[] handles = { normalVboHandle };
             gl.glDeleteBuffers(1, handles, 0);
             normalVboHandle = 0;
         }

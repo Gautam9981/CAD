@@ -1955,6 +1955,180 @@
       }
     ]
   },
+  "cad.core.MacroRecorder": {
+    "package": "cad.core",
+    "className": "MacroRecorder",
+    "file": "cad/core/MacroRecorder.java",
+    "constructors": [],
+    "methods": [
+      {
+        "name": "MacroCommand",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "public",
+        "parameters": [
+          {
+            "type": "ActionType",
+            "name": "action",
+            "description": ""
+          },
+          {
+            "type": "Map<String, Object>",
+            "name": "params",
+            "description": ""
+          }
+        ],
+        "signature": "package-private public MacroCommand(ActionType action, Map<String, Object> params)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "toScriptLine",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String toScriptLine()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "fromScriptLine",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "MacroCommand",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "line",
+            "description": ""
+          }
+        ],
+        "signature": "public static MacroCommand fromScriptLine(String line)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "startRecording",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "macroName",
+            "description": ""
+          }
+        ],
+        "signature": "public void startRecording(String macroName)",
+        "description": "Start recording a new macro.",
+        "returns": ""
+      },
+      {
+        "name": "stopRecording",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void stopRecording()",
+        "description": "Stop recording and save the macro.",
+        "returns": ""
+      },
+      {
+        "name": "recordCommand",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "ActionType",
+            "name": "action",
+            "description": ""
+          },
+          {
+            "type": "Map<String, Object>",
+            "name": "parameters",
+            "description": ""
+          }
+        ],
+        "signature": "public void recordCommand(ActionType action, Map<String, Object> parameters)",
+        "description": "Record a command during macro recording.",
+        "returns": ""
+      },
+      {
+        "name": "saveMacro",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "name",
+            "description": ""
+          }
+        ],
+        "signature": "private void saveMacro(String name)",
+        "description": "Save macro to file.",
+        "returns": ""
+      },
+      {
+        "name": "loadMacro",
+        "visibility": "public",
+        "static": "",
+        "returnType": "List<MacroCommand>",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "name",
+            "description": ""
+          }
+        ],
+        "signature": "public List<MacroCommand> loadMacro(String name)",
+        "description": "Load and execute a macro file.",
+        "returns": ""
+      },
+      {
+        "name": "listMacros",
+        "visibility": "public",
+        "static": "",
+        "returnType": "List<String>",
+        "parameters": [],
+        "signature": "public List<String> listMacros()",
+        "description": "List all available macros.",
+        "returns": ""
+      },
+      {
+        "name": "isRecording",
+        "visibility": "public",
+        "static": "",
+        "returnType": "boolean",
+        "parameters": [],
+        "signature": "public boolean isRecording()",
+        "description": "Check if currently recording.",
+        "returns": ""
+      },
+      {
+        "name": "getCurrentMacroName",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String getCurrentMacroName()",
+        "description": "Get current macro name.",
+        "returns": ""
+      },
+      {
+        "name": "getCommandCount",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [],
+        "signature": "public int getCommandCount()",
+        "description": "Get recorded commands count.",
+        "returns": ""
+      }
+    ]
+  },
   "cad.core.Point": {
     "package": "cad.core",
     "className": "Point",
@@ -2825,7 +2999,7 @@
         "returnType": "void",
         "parameters": [],
         "signature": "public void computePerVertexNormals()",
-        "description": "Computes per-vertex normals for all extruded faces (for smooth shading). This method should be called after extrusion and before uploading to VBOManager. It averages the normals of all faces sharing a vertex.",
+        "description": "Computes per-vertex normals for all extruded faces (for smooth shading) utilizing a crease angle threshold to preserve sharp edges.",
         "returns": ""
       },
       {
@@ -3064,7 +3238,17 @@
         "returnType": "void",
         "parameters": [],
         "signature": "public void clearSketch()",
-        "description": "Clears all entities from the sketch.",
+        "description": "Clears 2D entities from the sketch but PRESERVES extruded 3D geometry. This allows for multi-step macros where we sketch, extrude, clear sketch, and sketch again.",
+        "returns": ""
+      },
+      {
+        "name": "clearAll",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void clearAll()",
+        "description": "Clears EVERYTHING including 3D geometry.",
         "returns": ""
       },
       {
@@ -5224,6 +5408,26 @@
         "signature": "public static void main(String[] args)",
         "description": "Main method to launch the JavaFX application.",
         "returns": ""
+      },
+      {
+        "name": "showRunMacroMenu",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void showRunMacroMenu()",
+        "description": "Show macro run menu with options to upload or select from library.",
+        "returns": ""
+      },
+      {
+        "name": "fitSketchView",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void fitSketchView()",
+        "description": "Fits the 2D sketch view to show all entities. Calculates bounding box and adjusts zoom/pan.",
+        "returns": ""
       }
     ]
   },
@@ -5371,11 +5575,11 @@
           {
             "type": "int",
             "name": "divisions",
-            "description": "The number of subdivisions per edge (affects geometry, not rendering directly here)."
+            "description": "The number of subdivisions per edge (affects geometry, not"
           }
         ],
         "signature": "public void setCube(float size, int divisions)",
-        "description": "Sets the current active shape to a cube and updates its size and subdivisions. This method delegates the actual setting of parameters to the static `Geometry.createCube()` method, which manages the application's central 3D model state.",
+        "description": "subdivisions. This method delegates the actual setting of parameters to the static `Geometry.createCube()` method, which manages the application's central 3D model state. rendering directly here).",
         "returns": ""
       },
       {
@@ -5449,11 +5653,11 @@
           {
             "type": "GLAutoDrawable",
             "name": "drawable",
-            "description": "The GLAutoDrawable object, providing access to the OpenGL context."
+            "description": "The GLAutoDrawable object, providing access to the OpenGL"
           }
         ],
         "signature": "public void init(GLAutoDrawable drawable)",
-        "description": "This method is called exactly once when the OpenGL context is first created. It's used to perform all necessary OpenGL initializations, such as setting background color, enabling depth testing, configuring lighting, and setting material properties.",
+        "description": "This method is called exactly once when the OpenGL context is first created. It's used to perform all necessary OpenGL initializations, such as setting background color, enabling depth testing, configuring lighting, and setting material properties. context.",
         "returns": ""
       },
       {
@@ -5542,6 +5746,313 @@
         ],
         "signature": "public void dispose(GLAutoDrawable drawable)",
         "description": "This method is called when the OpenGL context is destroyed (e.g., when the GLJPanel is removed from its parent container or the application exits). It's used to release any OpenGL-related resources.",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.gui.MacroManager": {
+    "package": "cad.gui",
+    "className": "MacroManager",
+    "file": "cad/gui/MacroManager.java",
+    "constructors": [
+      {
+        "name": "MacroManager",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "Sketch",
+            "name": "sketch"
+          },
+          {
+            "type": "Stage",
+            "name": "primaryStage"
+          }
+        ],
+        "signature": "public MacroManager(Sketch sketch, Stage primaryStage)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "setCanvasRefresh",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Runnable",
+            "name": "canvasRefresh",
+            "description": ""
+          }
+        ],
+        "signature": "public void setCanvasRefresh(Runnable canvasRefresh)",
+        "description": "Set the canvas refresh callback (called after each macro command).",
+        "returns": ""
+      },
+      {
+        "name": "setOutputCallback",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "java.util.function.Consumer<String>",
+            "name": "outputCallback",
+            "description": ""
+          }
+        ],
+        "signature": "public void setOutputCallback(java.util.function.Consumer<String> outputCallback)",
+        "description": "Set the output callback for sending messages to GUI console.",
+        "returns": ""
+      },
+      {
+        "name": "setViewModeCallback",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Runnable",
+            "name": "viewModeCallback",
+            "description": ""
+          }
+        ],
+        "signature": "public void setViewModeCallback(Runnable viewModeCallback)",
+        "description": "Set the view mode callback to switch to sketch view.",
+        "returns": ""
+      },
+      {
+        "name": "setFitViewCallback",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Runnable",
+            "name": "fitViewCallback",
+            "description": ""
+          }
+        ],
+        "signature": "public void setFitViewCallback(Runnable fitViewCallback)",
+        "description": "Set the fit view callback to zoom to fit sketch.",
+        "returns": ""
+      },
+      {
+        "name": "setStlUpdateCallback",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "java.util.function.Consumer<List<float[]>>",
+            "name": "stlUpdateCallback",
+            "description": ""
+          }
+        ],
+        "signature": "public void setStlUpdateCallback(java.util.function.Consumer<List<float[]>> stlUpdateCallback)",
+        "description": "Set the STL update callback to render 3D geometry.",
+        "returns": ""
+      },
+      {
+        "name": "uploadAndRunMacro",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void uploadAndRunMacro()",
+        "description": "Show file chooser to upload and run a macro file.",
+        "returns": ""
+      },
+      {
+        "name": "selectAndRunMacro",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void selectAndRunMacro()",
+        "description": "Show dialog to select and run an existing macro.",
+        "returns": ""
+      },
+      {
+        "name": "runMacro",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "macroName",
+            "description": ""
+          }
+        ],
+        "signature": "public void runMacro(String macroName)",
+        "description": "Execute a macro by name.",
+        "returns": ""
+      },
+      {
+        "name": "executeMacro",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "List<MacroRecorder.MacroCommand>",
+            "name": "commands",
+            "description": ""
+          },
+          {
+            "type": "String",
+            "name": "macroName",
+            "description": ""
+          }
+        ],
+        "signature": "private void executeMacro(List<MacroRecorder.MacroCommand> commands, String macroName)",
+        "description": "Execute macro commands.",
+        "returns": ""
+      },
+      {
+        "name": "executeCommand",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "MacroRecorder.MacroCommand",
+            "name": "cmd",
+            "description": ""
+          }
+        ],
+        "signature": "private void executeCommand(MacroRecorder.MacroCommand cmd)",
+        "description": "Execute a single macro command.",
+        "returns": ""
+      },
+      {
+        "name": "generateNacaProfile",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "profile",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "chord",
+            "description": ""
+          }
+        ],
+        "signature": "private void generateNacaProfile(String profile, float chord)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "startRecording",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void startRecording()",
+        "description": "Start recording a new macro.",
+        "returns": ""
+      },
+      {
+        "name": "stopRecording",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void stopRecording()",
+        "description": "Stop recording current macro.",
+        "returns": ""
+      },
+      {
+        "name": "isRecording",
+        "visibility": "public",
+        "static": "",
+        "returnType": "boolean",
+        "parameters": [],
+        "signature": "public boolean isRecording()",
+        "description": "Check if currently recording.",
+        "returns": ""
+      },
+      {
+        "name": "showInfo",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "title",
+            "description": ""
+          },
+          {
+            "type": "String",
+            "name": "message",
+            "description": ""
+          }
+        ],
+        "signature": "private void showInfo(String title, String message)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "showWarning",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "title",
+            "description": ""
+          },
+          {
+            "type": "String",
+            "name": "message",
+            "description": ""
+          }
+        ],
+        "signature": "private void showWarning(String title, String message)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "showError",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "title",
+            "description": ""
+          },
+          {
+            "type": "String",
+            "name": "message",
+            "description": ""
+          }
+        ],
+        "signature": "private void showError(String title, String message)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "log",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "message",
+            "description": ""
+          }
+        ],
+        "signature": "private void log(String message)",
+        "description": "Log message to both System.out and GUI console (if callback is set).",
         "returns": ""
       }
     ]
@@ -6068,6 +6579,17 @@
         "visibility": "package-private",
         "parameters": [
           {
+            "type": "int i = 0; i < 3;",
+            "name": "i++"
+          }
+        ],
+        "signature": "package-private for(int i = 0; i < 3; i++)"
+      },
+      {
+        "name": "for",
+        "visibility": "package-private",
+        "parameters": [
+          {
             "type": "int i = 0; i < vertices.size();",
             "name": "i++"
           }
@@ -6079,22 +6601,22 @@
         "visibility": "package-private",
         "parameters": [
           {
-            "type": "Float f : verts) buffer.put(f);\n        buffer.rewind();\n        if (vboHandle ==",
+            "type": "Float f : verts)\n            buffer.put(f);\n        buffer.rewind();\n        if (vboHandle ==",
             "name": "0"
           }
         ],
-        "signature": "package-private for(Float f : verts) buffer.put(f);\n        buffer.rewind();\n        if (vboHandle == 0)"
+        "signature": "package-private for(Float f : verts)\n            buffer.put(f);\n        buffer.rewind();\n        if (vboHandle == 0)"
       },
       {
         "name": "for",
         "visibility": "package-private",
         "parameters": [
           {
-            "type": "Float n : norms) normalBuffer.put(n);\n        normalBuffer.rewind();\n        if (normalVboHandle ==",
+            "type": "Float n : norms)\n            normalBuffer.put(n);\n        normalBuffer.rewind();\n        if (normalVboHandle ==",
             "name": "0"
           }
         ],
-        "signature": "package-private for(Float n : norms) normalBuffer.put(n);\n        normalBuffer.rewind();\n        if (normalVboHandle == 0)"
+        "signature": "package-private for(Float n : norms)\n            normalBuffer.put(n);\n        normalBuffer.rewind();\n        if (normalVboHandle == 0)"
       }
     ],
     "methods": [
@@ -6110,12 +6632,137 @@
             "description": ""
           },
           {
+            "type": "GLU",
+            "name": "glu",
+            "description": ""
+          },
+          {
             "type": "List<? extends Object>",
             "name": "faces",
             "description": ""
           }
         ],
-        "signature": "public void uploadFaces(GL2 gl, List<? extends Object> faces)",
+        "signature": "public void uploadFaces(GL2 gl, GLU glu, List<? extends Object> faces)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "addVertexData",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "List<Float>",
+            "name": "verts",
+            "description": ""
+          },
+          {
+            "type": "List<Float>",
+            "name": "norms",
+            "description": ""
+          },
+          {
+            "type": "Object",
+            "name": "v",
+            "description": ""
+          },
+          {
+            "type": "Object",
+            "name": "nObj",
+            "description": ""
+          }
+        ],
+        "signature": "private void addVertexData(List<Float> verts, List<Float> norms, Object v, Object nObj)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getCoords",
+        "visibility": "private",
+        "static": "",
+        "returnType": "double[]",
+        "parameters": [
+          {
+            "type": "Object",
+            "name": "v",
+            "description": ""
+          }
+        ],
+        "signature": "private double[] getCoords(Object v)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "TessCallback",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "public",
+        "parameters": [
+          {
+            "type": "List<Float>",
+            "name": "verts",
+            "description": ""
+          },
+          {
+            "type": "List<Float>",
+            "name": "norms",
+            "description": ""
+          }
+        ],
+        "signature": "package-private public TessCallback(List<Float> verts, List<Float> norms)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "vertexData",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Object",
+            "name": "vertexData",
+            "description": ""
+          },
+          {
+            "type": "Object",
+            "name": "polygonData",
+            "description": ""
+          }
+        ],
+        "signature": "public void vertexData(Object vertexData, Object polygonData)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "combine",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "double[]",
+            "name": "coords",
+            "description": ""
+          },
+          {
+            "type": "Object[]",
+            "name": "data",
+            "description": ""
+          },
+          {
+            "type": "float[]",
+            "name": "weight",
+            "description": ""
+          },
+          {
+            "type": "Object[]",
+            "name": "outData",
+            "description": ""
+          }
+        ],
+        "signature": "public void combine(double[] coords, Object[] data, float[] weight, Object[] outData)",
         "description": "",
         "returns": ""
       },

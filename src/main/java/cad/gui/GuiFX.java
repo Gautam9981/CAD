@@ -244,6 +244,39 @@ public class GuiFX extends Application {
         interactionManager = new SketchInteractionManager(sketch, commandManager);
         macroManager = new MacroManager(sketch, primaryStage);
 
+        // Connect macro manager to canvas refresh (thread-safe on Swing EDT)
+        macroManager.setCanvasRefresh(() -> {
+            if (glCanvas != null) {
+                javax.swing.SwingUtilities.invokeLater(() -> glCanvas.repaint());
+            }
+        });
+
+        // Connect macro manager to GUI output console
+        macroManager.setOutputCallback(this::appendOutput);
+
+        // Connect macro manager to view mode switching
+        macroManager.setViewModeCallback(() -> {
+            if (glRenderer != null) {
+                glRenderer.setShowSketch(true);
+                appendOutput("Switched to sketch view for macro execution");
+            }
+        });
+
+        // Connect macro manager to fit view
+        macroManager.setFitViewCallback(this::fitSketchView);
+
+        // Connect macro manager to 3D view switching logic
+        macroManager.setStlUpdateCallback(triangles -> {
+            if (glRenderer != null) {
+                glRenderer.setStlTriangles(triangles);
+                glRenderer.setShowSketch(false); // Switch to 3D
+                appendOutput("Macro: Extrusion/Revolve complete - Switched to 3D view");
+
+                // Auto-zoom to fit 3D model
+                resetView();
+            }
+        });
+
         primaryStage.setTitle("SketchApp (4.0)");
 
         // Initialize components (fields, etc.)
@@ -3671,5 +3704,101 @@ public class GuiFX extends Application {
                 macroManager.uploadAndRunMacro();
             }
         }
+    }
+
+    /**
+     * Fits the 2D sketch view to show all entities.
+     * Calculates bounding box and adjusts zoom/pan.
+     */
+    public void fitSketchView() {
+        if (sketch == null)
+            return;
+        java.util.List<cad.core.Sketch.Entity> entities = sketch.getEntities();
+        if (entities.isEmpty()) {
+            sketch2DPanX = 0;
+            sketch2DPanY = 0;
+            sketch2DZoom = 1.0f;
+            if (glCanvas != null)
+                glCanvas.repaint();
+            return;
+        }
+
+        float minX = Float.MAX_VALUE;
+        float minY = Float.MAX_VALUE;
+        float maxX = -Float.MAX_VALUE;
+        float maxY = -Float.MAX_VALUE;
+
+        for (cad.core.Sketch.Entity entity : entities) {
+            if (entity instanceof cad.core.Sketch.PointEntity) {
+                cad.core.Sketch.PointEntity p = (cad.core.Sketch.PointEntity) entity;
+                minX = Math.min(minX, p.getX());
+                minY = Math.min(minY, p.getY());
+                maxX = Math.max(maxX, p.getX());
+                maxY = Math.max(maxY, p.getY());
+            } else if (entity instanceof cad.core.Sketch.Line) {
+                cad.core.Sketch.Line l = (cad.core.Sketch.Line) entity;
+                minX = Math.min(minX, Math.min(l.getX1(), l.getX2()));
+                minY = Math.min(minY, Math.min(l.getY1(), l.getY2()));
+                maxX = Math.max(maxX, Math.max(l.getX1(), l.getX2()));
+                maxY = Math.max(maxY, Math.max(l.getY1(), l.getY2()));
+            } else if (entity instanceof cad.core.Sketch.Circle) {
+                cad.core.Sketch.Circle c = (cad.core.Sketch.Circle) entity;
+                minX = Math.min(minX, c.getX() - c.getRadius());
+                minY = Math.min(minY, c.getY() - c.getRadius());
+                maxX = Math.max(maxX, c.getX() + c.getRadius());
+                maxY = Math.max(maxY, c.getY() + c.getRadius());
+            } else if (entity instanceof cad.core.Sketch.Polygon) {
+                cad.core.Sketch.Polygon poly = (cad.core.Sketch.Polygon) entity;
+                for (cad.core.Sketch.Point2D p : poly.getPoints()) {
+                    minX = Math.min(minX, p.getX());
+                    minY = Math.min(minY, p.getY());
+                    maxX = Math.max(maxX, p.getX());
+                    maxY = Math.max(maxY, p.getY());
+                }
+            }
+        }
+
+        if (minX == Float.MAX_VALUE)
+            return;
+
+        float width = maxX - minX;
+        float height = maxY - minY;
+
+        // Add 20% margin
+        width *= 1.2f;
+        height *= 1.2f;
+
+        // Ensure non-zero dimensions
+        if (width < 1.0f)
+            width = 1.0f;
+        if (height < 1.0f)
+            height = 1.0f;
+
+        // Center point
+        float centerX = (minX + maxX) / 2.0f;
+        float centerY = (minY + maxY) / 2.0f;
+
+        // Set pan to center (negative because pan moves the world)
+        sketch2DPanX = -centerX;
+        sketch2DPanY = -centerY;
+
+        // Calculate zoom to fit
+        // The view logic likely uses: window_width / zoom = world_width
+        // So zoom = window_width / world_width
+        // Using a safe reference dimension of 600px
+        float zoomX = 600.0f / width;
+        float zoomY = 400.0f / height;
+        sketch2DZoom = Math.min(zoomX, zoomY);
+
+        // Clamp zoom to reasonable values
+        if (sketch2DZoom < 0.1f)
+            sketch2DZoom = 0.1f;
+        if (sketch2DZoom > 50.0f)
+            sketch2DZoom = 50.0f;
+
+        if (glCanvas != null) {
+            javax.swing.SwingUtilities.invokeLater(() -> glCanvas.repaint());
+        }
+        appendOutput(String.format("Fit view to sketch bounds: [%.1f, %.1f] x [%.1f, %.1f]", minX, maxX, minY, maxY));
     }
 }

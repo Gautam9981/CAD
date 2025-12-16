@@ -311,54 +311,88 @@ public class Sketch {
      * VBOManager.
      * It averages the normals of all faces sharing a vertex.
      */
+    /**
+     * Computes per-vertex normals for all extruded faces (for smooth shading)
+     * utilizing a crease angle threshold to preserve sharp edges.
+     */
     public void computePerVertexNormals() {
-        // Map from Point3D to list of normals (accumulate for averaging)
-        java.util.Map<Point3D, List<float[]>> normalMap = new java.util.HashMap<>();
-        // First, compute face normals and accumulate for each vertex
+        // Map from Point3D to list of faces sharing that vertex
+        java.util.Map<Point3D, List<Face3D>> vertexToFaces = new java.util.HashMap<>();
+
+        // Cache face normals to avoid re-calculating
+        java.util.Map<Face3D, float[]> faceNormals = new java.util.HashMap<>();
+
+        // 1. Build adjacency map and cache face normals
         for (Face3D face : extrudedFaces) {
             List<Point3D> verts = face.getVertices();
-            int n = verts.size();
-            // Triangulate face (fan method)
-            for (int i = 1; i < n - 1; i++) {
-                Point3D p0 = verts.get(0);
-                Point3D p1 = verts.get(i);
-                Point3D p2 = verts.get(i + 1);
-                float[] normal = calculateFaceNormal(p0, p1, p2);
-                // Add this normal to each vertex's list
-                normalMap.computeIfAbsent(p0, k -> new java.util.ArrayList<>()).add(normal);
-                normalMap.computeIfAbsent(p1, k -> new java.util.ArrayList<>()).add(normal);
-                normalMap.computeIfAbsent(p2, k -> new java.util.ArrayList<>()).add(normal);
+            if (verts.size() < 3)
+                continue;
+
+            // Calculate normal using first 3 points (assuming planar face)
+            float[] normal = calculateFaceNormal(verts.get(0), verts.get(1), verts.get(2));
+            faceNormals.put(face, normal);
+
+            for (Point3D v : verts) {
+                vertexToFaces.computeIfAbsent(v, k -> new java.util.ArrayList<>()).add(face);
             }
         }
-        // Now, for each face, set its per-vertex normals (averaged)
+
+        // Crease threshold: Cosine of 45 degrees
+        double creaseThreshold = Math.cos(Math.toRadians(45));
+
+        // 2. Compute vertex normals for each face
         for (Face3D face : extrudedFaces) {
             List<Point3D> verts = face.getVertices();
-            List<float[]> normals = new java.util.ArrayList<>();
-            for (Point3D v : verts) {
-                List<float[]> nList = normalMap.get(v);
-                if (nList == null || nList.isEmpty()) {
-                    normals.add(new float[] { 0, 0, 1 });
-                } else {
-                    float nx = 0, ny = 0, nz = 0;
-                    for (float[] n : nList) {
-                        nx += n[0];
-                        ny += n[1];
-                        nz += n[2];
-                    }
-                    float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
-                    if (len > 1e-6) {
-                        nx /= len;
-                        ny /= len;
-                        nz /= len;
-                    } else {
-                        nx = 0;
-                        ny = 0;
-                        nz = 1;
-                    }
-                    normals.add(new float[] { nx, ny, nz });
-                }
+            List<float[]> vertexNormals = new ArrayList<>();
+            float[] currentFaceNormal = faceNormals.get(face);
+
+            if (currentFaceNormal == null) {
+                // Fallback
+                for (int i = 0; i < verts.size(); i++)
+                    vertexNormals.add(new float[] { 0, 0, 1 });
+                face.setVertexNormals(vertexNormals);
+                continue;
             }
-            face.setVertexNormals(normals);
+
+            for (Point3D v : verts) {
+                float nx = 0, ny = 0, nz = 0;
+                List<Face3D> neighbors = vertexToFaces.get(v);
+
+                if (neighbors != null) {
+                    for (Face3D neighbor : neighbors) {
+                        float[] nNormal = faceNormals.get(neighbor);
+                        if (nNormal == null)
+                            continue;
+
+                        // Dot product to check angle
+                        float dot = currentFaceNormal[0] * nNormal[0] +
+                                currentFaceNormal[1] * nNormal[1] +
+                                currentFaceNormal[2] * nNormal[2];
+
+                        // If angle is small (dot product large), blend the normal
+                        if (dot > creaseThreshold) {
+                            nx += nNormal[0];
+                            ny += nNormal[1];
+                            nz += nNormal[2];
+                        }
+                    }
+                }
+
+                // Normalize
+                float len = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
+                if (len > 1e-6) {
+                    nx /= len;
+                    ny /= len;
+                    nz /= len;
+                } else {
+                    // Fallback to face normal if degenerate
+                    nx = currentFaceNormal[0];
+                    ny = currentFaceNormal[1];
+                    nz = currentFaceNormal[2];
+                }
+                vertexNormals.add(new float[] { nx, ny, nz });
+            }
+            face.setVertexNormals(vertexNormals);
         }
     }
     // End of new class definitions
@@ -575,11 +609,24 @@ public class Sketch {
     /**
      * Clears all entities from the sketch.
      */
+    /**
+     * Clears 2D entities from the sketch but PRESERVES extruded 3D geometry.
+     * This allows for multi-step macros where we sketch, extrude, clear sketch, and
+     * sketch again.
+     */
     public void clearSketch() {
         sketchEntities.clear();
         polygons.clear(); // Clear polygons list as well
-        extrudedFaces.clear(); // Clear extruded faces
         dimensions.clear(); // Clear dimensions
+        // extrudedFaces.clear(); // DO NOT CLEAR 3D FACES here
+    }
+
+    /**
+     * Clears EVERYTHING including 3D geometry.
+     */
+    public void clearAll() {
+        clearSketch();
+        extrudedFaces.clear();
     }
 
     /**
@@ -1618,7 +1665,8 @@ public class Sketch {
      */
     public void extrude(double height) {
         // Clear previous extruded faces
-        this.extrudedFaces.clear();
+        // this.extrudedFaces.clear(); // REMOVED: Do not clear faces to allow
+        // multi-step macros
 
         // Extrude existing polygons (POLYLINE entities from DXF)
         for (Polygon polygon : this.polygons) {

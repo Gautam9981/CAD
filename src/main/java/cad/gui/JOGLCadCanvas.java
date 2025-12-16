@@ -18,8 +18,10 @@ import javax.swing.SwingUtilities;
 import java.io.IOException;
 
 /**
- * OpenGL canvas for rendering 3D models and 2D sketches with interactive controls.
- * Extends GLJPanel and provides mouse/keyboard interaction for rotation, zoom, and view switching.
+ * OpenGL canvas for rendering 3D models and 2D sketches with interactive
+ * controls.
+ * Extends GLJPanel and provides mouse/keyboard interaction for rotation, zoom,
+ * and view switching.
  */
 public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
 
@@ -31,25 +33,25 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
     private float rotateX = 0.0f; // Rotation angle around the X-axis (for tilting the view up/down)
     private float rotateY = 0.0f; // Rotation angle around the Y-axis (for rotating the view left/right)
     private float zoomZ = -600.0f; // Zoom level (distance from the camera along the Z-axis).
-                                 // Negative values move the object further into the screen.
+                                   // Negative values move the object further into the screen.
     private int lastMouseX, lastMouseY; // Stores the last mouse position during a drag operation
     private boolean mouseDragging = false; // Flag to track if the mouse is currently being dragged
 
     // --- Data for rendering ---
     private Sketch sketch; // Reference to the 2D sketch object that this canvas can render.
-    private boolean show3DModel = false; // Flag to determine whether to render the 3D model (true) or the 2D sketch (false).
+    private boolean show3DModel = false; // Flag to determine whether to render the 3D model (true) or the 2D sketch
+                                         // (false).
     private VBOManager vboManager = new VBOManager();
     private boolean vboDirty = true; // Track if VBO needs update
 
     /**
      * Creates OpenGL canvas with mouse and keyboard interaction support.
+     * 
      * @param sketch 2D sketch object for rendering in sketch mode
      */
     public JOGLCadCanvas(Sketch sketch) {
-        // Call the superclass constructor, requesting an OpenGL 2.0 profile.
-        // GL2 is used for compatibility with fixed-function pipeline features.
-        // This MUST be the first statement in the constructor.
-        super(new GLCapabilities(GLProfile.get("GL2")));
+        // Call the superclass constructor using static helper to configure capabilities
+        super(createCapabilities());
         this.sketch = sketch; // Assign the provided sketch object
 
         // Register this class as an OpenGL event listener. This enables the `init`,
@@ -95,7 +97,8 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
                     } else if (SwingUtilities.isRightMouseButton(e)) { // Zoom/Pan with Right Mouse Button
                         // Simple vertical drag affects zoom (moves camera closer/further)
                         zoomZ += dy * 0.05f;
-                        // For a proper pan, you'd translate the model based on dx, dy, and current zoom.
+                        // For a proper pan, you'd translate the model based on dx, dy, and current
+                        // zoom.
                     }
                     lastMouseX = e.getX(); // Update last mouse position
                     lastMouseY = e.getY();
@@ -111,7 +114,8 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
              * Scrolling up zooms in, scrolling down zooms out.
              */
             float notches = e.getWheelRotation(); // Get number of "notches" the wheel was rotated
-            zoomZ += notches * 0.5f; // Adjust zoom based on wheel rotation (positive moves away, negative moves closer)
+            zoomZ += notches * 0.5f; // Adjust zoom based on wheel rotation (positive moves away, negative moves
+                                     // closer)
             repaint(); // Request repaint
         });
 
@@ -148,17 +152,31 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
     }
 
     /**
-     * Sets the current active shape to a cube and updates its size and subdivisions.
+     * Helper to create GL capabilities with MSAA enabled.
+     */
+    private static GLCapabilities createCapabilities() {
+        GLCapabilities caps = new GLCapabilities(GLProfile.get("GL2"));
+        caps.setSampleBuffers(true);
+        caps.setNumSamples(4); // 4x MSAA
+        return caps;
+    }
+
+    /**
+     * Sets the current active shape to a cube and updates its size and
+     * subdivisions.
      * This method delegates the actual setting of parameters to the static
      * `Geometry.createCube()` method, which manages the application's central
      * 3D model state.
      *
      * @param size      The edge length of the cube.
-     * @param divisions The number of subdivisions per edge (affects geometry, not rendering directly here).
+     * @param divisions The number of subdivisions per edge (affects geometry, not
+     *                  rendering directly here).
      */
     public void setCube(float size, int divisions) {
-        // Calls the static method in Geometry to define a cube with the given size and divisions.
-        // Geometry will internally set itself to render a CUBE and store these parameters.
+        // Calls the static method in Geometry to define a cube with the given size and
+        // divisions.
+        // Geometry will internally set itself to render a CUBE and store these
+        // parameters.
         Geometry.createCube(size, divisions);
         // Switches the canvas to 3D model display mode to show the newly created cube.
         show3DModel();
@@ -166,21 +184,29 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
 
     /**
      * Creates a sphere with specified parameters and switches to 3D view.
+     * 
      * @param radius Sphere radius
-     * @param latDiv Latitude subdivisions  
+     * @param latDiv Latitude subdivisions
      * @param lonDiv Longitude subdivisions
      */
     public void setSphere(float radius, int latDiv, int lonDiv) {
-        // Calls the static method in Geometry to define a sphere with the given radius and divisions.
-        // Geometry will internally set itself to render a SPHERE and store these parameters.
-        // Note: `createSphere` in `Geometry` might simplify latDiv and lonDiv into one 'divisions' param.
-        Geometry.createSphere(radius, latDiv); // Assuming createSphere takes radius and one division param for simplicity based on your comment. Adjust if Geometry.createSphere needs both latDiv and lonDiv explicitly.
-        // Switches the canvas to 3D model display mode to show the newly created sphere.
+        // Calls the static method in Geometry to define a sphere with the given radius
+        // and divisions.
+        // Geometry will internally set itself to render a SPHERE and store these
+        // parameters.
+        // Note: `createSphere` in `Geometry` might simplify latDiv and lonDiv into one
+        // 'divisions' param.
+        Geometry.createSphere(radius, latDiv); // Assuming createSphere takes radius and one division param for
+                                               // simplicity based on your comment. Adjust if Geometry.createSphere
+                                               // needs both latDiv and lonDiv explicitly.
+        // Switches the canvas to 3D model display mode to show the newly created
+        // sphere.
         show3DModel();
     }
 
     /**
      * Loads STL file and switches to 3D model view.
+     * 
      * @param filePath Path to STL file to load
      */
     public void loadSTL(String filePath) {
@@ -192,13 +218,14 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
             System.out.println("Loaded STL triangles: " + Geometry.getLoadedStlTriangles().size()); // Debug statement
             System.out.println("Current shape after loading: " + Geometry.getCurrentShape()); // Debug current shape
             System.out.println("Show3DModel flag: " + show3DModel); // Debug 3D flag
-            
+
             // If loading succeeds, switch the canvas to 3D model display mode.
             show3DModel();
             // Request a repaint to immediately display the loaded STL model.
             repaint();
         } catch (IOException e) {
-            // Catches any I/O errors that occur during file loading (e.g., file not found, read errors).
+            // Catches any I/O errors that occur during file loading (e.g., file not found,
+            // read errors).
             System.err.println("Error loading STL file: " + e.getMessage());
             e.printStackTrace(); // Prints the stack trace for debugging.
             // Optionally, you could reset Geometry.currShape here if the loading failure
@@ -212,17 +239,18 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
      */
     public void showSketch() {
         show3DModel = false; // Set flag to render 2D sketch
-        repaint();           // Request the canvas to redraw itself
+        repaint(); // Request the canvas to redraw itself
     }
 
     /**
-     * Switches the canvas display mode to show the 3D model (cube, sphere, or loaded STL).
+     * Switches the canvas display mode to show the 3D model (cube, sphere, or
+     * loaded STL).
      * Sets the internal flag `show3DModel` to `true` and requests a repaint.
      */
     public void show3DModel() {
-        show3DModel = true;  // Set flag to render 3D model
-        vboDirty = true;     // Mark VBO as dirty (geometry may have changed)
-        repaint();           // Request the canvas to redraw itself
+        show3DModel = true; // Set flag to render 3D model
+        vboDirty = true; // Mark VBO as dirty (geometry may have changed)
+        repaint(); // Request the canvas to redraw itself
     }
 
     /**
@@ -231,7 +259,8 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
      * background color, enabling depth testing, configuring lighting, and setting
      * material properties.
      *
-     * @param drawable The GLAutoDrawable object, providing access to the OpenGL context.
+     * @param drawable The GLAutoDrawable object, providing access to the OpenGL
+     *                 context.
      */
     @Override
     public void init(GLAutoDrawable drawable) {
@@ -247,17 +276,17 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         gl.glEnable(GL2.GL_NORMALIZE);
         gl.glEnable(GL2.GL_LIGHTING);
         gl.glEnable(GL2.GL_LIGHT0);
-        float[] lightPos = {1.0f, 1.0f, 1.0f, 0.0f};
+        float[] lightPos = { 1.0f, 1.0f, 1.0f, 0.0f };
         gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, lightPos, 0);
-        float[] ambientLight = {0.3f, 0.3f, 0.3f, 1.0f};
-        float[] diffuseLight = {0.7f, 0.7f, 0.7f, 1.0f};
-        float[] specularLight = {1.0f, 1.0f, 1.0f, 1.0f};
+        float[] ambientLight = { 0.3f, 0.3f, 0.3f, 1.0f };
+        float[] diffuseLight = { 0.7f, 0.7f, 0.7f, 1.0f };
+        float[] specularLight = { 1.0f, 1.0f, 1.0f, 1.0f };
         gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_AMBIENT, ambientLight, 0);
         gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, diffuseLight, 0);
         gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_SPECULAR, specularLight, 0);
-        float[] materialAmbient = {0.1f, 0.1f, 0.1f, 1.0f};
-        float[] materialDiffuse = {0.8f, 0.8f, 0.8f, 1.0f};
-        float[] materialSpecular = {1.0f, 1.0f, 1.0f, 1.0f};
+        float[] materialAmbient = { 0.1f, 0.1f, 0.1f, 1.0f };
+        float[] materialDiffuse = { 0.8f, 0.8f, 0.8f, 1.0f };
+        float[] materialSpecular = { 1.0f, 1.0f, 1.0f, 1.0f };
         float shininess = 100.0f;
         gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_AMBIENT, materialAmbient, 0);
         gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_DIFFUSE, materialDiffuse, 0);
@@ -281,7 +310,8 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
     @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
         GL2 gl = drawable.getGL().getGL2();
-        if (height == 0) height = 1; // Prevent division by zero if height is 0
+        if (height == 0)
+            height = 1; // Prevent division by zero if height is 0
         float h = (float) width / (float) height; // Calculate the aspect ratio
 
         // Set the OpenGL viewport to cover the entire canvas area.
@@ -294,12 +324,15 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
 
         if (show3DModel) {
             // For 3D models, set up a perspective projection.
-            // This simulates how a camera sees objects, with distant objects appearing smaller.
-            // Parameters: field of view (45 deg), aspect ratio, near clipping plane (0.1f), far clipping plane (2000.0f).
+            // This simulates how a camera sees objects, with distant objects appearing
+            // smaller.
+            // Parameters: field of view (45 deg), aspect ratio, near clipping plane (0.1f),
+            // far clipping plane (2000.0f).
             glu.gluPerspective(45.0f, h, 0.1f, 2000.0f); // Increased far clipping for large models
         } else {
             // For 2D sketches, set up an orthographic projection.
-            // This projects objects without perspective distortion, suitable for CAD 2D views.
+            // This projects objects without perspective distortion, suitable for CAD 2D
+            // views.
             // It maps a 2D coordinate system directly to the screen pixels.
             float orthoScale = 100.0f; // A scaling factor for the orthographic view
             glu.gluOrtho2D(-width / orthoScale, width / orthoScale, -height / orthoScale, height / orthoScale);
@@ -321,17 +354,18 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
     @Override
     public void display(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
-        // Clear the color buffer (screen pixels) and the depth buffer (for depth testing).
+        // Clear the color buffer (screen pixels) and the depth buffer (for depth
+        // testing).
         gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
         gl.glLoadIdentity(); // Reset the current modelview matrix to identity
 
-        
         if (show3DModel) { // If in 3D view mode
             float distance = -zoomZ;
             if (sketch != null && !sketch.extrudedFaces.isEmpty()) {
                 float geometrySize = calculateGeometrySize();
                 float minDistance = geometrySize * 3.0f;
-                if (distance < minDistance) distance = minDistance;
+                if (distance < minDistance)
+                    distance = minDistance;
             }
             float[] geometryCenter = calculateGeometryCenter();
             float centerX = geometryCenter[0];
@@ -358,14 +392,14 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
             } else {
                 System.err.println("GLU object not initialized!");
             }
-            float[] objectColor = {0.6f, 0.7f, 0.9f, 1.0f};
+            float[] objectColor = { 0.6f, 0.7f, 0.9f, 1.0f };
             gl.glMaterialfv(GL2.GL_FRONT, GL2.GL_AMBIENT_AND_DIFFUSE, objectColor, 0);
             // --- VBO-based rendering for extruded geometry ---
             if (sketch != null && !sketch.extrudedFaces.isEmpty()) {
                 if (vboDirty) {
                     // Compute per-vertex normals for smooth shading before uploading
                     sketch.computePerVertexNormals();
-                    vboManager.uploadFaces(gl, sketch.extrudedFaces);
+                    vboManager.uploadFaces(gl, glu, sketch.extrudedFaces);
                     vboDirty = false;
                 }
                 vboManager.draw(gl);
@@ -392,7 +426,8 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
             gl.glPopMatrix(); // Restore the previous modelview matrix.
         }
 
-        gl.glFlush(); // Ensures all OpenGL commands are executed immediately, sending them to the graphics hardware.
+        gl.glFlush(); // Ensures all OpenGL commands are executed immediately, sending them to the
+                      // graphics hardware.
     }
 
     /**
@@ -409,7 +444,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
             float totalY = 0.0f;
             float totalZ = 0.0f;
             int vertexCount = 0;
-            
+
             // Sum all vertex coordinates
             for (Sketch.Face3D face : sketch.extrudedFaces) {
                 for (Sketch.Point3D vertex : face.getVertices()) {
@@ -419,23 +454,24 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
                     vertexCount++;
                 }
             }
-            
+
             // Calculate average (centroid)
             if (vertexCount > 0) {
-                return new float[]{
-                    totalX / vertexCount,
-                    totalY / vertexCount,
-                    totalZ / vertexCount
+                return new float[] {
+                        totalX / vertexCount,
+                        totalY / vertexCount,
+                        totalZ / vertexCount
                 };
             }
         }
-        
+
         // Default to origin for built-in shapes (cube, sphere, STL)
-        return new float[]{0.0f, 0.0f, 0.0f};
+        return new float[] { 0.0f, 0.0f, 0.0f };
     }
-    
+
     /**
-     * Calculates the bounding box dimensions of extruded geometry to help with automatic zoom.
+     * Calculates the bounding box dimensions of extruded geometry to help with
+     * automatic zoom.
      * 
      * @return Maximum dimension (width, height, or depth) of the geometry
      */
@@ -444,14 +480,14 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
             float minX = Float.MAX_VALUE, maxX = Float.MIN_VALUE;
             float minY = Float.MAX_VALUE, maxY = Float.MIN_VALUE;
             float minZ = Float.MAX_VALUE, maxZ = Float.MIN_VALUE;
-            
+
             // Find bounding box
             for (Sketch.Face3D face : sketch.extrudedFaces) {
                 for (Sketch.Point3D vertex : face.getVertices()) {
                     float x = vertex.getX();
                     float y = vertex.getY();
                     float z = vertex.getZ();
-                    
+
                     minX = Math.min(minX, x);
                     maxX = Math.max(maxX, x);
                     minY = Math.min(minY, y);
@@ -460,14 +496,14 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
                     maxZ = Math.max(maxZ, z);
                 }
             }
-            
+
             // Return the maximum dimension for zoom calculation
             float width = maxX - minX;
             float height = maxY - minY;
             float depth = maxZ - minZ;
             return Math.max(Math.max(width, height), depth);
         }
-        
+
         return 50.0f; // Default size for built-in shapes
     }
 
