@@ -231,6 +231,18 @@ Implemented kite creation functionality (sketching + extruding). Feature in inte
 
 ---
 
+---
+
+### Day 28 (12/16/25) - macOS Startup Fix
+**Critical Fix:** Resolved startup hang on macOS
+- **Issue:** Blocking `ChoiceDialog` in `start()` caused deadlocks with the macOS event loop (JOGL context).
+- **Solution:** Implemented specific "Splash Stage" for Unit Selection.
+  - App now launches a lightweight unit selection window first.
+  - Main application/OpenGL context only initializes *after* unit selection is confirmed.
+- **Verification:** Verified safe startup on macOS while maintaining the "Units First" requirement.
+
+---
+
 ## Installation & Running
 
 ### Windows

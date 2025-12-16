@@ -23,7 +23,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.control.ChoiceDialog;
+
 import javafx.scene.control.SplitPane; // Explicitly import SplitPane
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -42,7 +42,6 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Window;
 
-import java.util.Optional;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
@@ -1011,7 +1010,7 @@ public class GuiFX extends Application {
 
                 if (stlTriangles != null) {
                     renderStlTriangles(gl); // Render loaded STL triangles
-                    renderModelAxes(gl); // Render small axes at model centroid
+                    renderModelAxes(gl, drawable); // Render small axes at model centroid
                 } else {
                     renderPlanes(gl); // Render reference planes if no STL is loaded
                 }
@@ -1127,7 +1126,7 @@ public class GuiFX extends Application {
 
             // Render text labels if textRenderer is initialized
             if (textRenderer != null) {
-                renderAxisLabels(drawable, axisLength);
+                renderAxisLabels(drawable, axisLength, 0, 0, 0);
             }
 
             gl.glEnable(GL2.GL_LIGHTING);
@@ -1135,8 +1134,10 @@ public class GuiFX extends Application {
 
         /**
          * Renders axis labels (X, Y, Z) at the end of each coordinate axis.
+         * Optionally accepts an origin point to offset the labels.
          */
-        private void renderAxisLabels(GLAutoDrawable drawable, float axisLength) {
+        private void renderAxisLabels(GLAutoDrawable drawable, float axisLength, float originX, float originY,
+                float originZ) {
             GL2 gl = drawable.getGL().getGL2();
 
             // Get modelview and projection matrices
@@ -1160,8 +1161,8 @@ public class GuiFX extends Application {
             int charWidth = 18; // Approximate character width for size 24 font
             int charHeight = 24;
 
-            // X-axis label (Red) - positioned along positive X
-            boolean xProjected = glu.gluProject(axisLength + labelOffset, 0, 0,
+            // X-axis label (Red) - positioned along positive X from origin
+            boolean xProjected = glu.gluProject(originX + axisLength + labelOffset, originY, originZ,
                     modelview, 0, projection, 0, viewport, 0,
                     winCoords, 0);
             if (xProjected && winCoords[2] >= 0 && winCoords[2] <= 1) { // Check if in front of camera
@@ -1171,8 +1172,8 @@ public class GuiFX extends Application {
                 textRenderer.draw("X", x, y);
             }
 
-            // Y-axis label (Green) - positioned along positive Y
-            boolean yProjected = glu.gluProject(0, axisLength + labelOffset, 0,
+            // Y-axis label (Green) - positioned along positive Y from origin
+            boolean yProjected = glu.gluProject(originX, originY + axisLength + labelOffset, originZ,
                     modelview, 0, projection, 0, viewport, 0,
                     winCoords, 0);
             if (yProjected && winCoords[2] >= 0 && winCoords[2] <= 1) {
@@ -1182,8 +1183,8 @@ public class GuiFX extends Application {
                 textRenderer.draw("Y", x, y);
             }
 
-            // Z-axis label (Blue) - positioned along positive Z
-            boolean zProjected = glu.gluProject(0, 0, axisLength + labelOffset,
+            // Z-axis label (Blue) - positioned along positive Z from origin
+            boolean zProjected = glu.gluProject(originX, originY, originZ + axisLength + labelOffset,
                     modelview, 0, projection, 0, viewport, 0,
                     winCoords, 0);
             if (zProjected && winCoords[2] >= 0 && winCoords[2] <= 1) {
@@ -1198,17 +1199,17 @@ public class GuiFX extends Application {
 
         /**
          * Renders small coordinate axes at the model's centroid.
-         * Similar to SolidWorks model-space axes indicator.
          * X = Red, Y = Green, Z = Blue
          */
-        private void renderModelAxes(GL2 gl) {
+        private void renderModelAxes(GL2 gl, GLAutoDrawable drawable) {
             if (modelCentroid == null) {
                 return; // No model loaded
             }
 
-            // Scale axis length based on model size (20% of max dimension)
+            // Scale axis length based on model size
+            // Use a larger factor (e.g., 0.6 instead of 0.2) to ensure it protrudes
             float modelSize = Geometry.getModelMaxDimension();
-            float axisLength = Math.max(modelSize * 0.2f, 2.0f); // At least 2 units
+            float axisLength = Math.max(modelSize * 0.75f, 5.0f);
 
             float cx = modelCentroid[0];
             float cy = modelCentroid[1];
@@ -1218,7 +1219,7 @@ public class GuiFX extends Application {
             try {
                 gl.glDisable(GL2.GL_LIGHTING);
                 gl.glDisable(GL2.GL_DEPTH_TEST); // Draw on top
-                gl.glLineWidth(4.0f); // Thicker lines for visibility
+                gl.glLineWidth(3.0f); // Thicker lines for visibility
 
                 gl.glBegin(GL2.GL_LINES);
                 // X-axis (Red)
@@ -1239,12 +1240,17 @@ public class GuiFX extends Application {
 
                 // Draw larger point at centroid for visibility
                 gl.glColor3f(1.0f, 1.0f, 0.0f); // Yellow
-                gl.glPointSize(12.0f);
+                gl.glPointSize(10.0f);
                 gl.glBegin(GL2.GL_POINTS);
                 gl.glVertex3f(cx, cy, cz);
                 gl.glEnd();
             } finally {
                 gl.glPopAttrib();
+            }
+
+            // Render labels for model axes
+            if (textRenderer != null) {
+                renderAxisLabels(drawable, axisLength, cx, cy, cz);
             }
         }
 

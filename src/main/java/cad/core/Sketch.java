@@ -54,11 +54,21 @@ public class Sketch {
             this(new Point(x, y));
         }
 
-        public float getX() { return point.x; }
-        public float getY() { return point.y; }
-        
-        public Point getPoint() { return point; }
-        public void setPoint(float x, float y) { point.set(x, y); }
+        public float getX() {
+            return point.x;
+        }
+
+        public float getY() {
+            return point.y;
+        }
+
+        public Point getPoint() {
+            return point;
+        }
+
+        public void setPoint(float x, float y) {
+            point.set(x, y);
+        }
 
         @Override
         public String toString() {
@@ -85,17 +95,38 @@ public class Sketch {
         }
 
         // Getters for topology
-        public Point getStartPoint() { return start; }
-        public Point getEndPoint() { return end; }
+        public Point getStartPoint() {
+            return start;
+        }
+
+        public Point getEndPoint() {
+            return end;
+        }
 
         // Convenience getters for values (used by renderer)
-        public float getX1() { return start.x; }
-        public float getY1() { return start.y; }
-        public float getX2() { return end.x; }
-        public float getY2() { return end.y; }
-        
-        public void setStart(float x, float y) { start.set(x, y); }
-        public void setEnd(float x, float y) { end.set(x, y); }
+        public float getX1() {
+            return start.x;
+        }
+
+        public float getY1() {
+            return start.y;
+        }
+
+        public float getX2() {
+            return end.x;
+        }
+
+        public float getY2() {
+            return end.y;
+        }
+
+        public void setStart(float x, float y) {
+            start.set(x, y);
+        }
+
+        public void setEnd(float x, float y) {
+            end.set(x, y);
+        }
 
         public String toString() {
             return String.format("Line from %s to %s", start, end);
@@ -118,15 +149,30 @@ public class Sketch {
         public Circle(float x, float y, float r) {
             this(new Point(x, y), r);
         }
-        
-        public Point getCenterPoint() { return center; }
-        
-        public float getX() { return center.x; }
-        public float getY() { return center.y; }
-        public float getRadius() { return r; }
-        
-        public void setCenter(float x, float y) { center.set(x, y); }
-        public void setRadius(float r) { this.r = r; }
+
+        public Point getCenterPoint() {
+            return center;
+        }
+
+        public float getX() {
+            return center.x;
+        }
+
+        public float getY() {
+            return center.y;
+        }
+
+        public float getRadius() {
+            return r;
+        }
+
+        public void setCenter(float x, float y) {
+            center.set(x, y);
+        }
+
+        public void setRadius(float r) {
+            this.r = r;
+        }
 
         public String toString() {
             return String.format("Circle at %s with radius %.3f", center, r);
@@ -323,10 +369,10 @@ public class Sketch {
     // New fields to resolve errors
     public final List<Polygon> polygons = new CopyOnWriteArrayList<>(); // To store only Polygon entities for extrusion
     public List<Face3D> extrudedFaces = new ArrayList<>(); // To store the result of extrusion
-    
+
     // Dimension support
     private final List<Dimension> dimensions = new ArrayList<>(); // Store all dimensions
-    
+
     // Constraint support
     private final List<Constraint> constraints = new CopyOnWriteArrayList<>();
 
@@ -338,7 +384,7 @@ public class Sketch {
     public void solveConstraints() {
         ConstraintSolver.solve(constraints);
     }
-    
+
     public List<Constraint> getConstraints() {
         return constraints;
     }
@@ -347,17 +393,18 @@ public class Sketch {
         constraints.remove(c);
         solveConstraints();
     }
-    
 
-    
     // Generic entity management
     public void addEntity(Entity e) {
         if (!sketchEntities.contains(e)) {
             sketchEntities.add(e);
+            // Fix: Ensure polygons are added to the dedicated list for extrusion
+            if (e instanceof Polygon) {
+                polygons.add((Polygon) e);
+            }
         }
     }
-    
-    
+
     // End of new fields
 
     /**
@@ -563,15 +610,27 @@ public class Sketch {
     public List<Entity> getEntities() {
         return new ArrayList<>(sketchEntities);
     }
-    
+
     /**
      * Removes an entity from the sketch.
      * Used for undo operations.
+     * 
+     * @param entity The entity to remove
+     * @return true if removed, false if not found
+     */
+    /**
+     * Removes an entity from the sketch.
+     * Used for undo operations.
+     * 
      * @param entity The entity to remove
      * @return true if removed, false if not found
      */
     public boolean removeEntity(Entity entity) {
-        return sketchEntities.remove(entity);
+        boolean removed = sketchEntities.remove(entity);
+        if (removed && entity instanceof Polygon) {
+            polygons.remove((Polygon) entity);
+        }
+        return removed;
     }
 
     /**
@@ -1403,7 +1462,7 @@ public class Sketch {
                     break;
             }
         }
-        
+
         // Draw dimensions
         for (Dimension dim : dimensions) {
             if (dim != null) {
@@ -1411,19 +1470,20 @@ public class Sketch {
             }
         }
     }
-    
+
     /**
      * Finds the closest sketch entity to a given point within a threshold.
      * Used for entity selection when dimensioning.
-     * @param x Target X coordinate
-     * @param y Target Y coordinate
+     * 
+     * @param x         Target X coordinate
+     * @param y         Target Y coordinate
      * @param threshold Maximum distance to consider
      * @return The closest entity, or null if none within threshold
      */
     public Entity findClosestEntity(float x, float y, float threshold) {
         Entity closest = null;
         float minDistance = threshold;
-        
+
         for (Entity entity : sketchEntities) {
             float distance = calculateDistanceToEntity(entity, x, y);
             if (distance < minDistance) {
@@ -1431,10 +1491,10 @@ public class Sketch {
                 closest = entity;
             }
         }
-        
+
         return closest;
     }
-    
+
     /**
      * Calculates the distance from a point to an entity.
      */
@@ -1446,13 +1506,13 @@ public class Sketch {
             Circle circle = (Circle) entity;
             float dx = x - circle.getX();
             float dy = y - circle.getY();
-            float distToCenter = (float) Math.sqrt(dx*dx + dy*dy);
+            float distToCenter = (float) Math.sqrt(dx * dx + dy * dy);
             return Math.abs(distToCenter - circle.getRadius()); // Distance to circumference
         } else if (entity instanceof PointEntity) {
             PointEntity point = (PointEntity) entity;
             float dx = x - point.getX();
             float dy = y - point.getY();
-            return (float) Math.sqrt(dx*dx + dy*dy);
+            return (float) Math.sqrt(dx * dx + dy * dy);
         } else if (entity instanceof Polygon) {
             // For polygons, find closest edge
             Polygon poly = (Polygon) entity;
@@ -1468,37 +1528,38 @@ public class Sketch {
         }
         return Float.MAX_VALUE;
     }
-    
+
     /**
      * Calculates distance from a point to a line segment.
      */
     private float distanceToLineSegment(float px, float py, float x1, float y1, float x2, float y2) {
         float dx = x2 - x1;
         float dy = y2 - y1;
-        float lenSquared = dx*dx + dy*dy;
-        
+        float lenSquared = dx * dx + dy * dy;
+
         if (lenSquared == 0) {
             // Line is a point
-            return (float) Math.sqrt((px - x1)*(px - x1) + (py - y1)*(py - y1));
+            return (float) Math.sqrt((px - x1) * (px - x1) + (py - y1) * (py - y1));
         }
-        
+
         // Parameter t for closest point on line segment [0, 1]
         float t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / lenSquared));
-        
+
         float closestX = x1 + t * dx;
         float closestY = y1 + t * dy;
-        
-        return (float) Math.sqrt((px - closestX)*(px - closestX) + (py - closestY)*(py - closestY));
+
+        return (float) Math.sqrt((px - closestX) * (px - closestX) + (py - closestY) * (py - closestY));
     }
-    
+
     /**
      * Creates an appropriate dimension for the given entity.
+     * 
      * @param entity The entity to dimension
      * @return A dimension object, or null if entity type not supported
      */
     public Dimension createDimensionFor(Entity entity) {
         String unit = unitSystem.getAbbreviation();
-        
+
         if (entity instanceof Line) {
             Line line = (Line) entity;
             return new LinearDimension(line.getX1(), line.getY1(), line.getX2(), line.getY2(), unit);
@@ -1517,7 +1578,7 @@ public class Sketch {
         }
         return null;
     }
-    
+
     /**
      * Adds a dimension to the sketch.
      */
@@ -1526,21 +1587,21 @@ public class Sketch {
             dimensions.add(dim);
         }
     }
-    
+
     /**
      * Removes a dimension from the sketch.
      */
     public void removeDimension(Dimension dim) {
         dimensions.remove(dim);
     }
-    
+
     /**
      * Gets all dimensions in the sketch.
      */
     public List<Dimension> getDimensions() {
         return new ArrayList<>(dimensions);
     }
-    
+
     /**
      * Clears all dimensions from the sketch.
      */
@@ -2007,10 +2068,12 @@ public class Sketch {
             return -1;
         }
     }
+
     /**
      * Finds the closest entity to the given coordinates within a tolerance.
-     * @param x X coordinate
-     * @param y Y coordinate
+     * 
+     * @param x         X coordinate
+     * @param y         Y coordinate
      * @param tolerance Maximum distance to consider
      * @return The closest Entity or null if none found within tolerance
      */
@@ -2035,7 +2098,7 @@ public class Sketch {
                 float distToCenter = (float) Math.sqrt(dx * dx + dy * dy);
                 dst = Math.abs(distToCenter - c.getRadius());
             }
-            
+
             if (dst < minDst) {
                 minDst = dst;
                 closest = e;
@@ -2046,7 +2109,8 @@ public class Sketch {
 
     private float distancePointToSegment(float px, float py, float x1, float y1, float x2, float y2) {
         float l2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
-        if (l2 == 0) return (float) Math.sqrt((px - x1) * (px - x1) + (py - y1) * (py - y1));
+        if (l2 == 0)
+            return (float) Math.sqrt((px - x1) * (px - x1) + (py - y1) * (py - y1));
         float t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2;
         t = Math.max(0, Math.min(1, t));
         float projX = x1 + t * (x2 - x1);
