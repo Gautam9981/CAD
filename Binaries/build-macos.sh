@@ -47,8 +47,10 @@ cp "../src/main/resources/sketchapp-icon.icns" "$STAGING_DIR/" || true
 echo "Creating macOS DMG installer..."
 
 # Create the macOS installer
+# Step 1: Create App Image
+echo "Generating App Image..."
 jpackage \
-  --type dmg \
+  --type app-image \
   --input "$STAGING_DIR" \
   --name "$APP_NAME" \
   --main-jar SketchApp.jar \
@@ -57,12 +59,43 @@ jpackage \
   --vendor "SketchApp Team" \
   --description "Professional CAD Sketching Application" \
   --icon "$STAGING_DIR/sketchapp-icon.icns" \
-  --dest "$OUTPUT_DIR" \
+  --dest "$OUTPUT_DIR/app-image" \
   --mac-package-name "SketchApp" \
   --java-options "-Xmx2048m" \
   --java-options "-Dsun.java2d.opengl=true" \
   --java-options "-XstartOnFirstThread" \
   --arguments "--gui"
+
+# Step 2: Modify Info.plist to support older macOS versions (11.0+)
+INFO_PLIST="$OUTPUT_DIR/app-image/$APP_NAME.app/Contents/Info.plist"
+if [ -f "$INFO_PLIST" ]; then
+    echo "Updating LSMinimumSystemVersion in Info.plist to 11.0..."
+    # Use plytool or sed. sed is safer to assume presence.
+    # We replace the value if it exists, or insert it.
+    # jpackage usually adds LSMinimumSystemVersion, so we verify and replace.
+    if grep -q "LSMinimumSystemVersion" "$INFO_PLIST"; then
+        /usr/libexec/PlistBuddy -c "Set :LSMinimumSystemVersion 11.0" "$INFO_PLIST" || \
+        sed -i '' 's/LSMinimumSystemVersion<\/key>.*<string>.*<\/string>/LSMinimumSystemVersion<\/key>\n\t<string>11.0<\/string>/' "$INFO_PLIST"
+    else
+        /usr/libexec/PlistBuddy -c "Add :LSMinimumSystemVersion string 11.0" "$INFO_PLIST" || \
+        sed -i '' '/<dict>/a\
+	<key>LSMinimumSystemVersion</key>\
+	<string>11.0</string>
+' "$INFO_PLIST"
+    fi
+else
+    echo "Warning: Info.plist not found at $INFO_PLIST"
+fi
+
+# Step 3: Create DMG from App Image
+echo "Creating macOS DMG installer from App Image..."
+jpackage \
+  --type dmg \
+  --app-image "$OUTPUT_DIR/app-image/$APP_NAME.app" \
+  --name "$APP_NAME" \
+  --app-version "$APP_VERSION" \
+  --vendor "SketchApp Team" \
+  --dest "$OUTPUT_DIR"
 
 # Cleanup
 rm -rf "$STAGING_DIR"
