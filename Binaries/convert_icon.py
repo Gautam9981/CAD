@@ -2,33 +2,36 @@ from PIL import Image
 import os
 import platform
 
-img_path = '../resources/sketchapp-icon.png'
-ico_path = '../resources/sketchapp-icon.ico'
-icns_path = '../resources/sketchapp-icon.icns'
+# Paths - Updated to standard Maven structure
+SOURCE_IMG = '../src/main/resources/sketchapp-icon.png'
+ICO_PATH = '../src/main/resources/sketchapp-icon.ico'
+ICNS_PATH = '../src/main/resources/sketchapp-icon.icns'
 
 def convert_icons():
-    if not os.path.exists(img_path):
-        print(f"Error: {img_path} not found")
+    if not os.path.exists(SOURCE_IMG):
+        print(f"Error: {SOURCE_IMG} not found")
         return
 
-    img = Image.open(img_path)
+    img = Image.open(SOURCE_IMG)
+    system = platform.system()
+    print(f"Detected OS: {system}")
 
-    # Convert to ICO (Windows)
-    if not os.path.exists(ico_path):
-        img.save(ico_path, format='ICO')
-        print(f"Generated {ico_path}")
+    if system == 'Windows':
+        print(f"Generating {ICO_PATH} for Windows...")
+        img.save(ICO_PATH, format='ICO')
+        print(f"Generated {ICO_PATH}")
     
-    # Convert to ICNS (MacOS) - Requires Mac or external tools usually, but PIL might handle saving if supported
-    # We will try to save it so it is ready for the Mac build even if generated on Windows.
-    if not os.path.exists(icns_path):
+    elif system == 'Darwin':
+        print(f"Generating {ICNS_PATH} for macOS...")
         try:
-            # For robust ICNS, we usually need iconutil. 
-            # But let's try basic save first or warn user.
-            img.save(icns_path, format='ICNS')
-            print(f"Generated {icns_path}")
+            img.save(ICNS_PATH, format='ICNS')
+            print(f"Generated {ICNS_PATH}")
         except Exception as e:
-            print(f"Could not generate ICNS directly: {e}")
-            print("Please run 'mkdir sketchapp.iconset' and use 'iconutil -c icns sketchapp.iconset' on macOS.")
+            print(f"Error generating ICNS: {e}")
+            print("Note: Basic PIL ICNS support might be limited.")
+    
+    else:
+        print(f"No icon conversion needed for {system} (uses PNG natively).")
 
 if __name__ == "__main__":
     convert_icons()

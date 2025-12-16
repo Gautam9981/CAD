@@ -24,7 +24,7 @@ def add_rounded_corners(image_path, output_path, radius=50):
 
 if __name__ == "__main__":
     add_rounded_corners(
-        '../resources/sketchapp-icon.jpg',
-        '../resources/sketchapp-icon.png',
+        '../src/main/resources/sketchapp-icon.jpg',
+        '../src/main/resources/sketchapp-icon.png',
         radius=150
     )
