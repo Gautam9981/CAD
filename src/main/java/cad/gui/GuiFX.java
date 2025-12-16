@@ -29,6 +29,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import java.util.Optional;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.ToolBar;
@@ -37,6 +38,9 @@ import javafx.scene.control.RadioButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.TreeItem;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
@@ -89,6 +93,7 @@ import cad.core.FixedConstraint;
 import cad.core.Sketch.Line;
 import cad.core.Sketch.PointEntity;
 import cad.core.Sketch.Entity;
+import cad.gui.MacroManager;
 
 /**
  * GuiFX - Main JavaFX Application Class for CAD System
@@ -128,6 +133,7 @@ public class GuiFX extends Application {
     private FPSAnimator animator; // Manages the animation loop for the GLCanvas
     private OpenGLRenderer glRenderer; // Reference to the OpenGLRenderer instance
     private SketchInteractionManager interactionManager; // Handles interactive sketching logic
+    private MacroManager macroManager; // Handles macro recording and playback
 
     // === Static fields for configuration and core objects ===
     public static int sphereLatDiv = 10; // Default latitude divisions for sphere
@@ -233,8 +239,10 @@ public class GuiFX extends Application {
      * Called only after unit selection is complete.
      */
     private void initializeMainUI(Stage primaryStage) {
-        // Initialize the Sketch Interaction Manager
-        interactionManager = new SketchInteractionManager(sketch, commandManager); // Init interaction manager
+        // Initialize managers
+        commandManager = new CommandManager();
+        interactionManager = new SketchInteractionManager(sketch, commandManager);
+        macroManager = new MacroManager(sketch, primaryStage);
 
         primaryStage.setTitle("SketchApp (4.0)");
 
@@ -409,9 +417,9 @@ public class GuiFX extends Application {
         Tab toolsTab = new Tab("Tools");
         ToolBar toolsToolbar = new ToolBar();
         toolsToolbar.getItems().addAll(
-                createRibbonButton("Record", "Record Macro", e -> appendOutput("Macro Recording Started...")),
-                createRibbonButton("Stop", "Stop Recording", e -> appendOutput("Macro Recording Stopped.")),
-                createRibbonButton("Run", "Run Macro", e -> appendOutput("Select Macro to Run...")),
+                createRibbonButton("Record", "Record Macro", e -> macroManager.startRecording()),
+                createRibbonButton("Stop", "Stop Recording", e -> macroManager.stopRecording()),
+                createRibbonButton("Run", "Run Macro", e -> showRunMacroMenu()),
                 new Separator(),
                 createRibbonButton("Add-Ins", "Manage Add-Ins", e -> appendOutput("Add-In Manager opened.")));
         toolsTab.setContent(toolsToolbar);
@@ -3637,5 +3645,31 @@ public class GuiFX extends Application {
      */
     public static void main(String[] args) {
         launch(args);
+    }
+
+    /**
+     * Show macro run menu with options to upload or select from library.
+     */
+    private void showRunMacroMenu() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Run Macro");
+        alert.setHeaderText("Choose macro source");
+        alert.setContentText("Upload a macro file or select from your macro library.");
+
+        ButtonType btnLibrary = new ButtonType("Select from Library");
+        ButtonType btnUpload = new ButtonType("Upload Macro File");
+        ButtonType btnCancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        alert.getButtonTypes().setAll(btnLibrary, btnUpload, btnCancel);
+
+        Optional<ButtonType> result = alert.showAndWait();
+
+        if (result.isPresent()) {
+            if (result.get() == btnLibrary) {
+                macroManager.selectAndRunMacro();
+            } else if (result.get() == btnUpload) {
+                macroManager.uploadAndRunMacro();
+            }
+        }
     }
 }

@@ -1,0 +1,6156 @@
+{
+  "cad.Main": {
+    "package": "cad",
+    "className": "Main",
+    "file": "cad/Main.java",
+    "constructors": [],
+    "methods": [
+      {
+        "name": "main",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "args",
+            "description": ""
+          }
+        ],
+        "signature": "public static void main(String[] args)",
+        "description": "Entry point of the application. Prompts the user to select between CLI or GUI mode. Launches the selected interface or shows an error for invalid input.",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.cli.for": {
+    "package": "cad.cli",
+    "className": "for",
+    "file": "cad/cli/Cli.java",
+    "constructors": [
+      {
+        "name": "for",
+        "visibility": "package-private",
+        "parameters": [
+          {
+            "type": "int i = 0; i < sides;",
+            "name": "i++"
+          }
+        ],
+        "signature": "package-private for(int i = 0; i < sides; i++)"
+      },
+      {
+        "name": "for",
+        "visibility": "package-private",
+        "parameters": [
+          {
+            "type": "int i = 1; i < args.length; i +=",
+            "name": "2"
+          }
+        ],
+        "signature": "package-private for(int i = 1; i < args.length; i += 2)"
+      },
+      {
+        "name": "for",
+        "visibility": "package-private",
+        "parameters": [
+          {
+            "type": "String item :",
+            "name": "items"
+          }
+        ],
+        "signature": "package-private for(String item : items)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "launch",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public static void launch()",
+        "description": "Launch the CLI application. Prints welcome message and enters the command input loop.",
+        "returns": ""
+      },
+      {
+        "name": "Unit",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "toMillimeter",
+            "description": ""
+          }
+        ],
+        "signature": "package-private  Unit(float toMillimeter)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "convertToMillimeters",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "float",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "value",
+            "description": "The value in current unit"
+          }
+        ],
+        "signature": "private static float convertToMillimeters(float value)",
+        "description": "Converts a value from the current unit to millimeters.",
+        "returns": "The value converted to millimeters"
+      },
+      {
+        "name": "runCli",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public static void runCli()",
+        "description": "Main command processing loop. Reads user input, parses commands, and executes corresponding methods. Includes comprehensive error handling for graceful exit.",
+        "returns": ""
+      },
+      {
+        "name": "handleLoft",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "args",
+            "description": ""
+          }
+        ],
+        "signature": "private static void handleLoft(String[] args)",
+        "description": "Helper method to handle loft command.",
+        "returns": ""
+      },
+      {
+        "name": "help",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private static void help()",
+        "description": "Displays a help message listing all available commands and their usage.",
+        "returns": ""
+      },
+      {
+        "name": "version",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private static void version()",
+        "description": "Prints the version information.",
+        "returns": ""
+      },
+      {
+        "name": "exit",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private static void exit()",
+        "description": "Exits the application gracefully. Provides user feedback and ensures clean termination.",
+        "returns": ""
+      },
+      {
+        "name": "createCube",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "args",
+            "description": "Command arguments, expects size as second argument"
+          }
+        ],
+        "signature": "private static void createCube(String[] args)",
+        "description": "Creates a cube with the specified size and configured subdivisions.",
+        "returns": ""
+      },
+      {
+        "name": "createSphere",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "args",
+            "description": "Command arguments, expects radius as second argument"
+          }
+        ],
+        "signature": "private static void createSphere(String[] args)",
+        "description": "Creates a sphere with the specified radius and configured subdivisions.",
+        "returns": ""
+      },
+      {
+        "name": "setCubeDivisions",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "args",
+            "description": "Command arguments, expects count as second argument"
+          }
+        ],
+        "signature": "private static void setCubeDivisions(String[] args)",
+        "description": "Sets the number of subdivisions for cubes.",
+        "returns": ""
+      },
+      {
+        "name": "setSphereDivisions",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "args",
+            "description": "Command arguments, expects lat and lon as second and third"
+          }
+        ],
+        "signature": "private static void setSphereDivisions(String[] args)",
+        "description": "Sets latitude and longitude subdivisions for spheres. arguments",
+        "returns": ""
+      },
+      {
+        "name": "saveFile",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "args",
+            "description": "Command arguments, expects filename as second argument"
+          }
+        ],
+        "signature": "private static void saveFile(String[] args)",
+        "description": "Saves the current geometry to an STL file.",
+        "returns": ""
+      },
+      {
+        "name": "sketchClear",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private static void sketchClear()",
+        "description": "Clears all entities from the current sketch.",
+        "returns": ""
+      },
+      {
+        "name": "exportDxf",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "args",
+            "description": "Command arguments, expects filename as second argument"
+          }
+        ],
+        "signature": "private static void exportDxf(String[] args)",
+        "description": "Exports the current sketch to a DXF file.",
+        "returns": ""
+      },
+      {
+        "name": "sketchPoint",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "args",
+            "description": "Command arguments, expects x and y as second and third arguments"
+          }
+        ],
+        "signature": "private static void sketchPoint(String[] args)",
+        "description": "Adds a point entity to the sketch.",
+        "returns": ""
+      },
+      {
+        "name": "sketchLine",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "args",
+            "description": "Command arguments, expects x1, y1, x2, y2 as arguments 2-5"
+          }
+        ],
+        "signature": "private static void sketchLine(String[] args)",
+        "description": "Adds a line entity to the sketch.",
+        "returns": ""
+      },
+      {
+        "name": "sketchCircle",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "args",
+            "description": "Command arguments, expects x, y, radius as arguments 2-4"
+          }
+        ],
+        "signature": "private static void sketchCircle(String[] args)",
+        "description": "Adds a circle entity to the sketch.",
+        "returns": ""
+      },
+      {
+        "name": "sketchPolygon",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "args",
+            "description": "Command arguments for polygon creation"
+          }
+        ],
+        "signature": "private static void sketchPolygon(String[] args)",
+        "description": "Adds a polygon to the sketch. Supports two modes: - Regular polygon defined by center (x,y), radius, and number of sides - Polygon defined by explicit points (at least 3)",
+        "returns": ""
+      },
+      {
+        "name": "sketchList",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private static void sketchList()",
+        "description": "Lists all entities currently in the sketch.",
+        "returns": ""
+      },
+      {
+        "name": "extrudeRedirectToGUI",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private static void extrudeRedirectToGUI()",
+        "description": "Displays information about extrusion and redirects users to the GUI for better experience. The CLI no longer supports extrusion functionality as it's better suited for the GUI.",
+        "returns": ""
+      },
+      {
+        "name": "loadFile",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "args",
+            "description": "Command arguments, expects filename as second argument"
+          }
+        ],
+        "signature": "private static void loadFile(String[] args)",
+        "description": "Loads an STL or DXF file.",
+        "returns": ""
+      },
+      {
+        "name": "setUnits",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "args",
+            "description": "Command arguments, expects unit as second argument"
+          }
+        ],
+        "signature": "private static void setUnits(String[] args)",
+        "description": "Sets the current measurement units. Supported units: mm, cm, m, in, ft",
+        "returns": ""
+      },
+      {
+        "name": "handleCg",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private static void handleCg()",
+        "description": "Calculates and displays the Center of Gravity (CG) of the current model.",
+        "returns": ""
+      },
+      {
+        "name": "handleNaca",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "args",
+            "description": "Command arguments."
+          }
+        ],
+        "signature": "private static void handleNaca(String[] args)",
+        "description": "Handles the 'naca' command to generate an airfoil.",
+        "returns": ""
+      },
+      {
+        "name": "handleRevolve",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "args",
+            "description": "Command arguments."
+          }
+        ],
+        "signature": "private static void handleRevolve(String[] args)",
+        "description": "Handles the 'revolve' command.",
+        "returns": ""
+      },
+      {
+        "name": "handleUndo",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private static void handleUndo()",
+        "description": "Handles undo command.",
+        "returns": ""
+      },
+      {
+        "name": "handleRedo",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private static void handleRedo()",
+        "description": "Handles redo command.",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.core.AddConstraintCommand": {
+    "package": "cad.core",
+    "className": "AddConstraintCommand",
+    "file": "cad/core/AddConstraintCommand.java",
+    "constructors": [
+      {
+        "name": "AddConstraintCommand",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "Sketch",
+            "name": "sketch"
+          },
+          {
+            "type": "Constraint",
+            "name": "constraint"
+          }
+        ],
+        "signature": "public AddConstraintCommand(Sketch sketch, Constraint constraint)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "execute",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void execute()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "undo",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void undo()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getDescription",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String getDescription()",
+        "description": "",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.core.AddDimensionCommand": {
+    "package": "cad.core",
+    "className": "AddDimensionCommand",
+    "file": "cad/core/AddDimensionCommand.java",
+    "constructors": [
+      {
+        "name": "AddDimensionCommand",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "Sketch",
+            "name": "sketch"
+          },
+          {
+            "type": "Dimension",
+            "name": "dimension"
+          }
+        ],
+        "signature": "public AddDimensionCommand(Sketch sketch, Dimension dimension)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "execute",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void execute()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "undo",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void undo()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getDescription",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String getDescription()",
+        "description": "",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.core.AddEntityCommand": {
+    "package": "cad.core",
+    "className": "AddEntityCommand",
+    "file": "cad/core/AddEntityCommand.java",
+    "constructors": [
+      {
+        "name": "AddEntityCommand",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "Sketch",
+            "name": "sketch"
+          },
+          {
+            "type": "Entity",
+            "name": "entity"
+          },
+          {
+            "type": "String",
+            "name": "entityType"
+          }
+        ],
+        "signature": "public AddEntityCommand(Sketch sketch, Entity entity, String entityType)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "execute",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void execute()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "undo",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void undo()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getDescription",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String getDescription()",
+        "description": "",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.core.CoincidentConstraint": {
+    "package": "cad.core",
+    "className": "CoincidentConstraint",
+    "file": "cad/core/CoincidentConstraint.java",
+    "constructors": [
+      {
+        "name": "CoincidentConstraint",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "Point",
+            "name": "p1"
+          },
+          {
+            "type": "Point",
+            "name": "p2"
+          }
+        ],
+        "signature": "public CoincidentConstraint(Point p1, Point p2)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "getError",
+        "visibility": "public",
+        "static": "",
+        "returnType": "double",
+        "parameters": [],
+        "signature": "public double getError()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "solve",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void solve()",
+        "description": "",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.core.for": {
+    "package": "cad.core",
+    "className": "for",
+    "file": "cad/core/Dimension.java",
+    "constructors": [],
+    "methods": [
+      {
+        "name": "Dimension",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "public",
+        "parameters": [
+          {
+            "type": "DimensionType",
+            "name": "type",
+            "description": "The type of dimension"
+          },
+          {
+            "type": "double",
+            "name": "value",
+            "description": "The measured value"
+          },
+          {
+            "type": "String",
+            "name": "unit",
+            "description": "The unit abbreviation (e.g., \"mm\", \"in\")"
+          }
+        ],
+        "signature": "package-private public Dimension(DimensionType type, double value, String unit)",
+        "description": "Constructor",
+        "returns": ""
+      },
+      {
+        "name": "formatValue",
+        "visibility": "protected",
+        "static": "",
+        "returnType": "String",
+        "parameters": [
+          {
+            "type": "double",
+            "name": "val",
+            "description": "The value to format"
+          }
+        ],
+        "signature": "protected String formatValue(double val)",
+        "description": "Formats the numeric value with appropriate precision.",
+        "returns": "Formatted string"
+      },
+      {
+        "name": "updateLabel",
+        "visibility": "protected",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "protected void updateLabel()",
+        "description": "Updates the label with current value and unit.",
+        "returns": ""
+      },
+      {
+        "name": "setUnit",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "unit",
+            "description": "Unit abbreviation (e.g., \"mm\", \"in\")"
+          }
+        ],
+        "signature": "public void setUnit(String unit)",
+        "description": "Sets the unit for this dimension.",
+        "returns": ""
+      },
+      {
+        "name": "getType",
+        "visibility": "public",
+        "static": "",
+        "returnType": "DimensionType",
+        "parameters": [],
+        "signature": "public DimensionType getType()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getValue",
+        "visibility": "public",
+        "static": "",
+        "returnType": "double",
+        "parameters": [],
+        "signature": "public double getValue()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getLabel",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String getLabel()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "setVisible",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "boolean",
+            "name": "visible",
+            "description": ""
+          }
+        ],
+        "signature": "public void setVisible(boolean visible)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "isVisible",
+        "visibility": "public",
+        "static": "",
+        "returnType": "boolean",
+        "parameters": [],
+        "signature": "public boolean isVisible()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getTextX",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getTextX()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getTextY",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getTextY()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getTextZ",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getTextZ()",
+        "description": "",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.core.CommandManager": {
+    "package": "cad.core",
+    "className": "CommandManager",
+    "file": "cad/core/CommandManager.java",
+    "constructors": [
+      {
+        "name": "CommandManager",
+        "visibility": "public",
+        "parameters": [],
+        "signature": "public CommandManager()"
+      }
+    ],
+    "methods": [
+      {
+        "name": "executeCommand",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Command",
+            "name": "cmd",
+            "description": "The command to execute"
+          }
+        ],
+        "signature": "public void executeCommand(Command cmd)",
+        "description": "Execute a command and add it to the undo history.",
+        "returns": ""
+      },
+      {
+        "name": "undo",
+        "visibility": "public",
+        "static": "",
+        "returnType": "boolean",
+        "parameters": [],
+        "signature": "public boolean undo()",
+        "description": "Undo the last command.",
+        "returns": "true if undo was successful, false if nothing to undo"
+      },
+      {
+        "name": "redo",
+        "visibility": "public",
+        "static": "",
+        "returnType": "boolean",
+        "parameters": [],
+        "signature": "public boolean redo()",
+        "description": "Redo the last undone command.",
+        "returns": "true if redo was successful, false if nothing to redo"
+      },
+      {
+        "name": "canUndo",
+        "visibility": "public",
+        "static": "",
+        "returnType": "boolean",
+        "parameters": [],
+        "signature": "public boolean canUndo()",
+        "description": "Check if undo is available.",
+        "returns": ""
+      },
+      {
+        "name": "canRedo",
+        "visibility": "public",
+        "static": "",
+        "returnType": "boolean",
+        "parameters": [],
+        "signature": "public boolean canRedo()",
+        "description": "Check if redo is available.",
+        "returns": ""
+      },
+      {
+        "name": "getUndoDescription",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String getUndoDescription()",
+        "description": "Get the description of the next undo command.",
+        "returns": ""
+      },
+      {
+        "name": "getRedoDescription",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String getRedoDescription()",
+        "description": "Get the description of the next redo command.",
+        "returns": ""
+      },
+      {
+        "name": "clearHistory",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void clearHistory()",
+        "description": "Clear all history.",
+        "returns": ""
+      },
+      {
+        "name": "getUndoCount",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [],
+        "signature": "public int getUndoCount()",
+        "description": "Get the number of commands in undo history.",
+        "returns": ""
+      },
+      {
+        "name": "getRedoCount",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [],
+        "signature": "public int getRedoCount()",
+        "description": "Get the number of commands in redo history.",
+        "returns": ""
+      },
+      {
+        "name": "addListener",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "CommandListener",
+            "name": "listener",
+            "description": ""
+          }
+        ],
+        "signature": "public void addListener(CommandListener listener)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "removeListener",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "CommandListener",
+            "name": "listener",
+            "description": ""
+          }
+        ],
+        "signature": "public void removeListener(CommandListener listener)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "notifyCommandExecuted",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Command",
+            "name": "cmd",
+            "description": ""
+          }
+        ],
+        "signature": "private void notifyCommandExecuted(Command cmd)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "notifyUndo",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Command",
+            "name": "cmd",
+            "description": ""
+          }
+        ],
+        "signature": "private void notifyUndo(Command cmd)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "notifyRedo",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Command",
+            "name": "cmd",
+            "description": ""
+          }
+        ],
+        "signature": "private void notifyRedo(Command cmd)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "notifyHistoryChanged",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void notifyHistoryChanged()",
+        "description": "",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.core.ConstraintSolver": {
+    "package": "cad.core",
+    "className": "ConstraintSolver",
+    "file": "cad/core/ConstraintSolver.java",
+    "constructors": [],
+    "methods": [
+      {
+        "name": "solve",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "boolean",
+        "parameters": [
+          {
+            "type": "List<Constraint>",
+            "name": "constraints",
+            "description": "The list of active constraints to solve."
+          }
+        ],
+        "signature": "public static boolean solve(List<Constraint> constraints)",
+        "description": "Solves the system of constraints for the given sketch.",
+        "returns": "true if solved (converged), false if max iterations reached."
+      }
+    ]
+  },
+  "cad.core.ConstraintType": {
+    "package": "cad.core",
+    "className": "ConstraintType",
+    "file": "cad/core/ConstraintType.java",
+    "constructors": [],
+    "methods": []
+  },
+  "cad.core.FixedConstraint": {
+    "package": "cad.core",
+    "className": "FixedConstraint",
+    "file": "cad/core/FixedConstraint.java",
+    "constructors": [
+      {
+        "name": "FixedConstraint",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "Point",
+            "name": "point"
+          }
+        ],
+        "signature": "public FixedConstraint(Point point)"
+      },
+      {
+        "name": "FixedConstraint",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "Point",
+            "name": "point"
+          },
+          {
+            "type": "float",
+            "name": "x"
+          },
+          {
+            "type": "float",
+            "name": "y"
+          }
+        ],
+        "signature": "public FixedConstraint(Point point, float x, float y)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "getError",
+        "visibility": "public",
+        "static": "",
+        "returnType": "double",
+        "parameters": [],
+        "signature": "public double getError()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "solve",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void solve()",
+        "description": "",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.core.Geometry": {
+    "package": "cad.core",
+    "className": "Geometry",
+    "file": "cad/core/Geometry.java",
+    "constructors": [],
+    "methods": [
+      {
+        "name": "getCurrentShape",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "Shape",
+        "parameters": [],
+        "signature": "public static Shape getCurrentShape()",
+        "description": "Gets the currently active shape type for rendering decisions.",
+        "returns": "Current Shape enum value"
+      },
+      {
+        "name": "getParam",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public static float getParam()",
+        "description": "Gets the size parameter of current shape (cube size or sphere radius).",
+        "returns": "Size/radius parameter value"
+      },
+      {
+        "name": "getLoadedStlTriangles",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "List<float[]>",
+        "parameters": [],
+        "signature": "public static List<float[]> getLoadedStlTriangles()",
+        "description": "Gets triangles from loaded STL file for rendering. v2y, v2z, v3x, v3y, v3z]",
+        "returns": "List of triangle arrays with format [nx, ny, nz, v1x, v1y, v1z, v2x,"
+      },
+      {
+        "name": "getExtrudedTriangles",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "List<float[]>",
+        "parameters": [],
+        "signature": "public static List<float[]> getExtrudedTriangles()",
+        "description": "Gets triangles from extruded sketch for rendering. v2y, v2z, v3x, v3y, v3z]",
+        "returns": "List of triangle arrays with format [nx, ny, nz, v1x, v1y, v1z, v2x,"
+      },
+      {
+        "name": "getModelMaxDimension",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public static float getModelMaxDimension()",
+        "description": "Calculates maximum dimension of current model for auto-scaling views.",
+        "returns": "Maximum width, height, or depth of the model"
+      },
+      {
+        "name": "synchronized",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "",
+        "parameters": [],
+        "signature": "package-private  synchronized()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "loadStl",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "List<float[]>",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "filename",
+            "description": "Path to STL file"
+          }
+        ],
+        "signature": "public static List<float[]> loadStl(String filename)",
+        "description": "Loads STL file and parses triangles into internal format. Sets current shape to STL_LOADED on success.",
+        "returns": ""
+      },
+      {
+        "name": "centerModel",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "centerX",
+            "description": "The X-coordinate of the model's current center"
+          },
+          {
+            "type": "float",
+            "name": "centerY",
+            "description": "The Y-coordinate of the model's current center"
+          },
+          {
+            "type": "float",
+            "name": "centerZ",
+            "description": "The Z-coordinate of the model's current center"
+          }
+        ],
+        "signature": "private static void centerModel(float centerX, float centerY, float centerZ)",
+        "description": "Centers the loaded STL model by translating all vertices so that the model's center becomes the origin (0, 0, 0). This ensures proper rotation around the center.",
+        "returns": ""
+      },
+      {
+        "name": "createCube",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "size",
+            "description": "Edge length of the cube (0.1-100.0)"
+          },
+          {
+            "type": "int",
+            "name": "divisions",
+            "description": "Number of subdivisions per edge (1-200)"
+          }
+        ],
+        "signature": "public static void createCube(float size, int divisions)",
+        "description": "Creates a procedural cube with specified size and subdivisions.",
+        "returns": ""
+      },
+      {
+        "name": "createSphere",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "radius",
+            "description": "Radius of the sphere (0.1-50.0)"
+          },
+          {
+            "type": "int",
+            "name": "divisions",
+            "description": "Number of latitude/longitude subdivisions (3-100)"
+          }
+        ],
+        "signature": "public static void createSphere(float radius, int divisions)",
+        "description": "Creates a procedural UV sphere with specified radius and subdivisions.",
+        "returns": ""
+      },
+      {
+        "name": "createSphere",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "radius",
+            "description": "Radius of the sphere (0.1-50.0)"
+          },
+          {
+            "type": "int",
+            "name": "latDiv",
+            "description": "Number of latitude subdivisions (3-100)"
+          },
+          {
+            "type": "int",
+            "name": "lonDiv",
+            "description": "Number of longitude subdivisions (3-100)"
+          }
+        ],
+        "signature": "public static void createSphere(float radius, int latDiv, int lonDiv)",
+        "description": "Creates a procedural UV sphere with specified radius and separate lat/lon subdivisions.",
+        "returns": ""
+      },
+      {
+        "name": "generateCubeTriangles",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "size",
+            "description": "The size of the cube's edge."
+          },
+          {
+            "type": "int",
+            "name": "divisions",
+            "description": "Number of subdivisions per edge."
+          }
+        ],
+        "signature": "private static void generateCubeTriangles(float size, int divisions)",
+        "description": "Generates triangle data for a cube centered at the origin and stores it in loadedStlTriangles. The cube extends from -size/2 to +size/2 in all dimensions.",
+        "returns": ""
+      },
+      {
+        "name": "generateSphereTriangles",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "radius",
+            "description": "Radius of the sphere."
+          },
+          {
+            "type": "int",
+            "name": "latDiv",
+            "description": "Number of latitude divisions."
+          },
+          {
+            "type": "int",
+            "name": "lonDiv",
+            "description": "Number of longitude divisions."
+          }
+        ],
+        "signature": "private static void generateSphereTriangles(float radius, int latDiv, int lonDiv)",
+        "description": "Generates triangle data for a sphere centered at the origin and stores it in loadedStlTriangles.",
+        "returns": ""
+      },
+      {
+        "name": "calculateTriangleNormal",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "float[]",
+        "parameters": [
+          {
+            "type": "Sketch.Point3D",
+            "name": "p1",
+            "description": "First vertex"
+          },
+          {
+            "type": "Sketch.Point3D",
+            "name": "p2",
+            "description": "Second vertex"
+          },
+          {
+            "type": "Sketch.Point3D",
+            "name": "p3",
+            "description": "Third vertex"
+          }
+        ],
+        "signature": "private static float[] calculateTriangleNormal(Sketch.Point3D p1, Sketch.Point3D p2, Sketch.Point3D p3)",
+        "description": "Calculates the normal vector for a triangle defined by three 3D points.",
+        "returns": "Normal vector as float array [nx, ny, nz]"
+      },
+      {
+        "name": "saveStl",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "filename",
+            "description": "Output file path"
+          }
+        ],
+        "signature": "public static void saveStl(String filename)",
+        "description": "Saves current geometry (cube, sphere, loaded STL, or extruded shapes) to STL file.",
+        "returns": ""
+      },
+      {
+        "name": "writeLoadedStlTriangles",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "PrintWriter",
+            "name": "out",
+            "description": "PrintWriter to write STL data."
+          }
+        ],
+        "signature": "private static void writeLoadedStlTriangles(PrintWriter out)",
+        "description": "Generates and writes STL facets for the current `loadedStlTriangles` data. This is used when saving a previously loaded STL file.",
+        "returns": ""
+      },
+      {
+        "name": "writeExtrudedSketchToStl",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "PrintWriter",
+            "name": "out",
+            "description": "PrintWriter to write STL data."
+          },
+          {
+            "type": "Sketch",
+            "name": "sketch",
+            "description": "The sketch containing extruded faces."
+          }
+        ],
+        "signature": "private static void writeExtrudedSketchToStl(PrintWriter out, Sketch sketch)",
+        "description": "Writes extruded sketch geometry directly to STL format. Takes the Face3D objects from the sketch and converts them to triangles.",
+        "returns": ""
+      },
+      {
+        "name": "generateCubeStl",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "PrintWriter",
+            "name": "out",
+            "description": "PrintWriter to write STL."
+          },
+          {
+            "type": "float",
+            "name": "size",
+            "description": "Edge length of the cube."
+          },
+          {
+            "type": "int",
+            "name": "divisions",
+            "description": "Number of subdivisions per edge."
+          }
+        ],
+        "signature": "private static void generateCubeStl(PrintWriter out, float size, int divisions)",
+        "description": "Generate STL triangles for a cube and write to output.",
+        "returns": ""
+      },
+      {
+        "name": "generateSphereStl",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "PrintWriter",
+            "name": "out",
+            "description": "PrintWriter to write STL."
+          },
+          {
+            "type": "float",
+            "name": "radius",
+            "description": "Sphere radius."
+          },
+          {
+            "type": "int",
+            "name": "latDiv",
+            "description": "Latitude subdivisions."
+          },
+          {
+            "type": "int",
+            "name": "lonDiv",
+            "description": "Longitude subdivisions."
+          }
+        ],
+        "signature": "private static void generateSphereStl(PrintWriter out, float radius, int latDiv, int lonDiv)",
+        "description": "Generate STL triangles for a sphere and write to output.",
+        "returns": ""
+      },
+      {
+        "name": "sph",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "float[]",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "r",
+            "description": "Radius of the sphere."
+          },
+          {
+            "type": "float",
+            "name": "theta",
+            "description": "Polar angle (latitude), from 0 (north pole) to PI (south pole)."
+          },
+          {
+            "type": "float",
+            "name": "phi",
+            "description": "Azimuthal angle (longitude), from 0 to 2*PI."
+          }
+        ],
+        "signature": "private static float[] sph(float r, float theta, float phi)",
+        "description": "Calculate Cartesian coordinates for a point on a sphere given spherical angles.",
+        "returns": "Cartesian coordinates as float array [x, y, z]."
+      },
+      {
+        "name": "writeTriangle",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "PrintWriter",
+            "name": "out",
+            "description": "PrintWriter to write STL."
+          },
+          {
+            "type": "float[]",
+            "name": "a",
+            "description": "Vertex A coordinates as float array [x, y, z]."
+          },
+          {
+            "type": "float[]",
+            "name": "b",
+            "description": "Vertex B coordinates as float array [x, y, z]."
+          },
+          {
+            "type": "float[]",
+            "name": "c",
+            "description": "Vertex C coordinates as float array [x, y, z]."
+          }
+        ],
+        "signature": "private static void writeTriangle(PrintWriter out, float[] a, float[] b, float[] c)",
+        "description": "Write a triangle facet to the STL file, computing its normal automatically. This method is used when generating new geometry (e.g., cube, sphere).",
+        "returns": ""
+      },
+      {
+        "name": "drawCurrentShape",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": "The GL2 object (OpenGL context) used for drawing."
+          }
+        ],
+        "signature": "public static void drawCurrentShape(GL2 gl)",
+        "description": "Draws the currently selected 3D shape using OpenGL. This method is called by JOGLCadCanvas's display method. It handles drawing of cubes, spheres, loaded STL models, and extruded sketches.",
+        "returns": ""
+      },
+      {
+        "name": "drawCube",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": "The GL2 object."
+          },
+          {
+            "type": "float",
+            "name": "size",
+            "description": "Edge length of the cube."
+          },
+          {
+            "type": "int",
+            "name": "divisions",
+            "description": "Number of subdivisions per edge (for finer detail, though"
+          }
+        ],
+        "signature": "public static void drawCube(GL2 gl, float size, int divisions)",
+        "description": "Draws a cube using OpenGL. Vertices and normals are calculated on the fly. For high performance with many cubes, consider using VBOs. simple cube just draws 6 faces).",
+        "returns": ""
+      },
+      {
+        "name": "drawSphere",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": "The GL2 object."
+          },
+          {
+            "type": "float",
+            "name": "radius",
+            "description": "Radius of the sphere."
+          },
+          {
+            "type": "int",
+            "name": "latDiv",
+            "description": "Number of latitude subdivisions."
+          },
+          {
+            "type": "int",
+            "name": "lonDiv",
+            "description": "Number of longitude subdivisions."
+          }
+        ],
+        "signature": "public static void drawSphere(GL2 gl, float radius, int latDiv, int lonDiv)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "drawLoadedStl",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": "The GL2 object."
+          }
+        ],
+        "signature": "public static void drawLoadedStl(GL2 gl)",
+        "description": "This uses immediate mode (`glBegin`/`glEnd`), which is simple but less performant for very large models compared to Vertex Buffer Objects (VBOs).",
+        "returns": ""
+      },
+      {
+        "name": "calculateCentroid",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "float[]",
+        "parameters": [],
+        "signature": "public static float[] calculateCentroid()",
+        "description": "Calculates the Center of Gravity (Volumetric Centroid) of the loaded 3D model. Uses the signed volume of tetrahedrons method.",
+        "returns": "float array [x, y, z] representing the CG coordinates."
+      },
+      {
+        "name": "revolve",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Sketch",
+            "name": "sketch",
+            "description": "The sketch containing the profile to revolve."
+          },
+          {
+            "type": "float",
+            "name": "angleDegrees",
+            "description": "Angle to revolve (e.g., 360)."
+          },
+          {
+            "type": "int",
+            "name": "steps",
+            "description": "Number of steps for the revolution."
+          }
+        ],
+        "signature": "public static void revolve(Sketch sketch, float angleDegrees, int steps)",
+        "description": "Revolves a 2D sketch around the Y-axis to create a 3D mesh.",
+        "returns": ""
+      },
+      {
+        "name": "rotateY",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "float[]",
+        "parameters": [
+          {
+            "type": "Sketch.PointEntity",
+            "name": "p",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "theta",
+            "description": ""
+          }
+        ],
+        "signature": "private static float[] rotateY(Sketch.PointEntity p, float theta)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "addTriangleToExtruded",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float[]",
+            "name": "v1",
+            "description": ""
+          },
+          {
+            "type": "float[]",
+            "name": "v2",
+            "description": ""
+          },
+          {
+            "type": "float[]",
+            "name": "v3",
+            "description": ""
+          }
+        ],
+        "signature": "private static void addTriangleToExtruded(float[] v1, float[] v2, float[] v3)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "loft",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Sketch",
+            "name": "sketch",
+            "description": "The sketch containing profiles."
+          },
+          {
+            "type": "float",
+            "name": "height",
+            "description": "The height difference between the two profiles."
+          }
+        ],
+        "signature": "public static void loft(Sketch sketch, float height)",
+        "description": "Lofts between the first two polygons in the sketch over a specified height.",
+        "returns": ""
+      },
+      {
+        "name": "calculateSurfaceArea",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public static float calculateSurfaceArea()",
+        "description": "Calculates the total surface area of the current model.",
+        "returns": "Surface area in square units."
+      },
+      {
+        "name": "calculateVolume",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public static float calculateVolume()",
+        "description": "Calculates the volume of the current model using the divergence theorem. Assumes a closed, watertight mesh.",
+        "returns": "Volume in cubic units."
+      },
+      {
+        "name": "getActiveTriangles",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "List<float[]>",
+        "parameters": [],
+        "signature": "private static List<float[]> getActiveTriangles()",
+        "description": "Helper to get the currently active list of triangles.",
+        "returns": ""
+      },
+      {
+        "name": "pickFace",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "float[]",
+        "parameters": [
+          {
+            "type": "float[]",
+            "name": "rayOrigin",
+            "description": "Origin of the ray (camera position)."
+          },
+          {
+            "type": "float[]",
+            "name": "rayDir",
+            "description": "Normalized direction of the ray."
+          }
+        ],
+        "signature": "public static float[] pickFace(float[] rayOrigin, float[] rayDir)",
+        "description": "Casts a ray into the scene and finds the closest intersected triangle.",
+        "returns": "The data of the closest triangle, or null if no hit."
+      },
+      {
+        "name": "calculateTriangleArea",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "float",
+        "parameters": [
+          {
+            "type": "float[]",
+            "name": "tri",
+            "description": ""
+          }
+        ],
+        "signature": "public static float calculateTriangleArea(float[] tri)",
+        "description": "Calculates the area of a triangle in 3D.",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.core.HorizontalConstraint": {
+    "package": "cad.core",
+    "className": "HorizontalConstraint",
+    "file": "cad/core/HorizontalConstraint.java",
+    "constructors": [
+      {
+        "name": "HorizontalConstraint",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "Point",
+            "name": "p1"
+          },
+          {
+            "type": "Point",
+            "name": "p2"
+          }
+        ],
+        "signature": "public HorizontalConstraint(Point p1, Point p2)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "getError",
+        "visibility": "public",
+        "static": "",
+        "returnType": "double",
+        "parameters": [],
+        "signature": "public double getError()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "solve",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void solve()",
+        "description": "",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.core.LinearDimension": {
+    "package": "cad.core",
+    "className": "LinearDimension",
+    "file": "cad/core/LinearDimension.java",
+    "constructors": [
+      {
+        "name": "LinearDimension",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x1"
+          },
+          {
+            "type": "float",
+            "name": "y1"
+          },
+          {
+            "type": "float",
+            "name": "x2"
+          },
+          {
+            "type": "float",
+            "name": "y2"
+          },
+          {
+            "type": "String",
+            "name": "unit"
+          }
+        ],
+        "signature": "public LinearDimension(float x1, float y1, float x2, float y2, String unit)"
+      },
+      {
+        "name": "LinearDimension",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x1"
+          },
+          {
+            "type": "float",
+            "name": "y1"
+          },
+          {
+            "type": "float",
+            "name": "z1"
+          },
+          {
+            "type": "float",
+            "name": "x2"
+          },
+          {
+            "type": "float",
+            "name": "y2"
+          },
+          {
+            "type": "float",
+            "name": "z2"
+          },
+          {
+            "type": "String",
+            "name": "unit"
+          }
+        ],
+        "signature": "public LinearDimension(float x1, float y1, float z1, float x2, float y2, float z2, String unit)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "calculatePosition",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void calculatePosition()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "draw",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": ""
+          }
+        ],
+        "signature": "public void draw(GL2 gl)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "setOffsetDistance",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "offset",
+            "description": ""
+          }
+        ],
+        "signature": "public void setOffsetDistance(float offset)",
+        "description": "",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.core.Point": {
+    "package": "cad.core",
+    "className": "Point",
+    "file": "cad/core/Point.java",
+    "constructors": [
+      {
+        "name": "Point",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x"
+          },
+          {
+            "type": "float",
+            "name": "y"
+          }
+        ],
+        "signature": "public Point(float x, float y)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "set",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x",
+            "description": "New x-coordinate"
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": "New y-coordinate"
+          }
+        ],
+        "signature": "public void set(float x, float y)",
+        "description": "Updates the position of this point. Used by the ConstraintSolver.",
+        "returns": ""
+      },
+      {
+        "name": "move",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "double",
+            "name": "x",
+            "description": "New x-coordinate"
+          },
+          {
+            "type": "double",
+            "name": "y",
+            "description": "New y-coordinate"
+          }
+        ],
+        "signature": "public void move(double x, double y)",
+        "description": "Moves the point to the specified coordinates. Alias for set(x, y).",
+        "returns": ""
+      },
+      {
+        "name": "equals",
+        "visibility": "public",
+        "static": "",
+        "returnType": "boolean",
+        "parameters": [
+          {
+            "type": "Object",
+            "name": "obj",
+            "description": "The object to compare"
+          }
+        ],
+        "signature": "public boolean equals(Object obj)",
+        "description": "Checks whether another object is equal to this point. Uses a small epsilon for floating-point comparison.",
+        "returns": "true if obj is a Point with approximately equal coordinates"
+      },
+      {
+        "name": "hashCode",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [],
+        "signature": "public int hashCode()",
+        "description": "Generates a hash code based on the x and y coordinates.",
+        "returns": "The hash code"
+      },
+      {
+        "name": "toString",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String toString()",
+        "description": "Returns a string representation of the point in (x, y) format.",
+        "returns": "Formatted string of the point"
+      }
+    ]
+  },
+  "cad.core.PointEntity": {
+    "package": "cad.core",
+    "className": "PointEntity",
+    "file": "cad/core/PointEntity.java",
+    "constructors": [
+      {
+        "name": "PointEntity",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x"
+          },
+          {
+            "type": "float",
+            "name": "y"
+          }
+        ],
+        "signature": "public PointEntity(float x, float y)"
+      },
+      {
+        "name": "PointEntity",
+        "visibility": "package-private",
+        "parameters": [
+          {
+            "type": "y)\n     */\n    @Override\n    public String",
+            "name": "toString("
+          }
+        ],
+        "signature": "package-private PointEntity(y)\n     */\n    @Override\n    public String toString()"
+      }
+    ],
+    "methods": [
+      {
+        "name": "toString",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String toString()",
+        "description": "Returns a string representation of the PointEntity.",
+        "returns": "A string in the format PointEntity(x, y)"
+      }
+    ]
+  },
+  "cad.core.RadialDimension": {
+    "package": "cad.core",
+    "className": "RadialDimension",
+    "file": "cad/core/RadialDimension.java",
+    "constructors": [
+      {
+        "name": "RadialDimension",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "centerX"
+          },
+          {
+            "type": "float",
+            "name": "centerY"
+          },
+          {
+            "type": "float",
+            "name": "radius"
+          },
+          {
+            "type": "boolean",
+            "name": "showDiameter"
+          },
+          {
+            "type": "String",
+            "name": "unit"
+          }
+        ],
+        "signature": "public RadialDimension(float centerX, float centerY, float radius, boolean showDiameter, String unit)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "calculatePosition",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void calculatePosition()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "draw",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": ""
+          }
+        ],
+        "signature": "public void draw(GL2 gl)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getLabel",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String getLabel()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "setAngle",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "angle",
+            "description": "Angle in degrees (0-360)"
+          }
+        ],
+        "signature": "public void setAngle(float angle)",
+        "description": "Set the angle for dimension line placement",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.core.Sketch": {
+    "package": "cad.core",
+    "className": "Sketch",
+    "file": "cad/core/Sketch.java",
+    "constructors": [],
+    "methods": [
+      {
+        "name": "PointEntity",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "public",
+        "parameters": [
+          {
+            "type": "Point",
+            "name": "p",
+            "description": ""
+          }
+        ],
+        "signature": "package-private public PointEntity(Point p)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "PointEntity",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "public",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": ""
+          }
+        ],
+        "signature": "package-private public PointEntity(float x, float y)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getX",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getX()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getY",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getY()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getPoint",
+        "visibility": "public",
+        "static": "",
+        "returnType": "Point",
+        "parameters": [],
+        "signature": "public Point getPoint()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "setPoint",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": ""
+          }
+        ],
+        "signature": "public void setPoint(float x, float y)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "toString",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String toString()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "Line",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "public",
+        "parameters": [
+          {
+            "type": "Point",
+            "name": "start",
+            "description": ""
+          },
+          {
+            "type": "Point",
+            "name": "end",
+            "description": ""
+          }
+        ],
+        "signature": "package-private public Line(Point start, Point end)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "Line",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "public",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x1",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y1",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "x2",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y2",
+            "description": ""
+          }
+        ],
+        "signature": "package-private public Line(float x1, float y1, float x2, float y2)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getStartPoint",
+        "visibility": "public",
+        "static": "",
+        "returnType": "Point",
+        "parameters": [],
+        "signature": "public Point getStartPoint()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getEndPoint",
+        "visibility": "public",
+        "static": "",
+        "returnType": "Point",
+        "parameters": [],
+        "signature": "public Point getEndPoint()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getX1",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getX1()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getY1",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getY1()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getX2",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getX2()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getY2",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getY2()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "setStart",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": ""
+          }
+        ],
+        "signature": "public void setStart(float x, float y)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "setEnd",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": ""
+          }
+        ],
+        "signature": "public void setEnd(float x, float y)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "toString",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String toString()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "Circle",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "public",
+        "parameters": [
+          {
+            "type": "Point",
+            "name": "center",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "r",
+            "description": ""
+          }
+        ],
+        "signature": "package-private public Circle(Point center, float r)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "Circle",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "public",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "r",
+            "description": ""
+          }
+        ],
+        "signature": "package-private public Circle(float x, float y, float r)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getCenterPoint",
+        "visibility": "public",
+        "static": "",
+        "returnType": "Point",
+        "parameters": [],
+        "signature": "public Point getCenterPoint()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getX",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getX()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getY",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getY()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getRadius",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getRadius()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "setCenter",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": ""
+          }
+        ],
+        "signature": "public void setCenter(float x, float y)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "setRadius",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "r",
+            "description": ""
+          }
+        ],
+        "signature": "public void setRadius(float r)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "toString",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String toString()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "Polygon",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "public",
+        "parameters": [
+          {
+            "type": "List<PointEntity>",
+            "name": "points",
+            "description": ""
+          }
+        ],
+        "signature": "package-private public Polygon(List<PointEntity> points)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "toString",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String toString()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getPoints",
+        "visibility": "public",
+        "static": "",
+        "returnType": "List<Point2D>",
+        "parameters": [],
+        "signature": "public List<Point2D> getPoints()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getSketchPoints",
+        "visibility": "public",
+        "static": "",
+        "returnType": "List<PointEntity>",
+        "parameters": [],
+        "signature": "public List<PointEntity> getSketchPoints()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "Point2D",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "public",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": ""
+          }
+        ],
+        "signature": "package-private public Point2D(float x, float y)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getX",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getX()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getY",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getY()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "Point3D",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "public",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "z",
+            "description": ""
+          }
+        ],
+        "signature": "package-private public Point3D(float x, float y, float z)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getX",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getX()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getY",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getY()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getZ",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getZ()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "Face3D",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "public",
+        "parameters": [
+          {
+            "type": "Point3D",
+            "name": "p1",
+            "description": ""
+          },
+          {
+            "type": "Point3D",
+            "name": "p2",
+            "description": ""
+          },
+          {
+            "type": "Point3D",
+            "name": "p3",
+            "description": ""
+          },
+          {
+            "type": "Point3D",
+            "name": "p4",
+            "description": ""
+          }
+        ],
+        "signature": "package-private public Face3D(Point3D p1, Point3D p2, Point3D p3, Point3D p4)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "Face3D",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "public",
+        "parameters": [
+          {
+            "type": "List<Point3D>",
+            "name": "vertices",
+            "description": ""
+          }
+        ],
+        "signature": "package-private public Face3D(List<Point3D> vertices)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getVertices",
+        "visibility": "public",
+        "static": "",
+        "returnType": "List<Point3D>",
+        "parameters": [],
+        "signature": "public List<Point3D> getVertices()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "setVertexNormals",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "List<float[]>",
+            "name": "normals",
+            "description": ""
+          }
+        ],
+        "signature": "public void setVertexNormals(List<float[]> normals)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getVertexNormals",
+        "visibility": "public",
+        "static": "",
+        "returnType": "List<float[]>",
+        "parameters": [],
+        "signature": "public List<float[]> getVertexNormals()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "computePerVertexNormals",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void computePerVertexNormals()",
+        "description": "Computes per-vertex normals for all extruded faces (for smooth shading). This method should be called after extrusion and before uploading to VBOManager. It averages the normals of all faces sharing a vertex.",
+        "returns": ""
+      },
+      {
+        "name": "addConstraint",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Constraint",
+            "name": "c",
+            "description": ""
+          }
+        ],
+        "signature": "public void addConstraint(Constraint c)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "solveConstraints",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void solveConstraints()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getConstraints",
+        "visibility": "public",
+        "static": "",
+        "returnType": "List<Constraint>",
+        "parameters": [],
+        "signature": "public List<Constraint> getConstraints()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "removeConstraint",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Constraint",
+            "name": "c",
+            "description": ""
+          }
+        ],
+        "signature": "public void removeConstraint(Constraint c)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "addEntity",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Entity",
+            "name": "e",
+            "description": ""
+          }
+        ],
+        "signature": "public void addEntity(Entity e)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "addPoint",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x",
+            "description": "X-coordinate of the point."
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": "Y-coordinate of the point."
+          }
+        ],
+        "signature": "public int addPoint(float x, float y)",
+        "description": "Adds a point entity to the sketch.",
+        "returns": "0 on success, 1 if sketch buffer is full."
+      },
+      {
+        "name": "addLine",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x1",
+            "description": "X-coordinate of the start point."
+          },
+          {
+            "type": "float",
+            "name": "y1",
+            "description": "Y-coordinate of the start point."
+          },
+          {
+            "type": "float",
+            "name": "x2",
+            "description": "X-coordinate of the end point."
+          },
+          {
+            "type": "float",
+            "name": "y2",
+            "description": "Y-coordinate of the end point."
+          }
+        ],
+        "signature": "public int addLine(float x1, float y1, float x2, float y2)",
+        "description": "Adds a line entity to the sketch.",
+        "returns": "0 on success, 1 if sketch buffer is full."
+      },
+      {
+        "name": "addCircle",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x",
+            "description": "X-coordinate of the center."
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": "Y-coordinate of the center."
+          },
+          {
+            "type": "float",
+            "name": "r",
+            "description": "Radius of the circle."
+          }
+        ],
+        "signature": "public int addCircle(float x, float y, float r)",
+        "description": "Adds a circle entity to the sketch.",
+        "returns": "0 on success, 1 if sketch buffer is full."
+      },
+      {
+        "name": "addPolygon",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [
+          {
+            "type": "List<PointEntity>",
+            "name": "points",
+            "description": "List of PointEntity forming the polygon."
+          }
+        ],
+        "signature": "public int addPolygon(List<PointEntity> points)",
+        "description": "Adds a polygon entity to the sketch from a list of points.",
+        "returns": "0 on success, 1 if sketch buffer is full or invalid points."
+      },
+      {
+        "name": "addNSidedPolygon",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "centerX",
+            "description": "X-coordinate of the polygon's center."
+          },
+          {
+            "type": "float",
+            "name": "centerY",
+            "description": "Y-coordinate of the polygon's center."
+          },
+          {
+            "type": "float",
+            "name": "radius",
+            "description": "Radius of the circumcircle."
+          },
+          {
+            "type": "int",
+            "name": "sides",
+            "description": "Number of sides (3-25)."
+          }
+        ],
+        "signature": "public int addNSidedPolygon(float centerX, float centerY, float radius, int sides)",
+        "description": "Adds an N-sided regular polygon to the sketch.",
+        "returns": "0 on success, 1 on error."
+      },
+      {
+        "name": "addKite",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "centerX",
+            "description": "X-coordinate of the kite's center."
+          },
+          {
+            "type": "float",
+            "name": "centerY",
+            "description": "Y-coordinate of the kite's center."
+          },
+          {
+            "type": "float",
+            "name": "mainDiagonal",
+            "description": "Length of the main (vertical) diagonal."
+          },
+          {
+            "type": "float",
+            "name": "crossDiagonal",
+            "description": "Length of the cross (horizontal) diagonal."
+          },
+          {
+            "type": "float",
+            "name": "angleDegrees",
+            "description": "Angle (in degrees) of the main diagonal with respect to"
+          }
+        ],
+        "signature": "public int addKite(float centerX, float centerY, float mainDiagonal, float crossDiagonal, float angleDegrees)",
+        "description": "the X-axis.",
+        "returns": "0 on success, 1 on error."
+      },
+      {
+        "name": "clearSketch",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void clearSketch()",
+        "description": "Clears all entities from the sketch.",
+        "returns": ""
+      },
+      {
+        "name": "listSketch",
+        "visibility": "public",
+        "static": "",
+        "returnType": "List<String>",
+        "parameters": [],
+        "signature": "public List<String> listSketch()",
+        "description": "Returns a list of string representations of all entities in the sketch.",
+        "returns": "List of strings describing each sketch entity."
+      },
+      {
+        "name": "getEntities",
+        "visibility": "public",
+        "static": "",
+        "returnType": "List<Entity>",
+        "parameters": [],
+        "signature": "public List<Entity> getEntities()",
+        "description": "Gets all entities in the sketch.",
+        "returns": "List of all sketch entities."
+      },
+      {
+        "name": "removeEntity",
+        "visibility": "public",
+        "static": "",
+        "returnType": "boolean",
+        "parameters": [
+          {
+            "type": "Entity",
+            "name": "entity",
+            "description": "The entity to remove"
+          }
+        ],
+        "signature": "public boolean removeEntity(Entity entity)",
+        "description": "Removes an entity from the sketch. Used for undo operations.",
+        "returns": "true if removed, false if not found"
+      },
+      {
+        "name": "isClosedLoop",
+        "visibility": "public",
+        "static": "",
+        "returnType": "boolean",
+        "parameters": [],
+        "signature": "public boolean isClosedLoop()",
+        "description": "Checks if the sketch contains extrudable shapes. Extrudable shapes include polygons and circles. false otherwise.",
+        "returns": "true if sketch contains extrudable shapes (polygons or circles),"
+      },
+      {
+        "name": "setUnitSystem",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "UnitSystem",
+            "name": "unitSystem",
+            "description": "The new unit system."
+          }
+        ],
+        "signature": "public void setUnitSystem(UnitSystem unitSystem)",
+        "description": "Sets the unit system for the sketch.",
+        "returns": ""
+      },
+      {
+        "name": "getUnitSystem",
+        "visibility": "public",
+        "static": "",
+        "returnType": "UnitSystem",
+        "parameters": [],
+        "signature": "public UnitSystem getUnitSystem()",
+        "description": "Gets the current unit system.",
+        "returns": "Current UnitSystem."
+      },
+      {
+        "name": "getUnitsFromDXFCode",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "String",
+        "parameters": [
+          {
+            "type": "int",
+            "name": "code",
+            "description": "The DXF unit code."
+          }
+        ],
+        "signature": "private static String getUnitsFromDXFCode(int code)",
+        "description": "Converts a DXF unit code to its corresponding unit string.",
+        "returns": "The unit string."
+      },
+      {
+        "name": "exportSketchToDXF",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "filename",
+            "description": "Path to the output DXF file."
+          }
+        ],
+        "signature": "public void exportSketchToDXF(String filename)",
+        "description": "Exports the current sketch to a DXF file. It writes HEADER and ENTITIES sections, including unit information.",
+        "returns": ""
+      },
+      {
+        "name": "sketchPoint",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "params",
+            "description": "String array of parameters (x, y)."
+          }
+        ],
+        "signature": "public int sketchPoint(String[] params)",
+        "description": "Parses parameters for adding a point from command-line like input.",
+        "returns": "0 on success, 1 on error."
+      },
+      {
+        "name": "sketchLine",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "params",
+            "description": "String array of parameters (x1, y1, x2, y2)."
+          }
+        ],
+        "signature": "public int sketchLine(String[] params)",
+        "description": "Parses parameters for adding a line from command-line like input.",
+        "returns": "0 on success, 1 on error."
+      },
+      {
+        "name": "sketchCircle",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "params",
+            "description": "String array of parameters (x, y, r)."
+          }
+        ],
+        "signature": "public int sketchCircle(String[] params)",
+        "description": "Parses parameters for adding a circle from command-line like input.",
+        "returns": "0 on success, 1 on error."
+      },
+      {
+        "name": "sketchPolygon",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x",
+            "description": "X-coordinate of the center."
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": "Y-coordinate of the center."
+          },
+          {
+            "type": "float",
+            "name": "radius",
+            "description": "Radius of the circumcircle."
+          },
+          {
+            "type": "int",
+            "name": "sides",
+            "description": "Number of sides (3-25)."
+          }
+        ],
+        "signature": "public int sketchPolygon(float x, float y, float radius, int sides)",
+        "description": "Adds an N-sided polygon to the sketch based on provided parameters. This method directly accepts float coordinates and int sides.",
+        "returns": "0 on success, 1 on error."
+      },
+      {
+        "name": "loadDXF",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "filename",
+            "description": "Path to the DXF file to load."
+          }
+        ],
+        "signature": "public void loadDXF(String filename)",
+        "description": "Loads a DXF file, parses its header for units, and then its ENTITIES section to populate the sketch with points, lines, circles, and polylines. Includes robust error handling and unit scaling.",
+        "returns": ""
+      },
+      {
+        "name": "unitScaleFactor",
+        "visibility": "private",
+        "static": "",
+        "returnType": "float",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "unitStr",
+            "description": "The unit string from DXF header."
+          }
+        ],
+        "signature": "private float unitScaleFactor(String unitStr)",
+        "description": "Provides a scaling factor to convert DXF units to an internal standard unit (e.g., millimeters).",
+        "returns": "The conversion factor."
+      },
+      {
+        "name": "draw3D",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": "The GL2 object (OpenGL context) used for drawing."
+          }
+        ],
+        "signature": "public void draw3D(GL2 gl)",
+        "description": "Renders extruded 3D faces using OpenGL. This method renders the 3D geometry created by the extrude operation. It converts Face3D objects to triangles and renders them with proper lighting.",
+        "returns": ""
+      },
+      {
+        "name": "renderFace3D",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": "The GL2 object for OpenGL rendering."
+          },
+          {
+            "type": "Face3D",
+            "name": "face",
+            "description": "The Face3D object to render."
+          }
+        ],
+        "signature": "private void renderFace3D(GL2 gl, Face3D face)",
+        "description": "Renders a single Face3D object as triangles. Uses triangle fan tessellation for faces with more than 3 vertices.",
+        "returns": ""
+      },
+      {
+        "name": "calculateFaceNormal",
+        "visibility": "private",
+        "static": "",
+        "returnType": "float[]",
+        "parameters": [
+          {
+            "type": "Point3D",
+            "name": "p1",
+            "description": "First vertex of the triangle."
+          },
+          {
+            "type": "Point3D",
+            "name": "p2",
+            "description": "Second vertex of the triangle."
+          },
+          {
+            "type": "Point3D",
+            "name": "p3",
+            "description": "Third vertex of the triangle."
+          }
+        ],
+        "signature": "private float[] calculateFaceNormal(Point3D p1, Point3D p2, Point3D p3)",
+        "description": "Calculates the normal vector for a triangular face defined by three 3D points. Uses the cross product of two edge vectors.",
+        "returns": "Normal vector as a float array [nx, ny, nz]."
+      },
+      {
+        "name": "draw",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": "The GL2 object (OpenGL context) used for drawing."
+          }
+        ],
+        "signature": "public void draw(GL2 gl)",
+        "description": "Renders all entities in the sketch using OpenGL. This method is designed to be called by JOGLCadCanvas's `display` method when the 2D sketch view is active. It iterates through the `sketchEntities` list and uses OpenGL primitives to draw each type of entity.",
+        "returns": ""
+      },
+      {
+        "name": "findClosestEntity",
+        "visibility": "public",
+        "static": "",
+        "returnType": "Entity",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x",
+            "description": "Target X coordinate"
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": "Target Y coordinate"
+          },
+          {
+            "type": "float",
+            "name": "threshold",
+            "description": "Maximum distance to consider"
+          }
+        ],
+        "signature": "public Entity findClosestEntity(float x, float y, float threshold)",
+        "description": "Finds the closest sketch entity to a given point within a threshold. Used for entity selection when dimensioning.",
+        "returns": "The closest entity, or null if none within threshold"
+      },
+      {
+        "name": "calculateDistanceToEntity",
+        "visibility": "private",
+        "static": "",
+        "returnType": "float",
+        "parameters": [
+          {
+            "type": "Entity",
+            "name": "entity",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "x",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": ""
+          }
+        ],
+        "signature": "private float calculateDistanceToEntity(Entity entity, float x, float y)",
+        "description": "Calculates the distance from a point to an entity.",
+        "returns": ""
+      },
+      {
+        "name": "distanceToLineSegment",
+        "visibility": "private",
+        "static": "",
+        "returnType": "float",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "px",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "py",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "x1",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y1",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "x2",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y2",
+            "description": ""
+          }
+        ],
+        "signature": "private float distanceToLineSegment(float px, float py, float x1, float y1, float x2, float y2)",
+        "description": "Calculates distance from a point to a line segment.",
+        "returns": ""
+      },
+      {
+        "name": "createDimensionFor",
+        "visibility": "public",
+        "static": "",
+        "returnType": "Dimension",
+        "parameters": [
+          {
+            "type": "Entity",
+            "name": "entity",
+            "description": "The entity to dimension"
+          }
+        ],
+        "signature": "public Dimension createDimensionFor(Entity entity)",
+        "description": "Creates an appropriate dimension for the given entity.",
+        "returns": "A dimension object, or null if entity type not supported"
+      },
+      {
+        "name": "addDimension",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Dimension",
+            "name": "dim",
+            "description": ""
+          }
+        ],
+        "signature": "public void addDimension(Dimension dim)",
+        "description": "Adds a dimension to the sketch.",
+        "returns": ""
+      },
+      {
+        "name": "removeDimension",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Dimension",
+            "name": "dim",
+            "description": ""
+          }
+        ],
+        "signature": "public void removeDimension(Dimension dim)",
+        "description": "Removes a dimension from the sketch.",
+        "returns": ""
+      },
+      {
+        "name": "getDimensions",
+        "visibility": "public",
+        "static": "",
+        "returnType": "List<Dimension>",
+        "parameters": [],
+        "signature": "public List<Dimension> getDimensions()",
+        "description": "Gets all dimensions in the sketch.",
+        "returns": ""
+      },
+      {
+        "name": "clearDimensions",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void clearDimensions()",
+        "description": "Clears all dimensions from the sketch.",
+        "returns": ""
+      },
+      {
+        "name": "extrude",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "double",
+            "name": "height",
+            "description": "The height of the extrusion in the Z direction."
+          }
+        ],
+        "signature": "public void extrude(double height)",
+        "description": "Extrudes all closed shapes in the sketch to create 3D faces. Handles polygons, circles, and potentially connected line loops. Creates side faces, top faces, and bottom faces for each extrudable shape.",
+        "returns": ""
+      },
+      {
+        "name": "extrudePolygon",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Polygon",
+            "name": "polygon",
+            "description": "The polygon to extrude"
+          },
+          {
+            "type": "double",
+            "name": "height",
+            "description": "The extrusion height"
+          }
+        ],
+        "signature": "private void extrudePolygon(Polygon polygon, double height)",
+        "description": "Extrudes a single polygon to create 3D faces.",
+        "returns": ""
+      },
+      {
+        "name": "extrudeCircle",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Circle",
+            "name": "circle",
+            "description": "The circle to extrude"
+          },
+          {
+            "type": "double",
+            "name": "height",
+            "description": "The extrusion height"
+          }
+        ],
+        "signature": "private void extrudeCircle(Circle circle, double height)",
+        "description": "Extrudes a circle to create a cylindrical shape.",
+        "returns": ""
+      },
+      {
+        "name": "findClosedLoopsFromLines",
+        "visibility": "private",
+        "static": "",
+        "returnType": "List<List<Point2D>>",
+        "parameters": [],
+        "signature": "private List<List<Point2D>> findClosedLoopsFromLines()",
+        "description": "Finds closed loops formed by connected lines in the sketch. This method analyzes all Line entities and attempts to find sequences of connected lines that form closed polygonal shapes.",
+        "returns": "A list of closed loops, where each loop is a list of points"
+      },
+      {
+        "name": "isPointsEqual",
+        "visibility": "private",
+        "static": "",
+        "returnType": "boolean",
+        "parameters": [
+          {
+            "type": "Point2D",
+            "name": "p1",
+            "description": "First point"
+          },
+          {
+            "type": "Point2D",
+            "name": "p2",
+            "description": "Second point"
+          }
+        ],
+        "signature": "private boolean isPointsEqual(Point2D p1, Point2D p2)",
+        "description": "Helper method to check if two points are equal within a small tolerance.",
+        "returns": "true if points are equal within tolerance"
+      },
+      {
+        "name": "extrudeClosedLoop",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "List<Point2D>",
+            "name": "loop",
+            "description": "The closed loop of points to extrude"
+          },
+          {
+            "type": "double",
+            "name": "height",
+            "description": "The extrusion height"
+          }
+        ],
+        "signature": "private void extrudeClosedLoop(List<Point2D> loop, double height)",
+        "description": "Extrudes a closed loop of points to create 3D faces. This method treats the loop as a polygon and creates the corresponding 3D geometry including side faces, top face, and bottom face.",
+        "returns": ""
+      },
+      {
+        "name": "getExtrudedTriangles",
+        "visibility": "public",
+        "static": "",
+        "returnType": "List<float[]>",
+        "parameters": [],
+        "signature": "public List<float[]> getExtrudedTriangles()",
+        "description": "Converts extruded 3D faces to triangles for OpenGL rendering. Each face is triangulated and returned as an array of float values compatible with STL triangle format (normal + 3 vertices).",
+        "returns": "List of triangle arrays for OpenGL rendering"
+      },
+      {
+        "name": "triangulateFace",
+        "visibility": "private",
+        "static": "",
+        "returnType": "List<float[]>",
+        "parameters": [
+          {
+            "type": "Face3D",
+            "name": "face",
+            "description": "The face to triangulate"
+          }
+        ],
+        "signature": "private List<float[]> triangulateFace(Face3D face)",
+        "description": "Triangulates a 3D face into triangles for rendering. Uses fan triangulation for faces with more than 3 vertices.",
+        "returns": "List of triangles representing the face"
+      },
+      {
+        "name": "createTriangle",
+        "visibility": "private",
+        "static": "",
+        "returnType": "float[]",
+        "parameters": [
+          {
+            "type": "Point3D",
+            "name": "p1",
+            "description": "First vertex"
+          },
+          {
+            "type": "Point3D",
+            "name": "p2",
+            "description": "Second vertex"
+          },
+          {
+            "type": "Point3D",
+            "name": "p3",
+            "description": "Third vertex"
+          }
+        ],
+        "signature": "private float[] createTriangle(Point3D p1, Point3D p2, Point3D p3)",
+        "description": "Creates a triangle array from three 3D points. Calculates the normal vector and formats as STL triangle.",
+        "returns": "Triangle array [nx, ny, nz, x1, y1, z1, x2, y2, z2, x3, y3, z3]"
+      },
+      {
+        "name": "getPolygons",
+        "visibility": "public",
+        "static": "",
+        "returnType": "List<Polygon>",
+        "parameters": [],
+        "signature": "public List<Polygon> getPolygons()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "generateNaca4",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "digit4",
+            "description": "4-digit NACA code string (e.g., \"2412\")."
+          },
+          {
+            "type": "float",
+            "name": "chord",
+            "description": "Chord length."
+          },
+          {
+            "type": "int",
+            "name": "pointsPerSide",
+            "description": "Number of points for upper/lower surface."
+          }
+        ],
+        "signature": "public int generateNaca4(String digit4, float chord, int pointsPerSide)",
+        "description": "Generates a 4-digit NACA airfoil profile.",
+        "returns": "0 on success, -1 on failure."
+      },
+      {
+        "name": "getClosestEntity",
+        "visibility": "public",
+        "static": "",
+        "returnType": "Entity",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x",
+            "description": "X coordinate"
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": "Y coordinate"
+          },
+          {
+            "type": "float",
+            "name": "tolerance",
+            "description": "Maximum distance to consider"
+          }
+        ],
+        "signature": "public Entity getClosestEntity(float x, float y, float tolerance)",
+        "description": "Finds the closest entity to the given coordinates within a tolerance.",
+        "returns": "The closest Entity or null if none found within tolerance"
+      },
+      {
+        "name": "distancePointToSegment",
+        "visibility": "private",
+        "static": "",
+        "returnType": "float",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "px",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "py",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "x1",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y1",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "x2",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y2",
+            "description": ""
+          }
+        ],
+        "signature": "private float distancePointToSegment(float px, float py, float x1, float y1, float x2, float y2)",
+        "description": "",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.core.UnitSystem": {
+    "package": "cad.core",
+    "className": "UnitSystem",
+    "file": "cad/core/UnitSystem.java",
+    "constructors": [
+      {
+        "name": "UnitSystem",
+        "visibility": "package-private",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "description"
+          }
+        ],
+        "signature": "package-private UnitSystem(String description)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "getDescription",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String getDescription()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "toMeters",
+        "visibility": "public",
+        "static": "",
+        "returnType": "double",
+        "parameters": [
+          {
+            "type": "double",
+            "name": "value",
+            "description": ""
+          }
+        ],
+        "signature": "public double toMeters(double value)",
+        "description": "Returns the Length conversion factor to Meters (SI base). Useful for inter-unit calculations.",
+        "returns": ""
+      },
+      {
+        "name": "getDXFCode",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [],
+        "signature": "public int getDXFCode()",
+        "description": "Returns the DXF unit code for this system.",
+        "returns": ""
+      },
+      {
+        "name": "fromDXFCode",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "UnitSystem",
+        "parameters": [
+          {
+            "type": "int",
+            "name": "code",
+            "description": ""
+          }
+        ],
+        "signature": "public static UnitSystem fromDXFCode(int code)",
+        "description": "Resolves a UnitSystem from a DXF integer code.",
+        "returns": ""
+      },
+      {
+        "name": "getAbbreviation",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String getAbbreviation()",
+        "description": "Returns the abbreviated unit label for display in dimensions.",
+        "returns": "Short unit string (e.g., \"mm\", \"in\", \"ft\")"
+      }
+    ]
+  },
+  "cad.core.VerticalConstraint": {
+    "package": "cad.core",
+    "className": "VerticalConstraint",
+    "file": "cad/core/VerticalConstraint.java",
+    "constructors": [
+      {
+        "name": "VerticalConstraint",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "Point",
+            "name": "p1"
+          },
+          {
+            "type": "Point",
+            "name": "p2"
+          }
+        ],
+        "signature": "public VerticalConstraint(Point p1, Point p2)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "getError",
+        "visibility": "public",
+        "static": "",
+        "returnType": "double",
+        "parameters": [],
+        "signature": "public double getError()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "solve",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void solve()",
+        "description": "",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.gui.represents": {
+    "package": "cad.gui",
+    "className": "represents",
+    "file": "cad/gui/GuiFX.java",
+    "constructors": [],
+    "methods": [
+      {
+        "name": "start",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Stage",
+            "name": "primaryStage",
+            "description": ""
+          }
+        ],
+        "signature": "public void start(Stage primaryStage)",
+        "description": "The main entry point for the JavaFX application. Initializes the Unit Selection Splash Screen.",
+        "returns": ""
+      },
+      {
+        "name": "showUnitSelectionWindow",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Stage",
+            "name": "primaryStage",
+            "description": ""
+          }
+        ],
+        "signature": "private void showUnitSelectionWindow(Stage primaryStage)",
+        "description": "Displays a lightweight startup window for unit selection. This avoids blocking the event dispatch thread on macOS.",
+        "returns": ""
+      },
+      {
+        "name": "initializeMainUI",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Stage",
+            "name": "primaryStage",
+            "description": ""
+          }
+        ],
+        "signature": "private void initializeMainUI(Stage primaryStage)",
+        "description": "Initializes and displays the main application window. Called only after unit selection is complete.",
+        "returns": ""
+      },
+      {
+        "name": "createRibbon",
+        "visibility": "private",
+        "static": "",
+        "returnType": "TabPane",
+        "parameters": [],
+        "signature": "private TabPane createRibbon()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "createFeatureManagerTree",
+        "visibility": "private",
+        "static": "",
+        "returnType": "VBox",
+        "parameters": [],
+        "signature": "private VBox createFeatureManagerTree()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "createTaskPane",
+        "visibility": "private",
+        "static": "",
+        "returnType": "TabPane",
+        "parameters": [],
+        "signature": "private TabPane createTaskPane()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "initializeCanvasAsync",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "StackPane",
+            "name": "parent",
+            "description": ""
+          }
+        ],
+        "signature": "private void initializeCanvasAsync(StackPane parent)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "call",
+        "visibility": "protected",
+        "static": "",
+        "returnType": "Void",
+        "parameters": [],
+        "signature": "protected Void call()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "cleanupAndExit",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void cleanupAndExit()",
+        "description": "Properly cleans up resources and exits the application. This method should be called whenever the application needs to terminate, whether through window close, exit button, or programmatic exit. It ensures all resources are properly released before termination.",
+        "returns": ""
+      },
+      {
+        "name": "initializeComponents",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void initializeComponents()",
+        "description": "Initializes all the UI components (TextAreas, TextFields, ComboBoxes). This method is called once during the application's startup.",
+        "returns": ""
+      },
+      {
+        "name": "initializeGLCanvas",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void initializeGLCanvas()",
+        "description": "Initializes the JOGL GLCanvas component. This involves setting up OpenGL capabilities, adding event listeners for mouse and keyboard interaction, and wrapping it in a SwingNode for integration into the JavaFX scene. This method uses SwingUtilities.invokeLater to ensure GLCanvas creation on the correct thread.",
+        "returns": ""
+      },
+      {
+        "name": "call",
+        "visibility": "protected",
+        "static": "",
+        "returnType": "Void",
+        "parameters": [],
+        "signature": "protected Void call()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "createControlPanel",
+        "visibility": "private",
+        "static": "",
+        "returnType": "TabPane",
+        "parameters": [],
+        "signature": "private TabPane createControlPanel()",
+        "description": "Creates and configures the control panel (left side of the main split pane). This panel contains TitledPanes for commands and parameters.",
+        "returns": "A VBox representing the control panel."
+      },
+      {
+        "name": "createConfigurationManager",
+        "visibility": "private",
+        "static": "",
+        "returnType": "VBox",
+        "parameters": [],
+        "signature": "private VBox createConfigurationManager()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "createStatusBar",
+        "visibility": "private",
+        "static": "",
+        "returnType": "BorderPane",
+        "parameters": [],
+        "signature": "private BorderPane createStatusBar()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "createConsolePane",
+        "visibility": "private",
+        "static": "",
+        "returnType": "TitledPane",
+        "parameters": [],
+        "signature": "private TitledPane createConsolePane()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "createSectionLabel",
+        "visibility": "private",
+        "static": "",
+        "returnType": "Label",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "text",
+            "description": "The text content for the label."
+          }
+        ],
+        "signature": "private Label createSectionLabel(String text)",
+        "description": "Helper method to create a bold section label for UI organization.",
+        "returns": "A Label with bold font and increased font size."
+      },
+      {
+        "name": "createButton",
+        "visibility": "private",
+        "static": "",
+        "returnType": "Button",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "text",
+            "description": "The text to display on the button."
+          },
+          {
+            "type": "javafx.event.EventHandler<javafx.event.ActionEvent>",
+            "name": "handler",
+            "description": "The EventHandler for the button's action."
+          }
+        ],
+        "signature": "private Button createButton(String text, javafx.event.EventHandler<javafx.event.ActionEvent> handler)",
+        "description": "Helper method to create a button with specified text and action handler. The button is set to fill the maximum available width.",
+        "returns": "A configured Button object."
+      },
+      {
+        "name": "OpenGLRenderer",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "public",
+        "parameters": [
+          {
+            "type": "SketchInteractionManager",
+            "name": "interactionManager",
+            "description": ""
+          }
+        ],
+        "signature": "package-private public OpenGLRenderer(SketchInteractionManager interactionManager)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "init",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": "The GLAutoDrawable object that triggered the event."
+          }
+        ],
+        "signature": "public void init(GLAutoDrawable drawable)",
+        "description": "Called once when the OpenGL context is initialized. Sets up basic OpenGL states like clear color, depth testing, and lighting.",
+        "returns": ""
+      },
+      {
+        "name": "display",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": "The GLAutoDrawable object that triggered the event."
+          }
+        ],
+        "signature": "public void display(GLAutoDrawable drawable)",
+        "description": "Called by the animator to display the OpenGL scene. Clears the buffers, applies transformations, and renders either the 2D sketch, loaded STL model, or a default cube based on flags.",
+        "returns": ""
+      },
+      {
+        "name": "updateProjectionMatrix",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": "The GLAutoDrawable object to get dimensions from."
+          }
+        ],
+        "signature": "private void updateProjectionMatrix(GLAutoDrawable drawable)",
+        "description": "Updates the projection matrix with adaptive clipping planes based on current zoom and model size. This prevents clipping artifacts when rotating large models or when zoomed far out.",
+        "returns": ""
+      },
+      {
+        "name": "reshape",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": "The GLAutoDrawable object that triggered the event."
+          },
+          {
+            "type": "int",
+            "name": "x",
+            "description": "The x-coordinate of the viewport."
+          },
+          {
+            "type": "int",
+            "name": "y",
+            "description": "The y-coordinate of the viewport."
+          },
+          {
+            "type": "int",
+            "name": "width",
+            "description": "The width of the viewport."
+          },
+          {
+            "type": "int",
+            "name": "height",
+            "description": "The height of the viewport."
+          }
+        ],
+        "signature": "public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height)",
+        "description": "Sets up the viewport and the projection matrix with adaptive clipping planes.",
+        "returns": ""
+      },
+      {
+        "name": "dispose",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": "The GLAutoDrawable object that triggered the event."
+          }
+        ],
+        "signature": "public void dispose(GLAutoDrawable drawable)",
+        "description": "Called when the GLAutoDrawable is being disposed of. Used for releasing OpenGL resources, though none are explicitly managed here.",
+        "returns": ""
+      },
+      {
+        "name": "renderAxes",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": ""
+          }
+        ],
+        "signature": "private void renderAxes(GLAutoDrawable drawable)",
+        "description": "Renders XYZ coordinate axes for orientation reference with labels. X = Red, Y = Green, Z = Blue",
+        "returns": ""
+      },
+      {
+        "name": "renderModelAxes",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": ""
+          },
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": ""
+          }
+        ],
+        "signature": "private void renderModelAxes(GL2 gl, GLAutoDrawable drawable)",
+        "description": "Renders small coordinate axes at the model's centroid. X = Red, Y = Green, Z = Blue",
+        "returns": ""
+      },
+      {
+        "name": "renderPlanes",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": ""
+          }
+        ],
+        "signature": "private void renderPlanes(GL2 gl)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "renderStlTriangles",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": "The GL2 object for OpenGL drawing commands."
+          }
+        ],
+        "signature": "private void renderStlTriangles(GL2 gl)",
+        "description": "Renders the triangles loaded from an STL file. Each triangle consists of a normal vector and three vertices.",
+        "returns": ""
+      },
+      {
+        "name": "renderSketch",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": "The GL2 object for OpenGL drawing commands."
+          },
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": ""
+          }
+        ],
+        "signature": "public void renderSketch(GL2 gl, GLAutoDrawable drawable)",
+        "description": "Renders the 2D sketch elements using the Sketch class's built-in draw method. This is much more efficient than parsing string representations. Uses proper aspect ratio to ensure circles appear round, not oval. Completely independent of 3D view transformations. Supports 2D view manipulation (pan and zoom).",
+        "returns": ""
+      },
+      {
+        "name": "renderDimensionText",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": ""
+          },
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": ""
+          }
+        ],
+        "signature": "private void renderDimensionText(GL2 gl, GLAutoDrawable drawable)",
+        "description": "Renders dimension text labels in 2D sketch view.",
+        "returns": ""
+      },
+      {
+        "name": "renderGhost",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": ""
+          },
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": ""
+          }
+        ],
+        "signature": "private void renderGhost(GL2 gl, GLAutoDrawable drawable)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "renderSelectionHighlights",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": ""
+          }
+        ],
+        "signature": "private void renderSelectionHighlights(GL2 gl)",
+        "description": "Renders highlights for selected entities.",
+        "returns": ""
+      },
+      {
+        "name": "drawPoint",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "x",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "size",
+            "description": ""
+          }
+        ],
+        "signature": "private void drawPoint(GL2 gl, float x, float y, float size)",
+        "description": "Draw a small point (circle) at the given coordinates.",
+        "returns": ""
+      },
+      {
+        "name": "handle3DDimensionClick",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "int",
+            "name": "mouseX",
+            "description": ""
+          },
+          {
+            "type": "int",
+            "name": "mouseY",
+            "description": ""
+          }
+        ],
+        "signature": "public void handle3DDimensionClick(int mouseX, int mouseY)",
+        "description": "Handles mouse clicks in 3D mode for dimensioning.",
+        "returns": ""
+      },
+      {
+        "name": "setStlTriangles",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "List<float[]>",
+            "name": "triangles",
+            "description": "The list of float arrays, where each array represents an STL"
+          }
+        ],
+        "signature": "public void setStlTriangles(List<float[]> triangles)",
+        "description": "Sets the list of triangles to be rendered as an STL model. Automatically switches the view to hide the sketch and shows the STL model. Also calculates the centroid of the model for display. triangle (normal + 3 vertices).",
+        "returns": ""
+      },
+      {
+        "name": "calculateStlCentroid",
+        "visibility": "private",
+        "static": "",
+        "returnType": "float[]",
+        "parameters": [
+          {
+            "type": "List<float[]>",
+            "name": "triangles",
+            "description": "List of STL triangles"
+          }
+        ],
+        "signature": "private float[] calculateStlCentroid(List<float[]> triangles)",
+        "description": "Calculates the geometric centroid of an STL model. triangles",
+        "returns": "Array of [x, y, z] coordinates of the centroid, or null if no"
+      },
+      {
+        "name": "setShowSketch",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "boolean",
+            "name": "show",
+            "description": "A boolean value, true to show the sketch, false to hide it."
+          }
+        ],
+        "signature": "public void setShowSketch(boolean show)",
+        "description": "Sets the flag to show or hide the 2D sketch elements.",
+        "returns": ""
+      },
+      {
+        "name": "isShowingSketch",
+        "visibility": "public",
+        "static": "",
+        "returnType": "boolean",
+        "parameters": [],
+        "signature": "public boolean isShowingSketch()",
+        "description": "Gets the current state of sketch visibility.",
+        "returns": "true if sketch is being shown, false if 3D model is being shown."
+      },
+      {
+        "name": "mouseClicked",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "MouseEvent",
+            "name": "e",
+            "description": ""
+          }
+        ],
+        "signature": "public void mouseClicked(MouseEvent e)",
+        "description": "1. JOGL canvas needs Swing focus for mouse events 2. SwingNode needs JavaFX focus to prevent arrow key capture by UI traversal 3. Both must be coordinated to prevent focus conflicts",
+        "returns": ""
+      },
+      {
+        "name": "mousePressed",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "MouseEvent",
+            "name": "e",
+            "description": ""
+          }
+        ],
+        "signature": "public void mousePressed(MouseEvent e)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "mouseReleased",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "MouseEvent",
+            "name": "e",
+            "description": ""
+          }
+        ],
+        "signature": "public void mouseReleased(MouseEvent e)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "mouseEntered",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "MouseEvent",
+            "name": "e",
+            "description": ""
+          }
+        ],
+        "signature": "public void mouseEntered(MouseEvent e)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "mouseExited",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "MouseEvent",
+            "name": "e",
+            "description": ""
+          }
+        ],
+        "signature": "public void mouseExited(MouseEvent e)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "mouseDragged",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "MouseEvent",
+            "name": "e",
+            "description": ""
+          }
+        ],
+        "signature": "public void mouseDragged(MouseEvent e)",
+        "description": "MouseMotionListener implementation for the GLCanvas to handle mouse dragging. Supports both 3D rotation (for models) and 2D panning (for sketches).",
+        "returns": ""
+      },
+      {
+        "name": "mouseMoved",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "MouseEvent",
+            "name": "e",
+            "description": ""
+          }
+        ],
+        "signature": "public void mouseMoved(MouseEvent e)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "mouseWheelMoved",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "MouseWheelEvent",
+            "name": "e",
+            "description": ""
+          }
+        ],
+        "signature": "public void mouseWheelMoved(MouseWheelEvent e)",
+        "description": "MouseWheelListener implementation for the GLCanvas to handle zooming. Supports both 3D zoom (for models) and 2D zoom (for sketches).",
+        "returns": ""
+      },
+      {
+        "name": "setViewFront",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void setViewFront()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "setViewTop",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void setViewTop()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "setViewRight",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void setViewRight()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "setViewIsometric",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void setViewIsometric()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "keyPressed",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "KeyEvent",
+            "name": "e",
+            "description": ""
+          }
+        ],
+        "signature": "public void keyPressed(KeyEvent e)",
+        "description": "- R: Reset 3D view with auto-scaling Universal Controls: - SPACE: Toggle between 2D/3D view modes - ESC: Force canvas focus restoration - Ctrl+H: Display keyboard help",
+        "returns": ""
+      },
+      {
+        "name": "keyReleased",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "KeyEvent",
+            "name": "e",
+            "description": ""
+          }
+        ],
+        "signature": "public void keyReleased(KeyEvent e)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "keyTyped",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "KeyEvent",
+            "name": "e",
+            "description": ""
+          }
+        ],
+        "signature": "public void keyTyped(KeyEvent e)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "activateSketchTool",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "SketchInteractionManager.InteractionMode",
+            "name": "mode",
+            "description": "The interaction mode to activate (SKETCH_LINE, SKETCH_CIRCLE,"
+          },
+          {
+            "type": "String",
+            "name": "message",
+            "description": "The message to display to the user about how to use the tool"
+          }
+        ],
+        "signature": "private void activateSketchTool(SketchInteractionManager.InteractionMode mode, String message)",
+        "description": "Activates a sketch tool and automatically switches to sketch view if needed. Provides user feedback about the selected tool. etc.)",
+        "returns": ""
+      },
+      {
+        "name": "performUndo",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void performUndo()",
+        "description": "Performs undo operation.",
+        "returns": ""
+      },
+      {
+        "name": "performRedo",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void performRedo()",
+        "description": "Performs redo operation.",
+        "returns": ""
+      },
+      {
+        "name": "activateDimensionTool",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void activateDimensionTool()",
+        "description": "Activates the dimension tool for measuring entities. User can click entities to create dimensions.",
+        "returns": ""
+      },
+      {
+        "name": "handleDimensionClick",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "worldX",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "worldY",
+            "description": ""
+          }
+        ],
+        "signature": "private void handleDimensionClick(float worldX, float worldY)",
+        "description": "Handles a click when dimension tool is active. Finds the closest entity and creates a dimension for it.",
+        "returns": ""
+      },
+      {
+        "name": "orientViewToPlane",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "planeName",
+            "description": "The name of the plane (e.g., \"Front Plane\", \"Top Plane\","
+          }
+        ],
+        "signature": "private void orientViewToPlane(String planeName)",
+        "description": "Orients the 3D view to align with the selected plane. Double-clicking a plane in the feature tree calls this method. \"Right Plane\")",
+        "returns": ""
+      },
+      {
+        "name": "toggleSketchView",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void toggleSketchView()",
+        "description": "Toggles between 2D sketch view and 3D model view.",
+        "returns": ""
+      },
+      {
+        "name": "resetView",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void resetView()",
+        "description": "Resets the 3D view to default position with auto-scaling zoom. Clears rotation and sets zoom based on model size for optimal viewing.",
+        "returns": ""
+      },
+      {
+        "name": "showKeyboardHelp",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void showKeyboardHelp()",
+        "description": "Displays comprehensive keyboard controls help in the console output. This method provides users with a quick reference guide for all available keyboard shortcuts and controls. It's triggered by pressing Ctrl+H and outputs a formatted help message to the console area. Updated to include both 2D sketch manipulation and 3D model controls.",
+        "returns": ""
+      },
+      {
+        "name": "appendOutput",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "text",
+            "description": ""
+          }
+        ],
+        "signature": "private void appendOutput(String text)",
+        "description": "Appends text to console output with thread-safe execution. Uses Platform.runLater() for JavaFX thread safety and auto-scrolls to bottom.",
+        "returns": ""
+      },
+      {
+        "name": "getSketchWorldCoordinates",
+        "visibility": "private",
+        "static": "",
+        "returnType": "float[]",
+        "parameters": [
+          {
+            "type": "int",
+            "name": "screenX",
+            "description": ""
+          },
+          {
+            "type": "int",
+            "name": "screenY",
+            "description": ""
+          }
+        ],
+        "signature": "private float[] getSketchWorldCoordinates(int screenX, int screenY)",
+        "description": "Converts screen coordinates to sketch world coordinates. Assumes standard 2D orthographic projection matches current pan/zoom.",
+        "returns": ""
+      },
+      {
+        "name": "createHelpPane",
+        "visibility": "private",
+        "static": "",
+        "returnType": "TitledPane",
+        "parameters": [],
+        "signature": "private TitledPane createHelpPane()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "showHelp",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void showHelp()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "help",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void help()",
+        "description": "Shows available commands and basic keyboard controls in console. Lists all GUI commands and directs users to Ctrl+H for detailed help.",
+        "returns": ""
+      },
+      {
+        "name": "showSaveDialog",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void showSaveDialog()",
+        "description": "This method provides a comprehensive file saving interface that supports multiple formats and includes robust error handling. It presents a file chooser dialog for user selection and delegates to format-specific save methods based on the chosen file extension.",
+        "returns": ""
+      },
+      {
+        "name": "loadFile",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void loadFile()",
+        "description": "This method provides a comprehensive file loading interface that automatically detects supported formats and delegates to appropriate parsing methods.",
+        "returns": ""
+      },
+      {
+        "name": "exportDXF",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void exportDXF()",
+        "description": "This method provides a specialized export interface specifically for DXF format, which is widely supported by CAD applications. It handles the complete export process including file selection, format conversion, and error management.",
+        "returns": ""
+      },
+      {
+        "name": "sketchClear",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void sketchClear()",
+        "description": "Post-Clear State: - Empty sketch ready for new geometry - Clean coordinate system - Reset entity counters - Canvas automatically refreshed",
+        "returns": ""
+      },
+      {
+        "name": "sketchList",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void sketchList()",
+        "description": "This method provides detailed inspection capabilities for the sketch contents, outputting a formatted inventory of all geometric entities with their properties and relationships. Essential for debugging complex sketches and verifying geometry accuracy.",
+        "returns": ""
+      },
+      {
+        "name": "showLoadDialog",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void showLoadDialog()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "extrudeSketch",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void extrudeSketch()",
+        "description": "polygons. // Legacy sketch methods (sketchPoint, sketchLine, sketchCircle, sketchPolygon) removed /** Extrudes the current 2D sketch into a 3D shape. Opens a custom dialog window to get the extrusion height from the user.",
+        "returns": ""
+      },
+      {
+        "name": "showKiteDialog",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void showKiteDialog()",
+        "description": "Shows a dialog to collect polygon parameters before drawing.",
+        "returns": ""
+      },
+      {
+        "name": "showCubeDialog",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void showCubeDialog()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "Button",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "new",
+        "parameters": [],
+        "signature": "package-private new Button()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "showSphereDialog",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void showSphereDialog()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "Button",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "new",
+        "parameters": [],
+        "signature": "package-private new Button()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "showPolygonParametersDialog",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void showPolygonParametersDialog()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "showCreatePlaneDialog",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "TreeItem<String>",
+            "name": "rootItem",
+            "description": ""
+          }
+        ],
+        "signature": "private void showCreatePlaneDialog(TreeItem<String> rootItem)",
+        "description": "Shows dialog for creating a custom reference plane. User can define name and orientation angles.",
+        "returns": ""
+      },
+      {
+        "name": "showUnitSelectionDialog",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void showUnitSelectionDialog()",
+        "description": "Shows the unit selection dialog at application startup. Allows user to choose their preferred unit system.",
+        "returns": ""
+      },
+      {
+        "name": "setApplicationUnits",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "UnitSystem",
+            "name": "units",
+            "description": ""
+          }
+        ],
+        "signature": "private void setApplicationUnits(UnitSystem units)",
+        "description": "Sets the application-wide unit system. Updates sketch and current units field.",
+        "returns": ""
+      },
+      {
+        "name": "showNacaDialog",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void showNacaDialog()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "Button",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "new",
+        "parameters": [],
+        "signature": "package-private new Button()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "showRevolveDialog",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void showRevolveDialog()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "Button",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "new",
+        "parameters": [],
+        "signature": "package-private new Button()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "showLoftDialog",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void showLoftDialog()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "Button",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "new",
+        "parameters": [],
+        "signature": "package-private new Button()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "calculateMassProperties",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void calculateMassProperties()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "activateSelectionTool",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void activateSelectionTool()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "applyHorizontalConstraint",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void applyHorizontalConstraint()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "applyVerticalConstraint",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void applyVerticalConstraint()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "applyCoincidentConstraint",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void applyCoincidentConstraint()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "applyFixedConstraint",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void applyFixedConstraint()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "main",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String[]",
+            "name": "args",
+            "description": "Command line arguments passed to the application."
+          }
+        ],
+        "signature": "public static void main(String[] args)",
+        "description": "Main method to launch the JavaFX application.",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.gui.JOGLCadCanvas": {
+    "package": "cad.gui",
+    "className": "JOGLCadCanvas",
+    "file": "cad/gui/JOGLCadCanvas.java",
+    "constructors": [
+      {
+        "name": "JOGLCadCanvas",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "Sketch",
+            "name": "sketch"
+          }
+        ],
+        "signature": "public JOGLCadCanvas(Sketch sketch)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "addMouseListener",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "",
+        "parameters": [
+          {
+            "type": "new",
+            "name": "MouseAdapter(",
+            "description": ""
+          }
+        ],
+        "signature": "package-private  addMouseListener(new MouseAdapter()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "mousePressed",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "MouseEvent",
+            "name": "e",
+            "description": ""
+          }
+        ],
+        "signature": "public void mousePressed(MouseEvent e)",
+        "description": "Captures the initial mouse position when a mouse button is pressed and sets the dragging flag.",
+        "returns": ""
+      },
+      {
+        "name": "mouseReleased",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "MouseEvent",
+            "name": "e",
+            "description": ""
+          }
+        ],
+        "signature": "public void mouseReleased(MouseEvent e)",
+        "description": "Resets the dragging flag when the mouse button is released.",
+        "returns": ""
+      },
+      {
+        "name": "addMouseMotionListener",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "",
+        "parameters": [
+          {
+            "type": "new",
+            "name": "MouseMotionAdapter(",
+            "description": ""
+          }
+        ],
+        "signature": "package-private  addMouseMotionListener(new MouseMotionAdapter()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "mouseDragged",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "MouseEvent",
+            "name": "e",
+            "description": ""
+          }
+        ],
+        "signature": "public void mouseDragged(MouseEvent e)",
+        "description": "Handles mouse dragging for rotation (left-click drag) and basic zoom/pan (right-click drag).",
+        "returns": ""
+      },
+      {
+        "name": "addKeyListener",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "",
+        "parameters": [
+          {
+            "type": "new",
+            "name": "KeyAdapter(",
+            "description": ""
+          }
+        ],
+        "signature": "package-private  addKeyListener(new KeyAdapter()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "keyPressed",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "KeyEvent",
+            "name": "e",
+            "description": ""
+          }
+        ],
+        "signature": "public void keyPressed(KeyEvent e)",
+        "description": "Handles key presses for resetting view and switching between 2D/3D modes.",
+        "returns": ""
+      },
+      {
+        "name": "setCube",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "size",
+            "description": "The edge length of the cube."
+          },
+          {
+            "type": "int",
+            "name": "divisions",
+            "description": "The number of subdivisions per edge (affects geometry, not rendering directly here)."
+          }
+        ],
+        "signature": "public void setCube(float size, int divisions)",
+        "description": "Sets the current active shape to a cube and updates its size and subdivisions. This method delegates the actual setting of parameters to the static `Geometry.createCube()` method, which manages the application's central 3D model state.",
+        "returns": ""
+      },
+      {
+        "name": "setSphere",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "radius",
+            "description": "Sphere radius"
+          },
+          {
+            "type": "int",
+            "name": "latDiv",
+            "description": "Latitude subdivisions"
+          },
+          {
+            "type": "int",
+            "name": "lonDiv",
+            "description": "Longitude subdivisions"
+          }
+        ],
+        "signature": "public void setSphere(float radius, int latDiv, int lonDiv)",
+        "description": "Creates a sphere with specified parameters and switches to 3D view.",
+        "returns": ""
+      },
+      {
+        "name": "loadSTL",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "String",
+            "name": "filePath",
+            "description": "Path to STL file to load"
+          }
+        ],
+        "signature": "public void loadSTL(String filePath)",
+        "description": "Loads STL file and switches to 3D model view.",
+        "returns": ""
+      },
+      {
+        "name": "showSketch",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void showSketch()",
+        "description": "Switches the canvas display mode to show the 2D sketch. Sets the internal flag `show3DModel` to `false` and requests a repaint.",
+        "returns": ""
+      },
+      {
+        "name": "show3DModel",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void show3DModel()",
+        "description": "Switches the canvas display mode to show the 3D model (cube, sphere, or loaded STL). Sets the internal flag `show3DModel` to `true` and requests a repaint.",
+        "returns": ""
+      },
+      {
+        "name": "init",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": "The GLAutoDrawable object, providing access to the OpenGL context."
+          }
+        ],
+        "signature": "public void init(GLAutoDrawable drawable)",
+        "description": "This method is called exactly once when the OpenGL context is first created. It's used to perform all necessary OpenGL initializations, such as setting background color, enabling depth testing, configuring lighting, and setting material properties.",
+        "returns": ""
+      },
+      {
+        "name": "reshape",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": "The GLAutoDrawable object."
+          },
+          {
+            "type": "int",
+            "name": "x",
+            "description": "The x-coordinate of the viewport origin."
+          },
+          {
+            "type": "int",
+            "name": "y",
+            "description": "The y-coordinate of the viewport origin."
+          },
+          {
+            "type": "int",
+            "name": "width",
+            "description": "The new width of the viewport."
+          },
+          {
+            "type": "int",
+            "name": "height",
+            "description": "The new height of the viewport."
+          }
+        ],
+        "signature": "public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height)",
+        "description": "and perspective for either 3D or 2D rendering.",
+        "returns": ""
+      },
+      {
+        "name": "display",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": "The GLAutoDrawable object."
+          }
+        ],
+        "signature": "public void display(GLAutoDrawable drawable)",
+        "description": "This method is called repeatedly by the animator to render the scene. It clears the buffers, applies camera transformations, and then draws either the 3D model (cube, sphere, or STL) or the 2D sketch based on the current display mode (`show3DModel` flag).",
+        "returns": ""
+      },
+      {
+        "name": "calculateGeometryCenter",
+        "visibility": "private",
+        "static": "",
+        "returnType": "float[]",
+        "parameters": [],
+        "signature": "private float[] calculateGeometryCenter()",
+        "description": "Calculates the center point of the current geometry. For extruded shapes, calculates the centroid of all vertices. For default shapes (cube, sphere, STL), returns the origin.",
+        "returns": "Array containing [centerX, centerY, centerZ] coordinates"
+      },
+      {
+        "name": "calculateGeometrySize",
+        "visibility": "private",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "private float calculateGeometrySize()",
+        "description": "Calculates the bounding box dimensions of extruded geometry to help with automatic zoom.",
+        "returns": "Maximum dimension (width, height, or depth) of the geometry"
+      },
+      {
+        "name": "dispose",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": "The GLAutoDrawable object."
+          }
+        ],
+        "signature": "public void dispose(GLAutoDrawable drawable)",
+        "description": "This method is called when the OpenGL context is destroyed (e.g., when the GLJPanel is removed from its parent container or the application exits). It's used to release any OpenGL-related resources.",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.gui.SketchCanvas": {
+    "package": "cad.gui",
+    "className": "SketchCanvas",
+    "file": "cad/gui/SketchCanvas.java",
+    "constructors": [
+      {
+        "name": "SketchCanvas",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "cad.core.Sketch",
+            "name": "sketch"
+          }
+        ],
+        "signature": "public SketchCanvas(cad.core.Sketch sketch)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "addKeyListener",
+        "visibility": "package-private",
+        "static": "",
+        "returnType": "",
+        "parameters": [
+          {
+            "type": "new",
+            "name": "KeyAdapter(",
+            "description": ""
+          }
+        ],
+        "signature": "package-private  addKeyListener(new KeyAdapter()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "keyPressed",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "KeyEvent",
+            "name": "e",
+            "description": ""
+          }
+        ],
+        "signature": "public void keyPressed(KeyEvent e)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "setStlTriangles",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "List<float[]>",
+            "name": "triangles",
+            "description": ""
+          }
+        ],
+        "signature": "public void setStlTriangles(List<float[]> triangles)",
+        "description": "Accepts a list of STL triangles and computes averaged normals for smooth shading.",
+        "returns": ""
+      },
+      {
+        "name": "showSketch",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void showSketch()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "resetView",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void resetView()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "init",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": ""
+          }
+        ],
+        "signature": "public void init(GLAutoDrawable drawable)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "reshape",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": ""
+          },
+          {
+            "type": "int",
+            "name": "x",
+            "description": ""
+          },
+          {
+            "type": "int",
+            "name": "y",
+            "description": ""
+          },
+          {
+            "type": "int",
+            "name": "width",
+            "description": ""
+          },
+          {
+            "type": "int",
+            "name": "height",
+            "description": ""
+          }
+        ],
+        "signature": "public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "display",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": ""
+          }
+        ],
+        "signature": "public void display(GLAutoDrawable drawable)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "dispose",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GLAutoDrawable",
+            "name": "drawable",
+            "description": ""
+          }
+        ],
+        "signature": "public void dispose(GLAutoDrawable drawable)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "drawStl",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": ""
+          }
+        ],
+        "signature": "private void drawStl(GL2 gl)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "computeNormal",
+        "visibility": "private",
+        "static": "",
+        "returnType": "float[]",
+        "parameters": [
+          {
+            "type": "float[]",
+            "name": "v1",
+            "description": ""
+          },
+          {
+            "type": "float[]",
+            "name": "v2",
+            "description": ""
+          },
+          {
+            "type": "float[]",
+            "name": "v3",
+            "description": ""
+          }
+        ],
+        "signature": "private float[] computeNormal(float[] v1, float[] v2, float[] v3)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "refresh",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void refresh()",
+        "description": "",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.gui.SketchInteractionManager": {
+    "package": "cad.gui",
+    "className": "SketchInteractionManager",
+    "file": "cad/gui/SketchInteractionManager.java",
+    "constructors": [
+      {
+        "name": "SketchInteractionManager",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "Sketch",
+            "name": "sketch"
+          },
+          {
+            "type": "CommandManager",
+            "name": "commandManager"
+          }
+        ],
+        "signature": "public SketchInteractionManager(Sketch sketch, CommandManager commandManager)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "setMode",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "InteractionMode",
+            "name": "mode",
+            "description": ""
+          }
+        ],
+        "signature": "public void setMode(InteractionMode mode)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getMode",
+        "visibility": "public",
+        "static": "",
+        "returnType": "InteractionMode",
+        "parameters": [],
+        "signature": "public InteractionMode getMode()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "handleMousePress",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "worldX",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "worldY",
+            "description": ""
+          }
+        ],
+        "signature": "public void handleMousePress(float worldX, float worldY)",
+        "description": "Handles mouse press events to START drawing.",
+        "returns": ""
+      },
+      {
+        "name": "handleMouseRelease",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "worldX",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "worldY",
+            "description": ""
+          }
+        ],
+        "signature": "public void handleMouseRelease(float worldX, float worldY)",
+        "description": "Handles mouse release events to FINISH drawing.",
+        "returns": ""
+      },
+      {
+        "name": "handleMouseClick",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "MouseEvent",
+            "name": "e",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "worldX",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "worldY",
+            "description": ""
+          }
+        ],
+        "signature": "public void handleMouseClick(MouseEvent e, float worldX, float worldY)",
+        "description": "Legacy handler - kept for compatibility but largely superseded by Press/Release for dragging.",
+        "returns": ""
+      },
+      {
+        "name": "handleMouseMove",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "worldX",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "worldY",
+            "description": ""
+          }
+        ],
+        "signature": "public void handleMouseMove(float worldX, float worldY)",
+        "description": "Handles mouse move/drag events to update the \"rubber band\" preview.",
+        "returns": ""
+      },
+      {
+        "name": "isDrawing",
+        "visibility": "public",
+        "static": "",
+        "returnType": "boolean",
+        "parameters": [],
+        "signature": "public boolean isDrawing()",
+        "description": "Returns true if there is an active ghost shape to render.",
+        "returns": ""
+      },
+      {
+        "name": "getStartX",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getStartX()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getStartY",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getStartY()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getCurrentX",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getCurrentX()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getCurrentY",
+        "visibility": "public",
+        "static": "",
+        "returnType": "float",
+        "parameters": [],
+        "signature": "public float getCurrentY()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "setPolygonSides",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "int",
+            "name": "sides",
+            "description": "Number of sides (must be >= 3)"
+          }
+        ],
+        "signature": "public void setPolygonSides(int sides)",
+        "description": "Sets the number of sides for polygon creation.",
+        "returns": ""
+      },
+      {
+        "name": "getPolygonSides",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [],
+        "signature": "public int getPolygonSides()",
+        "description": "Gets the current number of sides for polygon creation.",
+        "returns": "Number of sides"
+      },
+      {
+        "name": "handleDimensionClick",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": ""
+          }
+        ],
+        "signature": "private void handleDimensionClick(float x, float y)",
+        "description": "Handles clicks for the smart dimension tool.",
+        "returns": ""
+      },
+      {
+        "name": "handleSelectionClick",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "x",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "y",
+            "description": ""
+          }
+        ],
+        "signature": "private void handleSelectionClick(float x, float y)",
+        "description": "Handles selection click.",
+        "returns": ""
+      },
+      {
+        "name": "getSelectedEntities",
+        "visibility": "public",
+        "static": "",
+        "returnType": "List<Entity>",
+        "parameters": [],
+        "signature": "public List<Entity> getSelectedEntities()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "clearSelection",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void clearSelection()",
+        "description": "",
+        "returns": ""
+      }
+    ]
+  },
+  "cad.gui.for": {
+    "package": "cad.gui",
+    "className": "for",
+    "file": "cad/gui/VBOManager.java",
+    "constructors": [
+      {
+        "name": "for",
+        "visibility": "package-private",
+        "parameters": [
+          {
+            "type": "Object faceObj :",
+            "name": "faces"
+          }
+        ],
+        "signature": "package-private for(Object faceObj : faces)"
+      },
+      {
+        "name": "for",
+        "visibility": "package-private",
+        "parameters": [
+          {
+            "type": "int i = 0; i < vertices.size();",
+            "name": "i++"
+          }
+        ],
+        "signature": "package-private for(int i = 0; i < vertices.size(); i++)"
+      },
+      {
+        "name": "for",
+        "visibility": "package-private",
+        "parameters": [
+          {
+            "type": "Float f : verts) buffer.put(f);\n        buffer.rewind();\n        if (vboHandle ==",
+            "name": "0"
+          }
+        ],
+        "signature": "package-private for(Float f : verts) buffer.put(f);\n        buffer.rewind();\n        if (vboHandle == 0)"
+      },
+      {
+        "name": "for",
+        "visibility": "package-private",
+        "parameters": [
+          {
+            "type": "Float n : norms) normalBuffer.put(n);\n        normalBuffer.rewind();\n        if (normalVboHandle ==",
+            "name": "0"
+          }
+        ],
+        "signature": "package-private for(Float n : norms) normalBuffer.put(n);\n        normalBuffer.rewind();\n        if (normalVboHandle == 0)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "uploadFaces",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": ""
+          },
+          {
+            "type": "List<? extends Object>",
+            "name": "faces",
+            "description": ""
+          }
+        ],
+        "signature": "public void uploadFaces(GL2 gl, List<? extends Object> faces)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "draw",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": ""
+          }
+        ],
+        "signature": "public void draw(GL2 gl)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "dispose",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "GL2",
+            "name": "gl",
+            "description": ""
+          }
+        ],
+        "signature": "public void dispose(GL2 gl)",
+        "description": "",
+        "returns": ""
+      }
+    ]
+  }
+}
