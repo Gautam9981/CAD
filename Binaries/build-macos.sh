@@ -42,7 +42,7 @@ STAGING_DIR="staging"
 rm -rf "$STAGING_DIR"
 mkdir -p "$STAGING_DIR"
 cp "$JAR_FILE" "$STAGING_DIR/"
-cp "../resources/sketchapp-icon.icns" "$STAGING_DIR/" || true
+cp "../src/main/resources/sketchapp-icon.icns" "$STAGING_DIR/" || true
 
 echo "Creating macOS DMG installer..."
 
@@ -56,7 +56,7 @@ jpackage \
   --app-version "$APP_VERSION" \
   --vendor "SketchApp Team" \
   --description "Professional CAD Sketching Application" \
-  --icon "../resources/sketchapp-icon.icns" \
+  --icon "$STAGING_DIR/sketchapp-icon.icns" \
   --dest "$OUTPUT_DIR" \
   --mac-package-name "SketchApp" \
   --java-options "-Xmx2048m" \

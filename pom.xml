@@ -338,32 +338,7 @@
     <finalName>SketchApp</finalName>
 
     
-    <!-- Include CSS and other resources -->
-    <resources>
-        <resource>
-            <directory>src/main/resources</directory>
-        </resource>
-        <resource>
-            <directory>src/main/java</directory>
-            <includes>
-                <include>**/*.css</include>
-                <include>**/*.fxml</include>
-                <include>**/*.png</include>
-                <include>**/*.jpg</include>
-            </includes>
-        </resource>
-        <resource>
-            <directory>${project.basedir}</directory>
-            <includes>
-                <include>gui/**/*.css</include>
-                <include>gui/**/*.fxml</include>
-                <include>gui/**/*.properties</include>
-                <include>**/*.png</include>
-                <include>**/*.jpg</include>
-                <include>**/*.gif</include>
-            </includes>
-        </resource>
-    </resources>
+    <!-- Resources are now in standard src/main/resources -->
     
         <plugins>
             <plugin>

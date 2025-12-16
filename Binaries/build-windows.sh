@@ -44,7 +44,7 @@ STAGING_DIR="staging"
 rm -rf "$STAGING_DIR"
 mkdir -p "$STAGING_DIR"
 cp "$JAR_FILE" "$STAGING_DIR/"
-cp "../resources/sketchapp-icon.ico" "$STAGING_DIR/" || true
+cp "../src/main/resources/sketchapp-icon.ico" "$STAGING_DIR/" || true
 
 echo "Creating Windows installer..."
 
@@ -59,7 +59,7 @@ jpackage \
   --app-version "$APP_VERSION" \
   --vendor "SketchApp Team" \
   --description "Professional CAD Sketching Application" \
-  --icon "../resources/sketchapp-icon.ico" \
+  --icon "$STAGING_DIR/sketchapp-icon.ico" \
   --dest "$OUTPUT_DIR" \
   --win-dir-chooser \
   --win-menu \

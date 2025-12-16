@@ -65,7 +65,7 @@ STAGING_DIR="staging"
 rm -rf "$STAGING_DIR"
 mkdir -p "$STAGING_DIR"
 cp "$JAR_FILE" "$STAGING_DIR/"
-cp "../resources/sketchapp-icon.png" "$STAGING_DIR/" || true
+cp "../src/main/resources/sketchapp-icon.png" "$STAGING_DIR/" || true
 
 echo "✓ Prepared staging directory with JAR and dependencies"
 
@@ -82,7 +82,7 @@ if [ "$DEB_AVAILABLE" = true ]; then
       --app-version "$APP_VERSION" \
       --vendor "SketchApp Team" \
       --description "Professional CAD Sketching Application" \
-      --icon "../resources/sketchapp-icon.png" \
+      --icon "$STAGING_DIR/sketchapp-icon.png" \
       --dest "$OUTPUT_DIR" \
       --linux-shortcut \
       --linux-menu-group "Graphics;Engineering;" \
@@ -108,7 +108,7 @@ if [ "$RPM_AVAILABLE" = true ]; then
       --app-version "$APP_VERSION" \
       --vendor "SketchApp Team" \
       --description "Professional CAD Sketching Application" \
-      --icon "../resources/sketchapp-icon.png" \
+      --icon "$STAGING_DIR/sketchapp-icon.png" \
       --dest "$OUTPUT_DIR" \
       --linux-shortcut \
       --linux-menu-group "Graphics;Engineering;" \
