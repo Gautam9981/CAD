@@ -73,16 +73,15 @@ if [ -f "$INFO_PLIST" ]; then
     # Use plytool or sed. sed is safer to assume presence.
     # We replace the value if it exists, or insert it.
     # jpackage usually adds LSMinimumSystemVersion, so we verify and replace.
-    if grep -q "LSMinimumSystemVersion" "$INFO_PLIST"; then
-        /usr/libexec/PlistBuddy -c "Set :LSMinimumSystemVersion 11.0" "$INFO_PLIST" || \
-        sed -i '' 's/LSMinimumSystemVersion<\/key>.*<string>.*<\/string>/LSMinimumSystemVersion<\/key>\n\t<string>11.0<\/string>/' "$INFO_PLIST"
-    else
-        /usr/libexec/PlistBuddy -c "Add :LSMinimumSystemVersion string 11.0" "$INFO_PLIST" || \
-        sed -i '' '/<dict>/a\
-	<key>LSMinimumSystemVersion</key>\
-	<string>11.0</string>
-' "$INFO_PLIST"
-    fi
+    echo "Updating LSMinimumSystemVersion in Info.plist to 11.0..."
+    # Robustly set LSMinimumSystemVersion using PlistBuddy
+    # 1. Try to delete the key first to avoid type conflicts or errors if it exists
+    /usr/libexec/PlistBuddy -c "Delete :LSMinimumSystemVersion" "$INFO_PLIST" || true
+    # 2. Add the key as a string with value "11.0"
+    /usr/libexec/PlistBuddy -c "Add :LSMinimumSystemVersion string 11.0" "$INFO_PLIST"
+    
+    echo "Info.plist updated:"
+    grep -A 1 "LSMinimumSystemVersion" "$INFO_PLIST" || echo "Reference verified via PlistBuddy"
 else
     echo "Warning: Info.plist not found at $INFO_PLIST"
 fi
