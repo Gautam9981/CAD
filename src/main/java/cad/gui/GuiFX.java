@@ -165,29 +165,75 @@ public class GuiFX extends Application {
      * The main entry point for the JavaFX application.
      * Initializes the SolidWorks-style layout.
      */
+    /**
+     * The main entry point for the JavaFX application.
+     * Initializes the Unit Selection Splash Screen.
+     */
     @Override
     public void start(Stage primaryStage) {
         sketch = new Sketch(); // Initialize the Sketch object
         commandManager = new CommandManager(); // Initialize undo/redo manager
-        
-        // Show unit selection dialog FIRST
-        List<UnitSystem> choices = java.util.Arrays.asList(UnitSystem.values());
-        ChoiceDialog<UnitSystem> dialog = new ChoiceDialog<>(UnitSystem.MMGS, choices); // Default to MMGS
-        dialog.setTitle("Unit System Selection");
-        dialog.setHeaderText("Select the Unit System for this session");
-        dialog.setContentText("Unit System:");
 
-        Optional<UnitSystem> result = dialog.showAndWait();
-        if (result.isPresent()) {
-            currentUnits = result.get();
-            sketch.setUnitSystem(currentUnits); // Configure sketch with selected units
-            System.out.println("Selected Unit System: " + currentUnits.toString());
-        } else {
-            // User cancelled - exit app
-            Platform.exit(); 
+        // Show Unit Selection Window (Splash Screen)
+        showUnitSelectionWindow(primaryStage);
+    }
+
+    /**
+     * Displays a lightweight startup window for unit selection.
+     * This avoids blocking the event dispatch thread on macOS.
+     */
+    private void showUnitSelectionWindow(Stage primaryStage) {
+        Stage splashStage = new Stage();
+        splashStage.setTitle("Select Units");
+
+        VBox root = new VBox(15);
+        root.setPadding(new Insets(20));
+        root.setAlignment(Pos.CENTER);
+
+        Label lblPrompt = new Label("Select Unit System for this session:");
+        lblPrompt.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+
+        ComboBox<UnitSystem> unitCombo = new ComboBox<>();
+        unitCombo.getItems().addAll(UnitSystem.values());
+        unitCombo.setValue(UnitSystem.MMGS); // Default
+        unitCombo.setMaxWidth(Double.MAX_VALUE);
+
+        HBox buttonBox = new HBox(10);
+        buttonBox.setAlignment(Pos.CENTER_RIGHT);
+
+        Button btnCancel = new Button("Cancel");
+        btnCancel.setOnAction(e -> {
+            splashStage.close();
+            Platform.exit();
             System.exit(0);
-        }
+        });
 
+        Button btnOK = new Button("Start SketchApp");
+        btnOK.setDefaultButton(true);
+        btnOK.setOnAction(e -> {
+            currentUnits = unitCombo.getValue();
+            sketch.setUnitSystem(currentUnits);
+            System.out.println("Selected Unit System: " + currentUnits.toString());
+
+            splashStage.close();
+            initializeMainUI(primaryStage);
+        });
+
+        buttonBox.getChildren().addAll(btnCancel, btnOK);
+        root.getChildren().addAll(lblPrompt, unitCombo, buttonBox);
+
+        Scene scene = new Scene(root, 300, 150);
+        splashStage.setScene(scene);
+        splashStage.setResizable(false);
+        splashStage.centerOnScreen();
+        splashStage.show();
+    }
+
+    /**
+     * Initializes and displays the main application window.
+     * Called only after unit selection is complete.
+     */
+    private void initializeMainUI(Stage primaryStage) {
         // Initialize the Sketch Interaction Manager
         interactionManager = new SketchInteractionManager(sketch, commandManager); // Init interaction manager
 
@@ -300,10 +346,16 @@ public class GuiFX extends Application {
                 createRibbonButton("Load", "Open File", e -> showLoadDialog()),
                 createRibbonButton("Save", "Save STL", e -> showSaveDialog()),
                 new Separator(),
-                createRibbonButton("Line", "Line Entity", e -> activateSketchTool(SketchInteractionManager.InteractionMode.SKETCH_LINE, "Line: Click and drag to draw a line")),
-                createRibbonButton("Circle", "Circle Entity", e -> activateSketchTool(SketchInteractionManager.InteractionMode.SKETCH_CIRCLE, "Circle: Click center, drag to set radius")),
+                createRibbonButton("Line", "Line Entity",
+                        e -> activateSketchTool(SketchInteractionManager.InteractionMode.SKETCH_LINE,
+                                "Line: Click and drag to draw a line")),
+                createRibbonButton("Circle", "Circle Entity",
+                        e -> activateSketchTool(SketchInteractionManager.InteractionMode.SKETCH_CIRCLE,
+                                "Circle: Click center, drag to set radius")),
                 createRibbonButton("Polygon", "Polygon Entity", e -> showPolygonParametersDialog()),
-                createRibbonButton("Point", "Point Entity", e -> activateSketchTool(SketchInteractionManager.InteractionMode.SKETCH_POINT, "Point: Click to place points")),
+                createRibbonButton("Point", "Point Entity",
+                        e -> activateSketchTool(SketchInteractionManager.InteractionMode.SKETCH_POINT,
+                                "Point: Click to place points")),
 
                 createRibbonButton("Kite", "Kite Entity", e -> showKiteDialog()),
                 createRibbonButton("NACA", "NACA Airfoil", e -> showNacaDialog()), // New Dialog needed
@@ -405,10 +457,10 @@ public class GuiFX extends Application {
         TreeView<String> tree = new TreeView<>(rootItem);
         tree.setShowRoot(true);
         VBox.setVgrow(tree, Priority.ALWAYS);
-        
+
         // Add double-click handler for plane orientation
         tree.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) {  // Double-click
+            if (event.getClickCount() == 2) { // Double-click
                 TreeItem<String> selectedItem = tree.getSelectionModel().getSelectedItem();
                 if (selectedItem != null) {
                     String itemName = selectedItem.getValue();
@@ -416,7 +468,7 @@ public class GuiFX extends Application {
                 }
             }
         });
-        
+
         // Add right-click context menu for creating custom planes
         ContextMenu contextMenu = new ContextMenu();
         MenuItem createPlaneItem = new MenuItem("Create New Plane...");
@@ -825,18 +877,19 @@ public class GuiFX extends Application {
      * @return A TitledPane containing the TextArea for console output.
      */
     private Label statusLabel;
-    
+
     private BorderPane createStatusBar() {
         BorderPane statusBar = new BorderPane();
-        statusBar.setStyle("-fx-background-color: #f0f0f0; -fx-padding: 5px; -fx-border-color: #cccccc; -fx-border-width: 1px 0 0 0;");
-        
+        statusBar.setStyle(
+                "-fx-background-color: #f0f0f0; -fx-padding: 5px; -fx-border-color: #cccccc; -fx-border-width: 1px 0 0 0;");
+
         statusLabel = new Label("Ready");
         statusLabel.setStyle("-fx-font-family: 'Segoe UI', sans-serif; -fx-font-size: 12px;");
         statusBar.setLeft(statusLabel);
-        
+
         return statusBar;
     }
-    
+
     private TitledPane createConsolePane() { // Create Console Output (Bottom)
         TitledPane consolePane = new TitledPane("Console Output", outputArea);
         consolePane.setCollapsible(true);
@@ -880,15 +933,14 @@ public class GuiFX extends Application {
      */
     private class OpenGLRenderer implements GLEventListener {
         private GLU glu = new GLU(); // GLU utility object for perspective projection
-        
+
         // Cached matrices for picking
         private double[] modelviewMatrix = new double[16];
         private double[] projectionMatrix = new double[16];
         private int[] viewport = new int[4];
-        
+
         // 3D Selection State
         private float[] firstPoint3D = null; // For distance measurement
-        
 
         private boolean showSketch = false; // Flag to switch between rendering 3D models (STL/default cube) and 2D
         private float[] modelCentroid = null; // Centroid of the currently loaded STL model (null if no model)
@@ -920,7 +972,7 @@ public class GuiFX extends Application {
             float[] lightColor = { 1.0f, 1.0f, 1.0f, 1.0f }; // White light
             gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, lightPos, 0);
             gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, lightColor, 0);
-            
+
             // Initialize text renderer for axis labels
             textRenderer = new TextRenderer(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 24));
         }
@@ -953,7 +1005,8 @@ public class GuiFX extends Application {
                 gl.glRotatef(rotationX, 1.0f, 0.0f, 0.0f);
                 gl.glRotatef(rotationY, 0.0f, 1.0f, 0.0f);
 
-                // Always render coordinate axes for reference (CAD convention: X=Red, Y=Green, Z=Blue)
+                // Always render coordinate axes for reference (CAD convention: X=Red, Y=Green,
+                // Z=Blue)
                 renderAxes(drawable);
 
                 if (stlTriangles != null) {
@@ -963,7 +1016,7 @@ public class GuiFX extends Application {
                     renderPlanes(gl); // Render reference planes if no STL is loaded
                 }
             }
-            
+
             // Cache matrices for picking (capture state after all transformations)
             gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, modelviewMatrix, 0);
             gl.glGetDoublev(GL2.GL_PROJECTION_MATRIX, projectionMatrix, 0);
@@ -1043,7 +1096,6 @@ public class GuiFX extends Application {
             // Cleanup resources if any (e.g., VBOs, textures)
         }
 
-
         /**
          * Renders XYZ coordinate axes for orientation reference with labels.
          * X = Red, Y = Green, Z = Blue
@@ -1053,97 +1105,97 @@ public class GuiFX extends Application {
             float axisLength = 15.0f;
             gl.glDisable(GL2.GL_LIGHTING);
             gl.glLineWidth(2.0f);
-            
+
             gl.glBegin(GL2.GL_LINES);
             // X-axis (Red)
             gl.glColor3f(1.0f, 0.0f, 0.0f);
             gl.glVertex3f(0, 0, 0);
             gl.glVertex3f(axisLength, 0, 0);
-            
+
             // Y-axis (Green)
             gl.glColor3f(0.0f, 1.0f, 0.0f);
             gl.glVertex3f(0, 0, 0);
             gl.glVertex3f(0, axisLength, 0);
-            
+
             // Z-axis (Blue)
             gl.glColor3f(0.0f, 0.0f, 1.0f);
             gl.glVertex3f(0, 0, 0);
             gl.glVertex3f(0, 0, axisLength);
             gl.glEnd();
-            
+
             gl.glLineWidth(1.0f);
-            
+
             // Render text labels if textRenderer is initialized
             if (textRenderer != null) {
                 renderAxisLabels(drawable, axisLength);
             }
-            
+
             gl.glEnable(GL2.GL_LIGHTING);
         }
-        
+
         /**
          * Renders axis labels (X, Y, Z) at the end of each coordinate axis.
          */
         private void renderAxisLabels(GLAutoDrawable drawable, float axisLength) {
             GL2 gl = drawable.getGL().getGL2();
-            
+
             // Get modelview and projection matrices
             double[] modelview = new double[16];
             double[] projection = new double[16];
             int[] viewport = new int[4];
-            
+
             gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, modelview, 0);
             gl.glGetDoublev(GL2.GL_PROJECTION_MATRIX, projection, 0);
             gl.glGetIntegerv(GL2.GL_VIEWPORT, viewport, 0);
-            
+
             double[] winCoords = new double[3];
-            
+
             // Offset distance for text from axis endpoint
             float labelOffset = 2.0f;
-            
+
             // Begin 2D rendering with larger font
             textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
-            
+
             // Get text dimensions for centering (approximate)
-            int charWidth = 18;  // Approximate character width for size 24 font
+            int charWidth = 18; // Approximate character width for size 24 font
             int charHeight = 24;
-            
+
             // X-axis label (Red) - positioned along positive X
-            boolean xProjected = glu.gluProject(axisLength + labelOffset, 0, 0, 
-                                               modelview, 0, projection, 0, viewport, 0, 
-                                               winCoords, 0);
+            boolean xProjected = glu.gluProject(axisLength + labelOffset, 0, 0,
+                    modelview, 0, projection, 0, viewport, 0,
+                    winCoords, 0);
             if (xProjected && winCoords[2] >= 0 && winCoords[2] <= 1) { // Check if in front of camera
                 textRenderer.setColor(1.0f, 0.0f, 0.0f, 1.0f); // Bright red
-                int x = (int)winCoords[0] - charWidth/2;  // Center text
-                int y = (int)winCoords[1] - charHeight/2;
+                int x = (int) winCoords[0] - charWidth / 2; // Center text
+                int y = (int) winCoords[1] - charHeight / 2;
                 textRenderer.draw("X", x, y);
             }
-            
+
             // Y-axis label (Green) - positioned along positive Y
-            boolean yProjected = glu.gluProject(0, axisLength + labelOffset, 0, 
-                                               modelview, 0, projection, 0, viewport, 0, 
-                                               winCoords, 0);
+            boolean yProjected = glu.gluProject(0, axisLength + labelOffset, 0,
+                    modelview, 0, projection, 0, viewport, 0,
+                    winCoords, 0);
             if (yProjected && winCoords[2] >= 0 && winCoords[2] <= 1) {
                 textRenderer.setColor(0.0f, 0.8f, 0.0f, 1.0f); // Bright green
-                int x = (int)winCoords[0] - charWidth/2;
-                int y = (int)winCoords[1] - charHeight/2;
+                int x = (int) winCoords[0] - charWidth / 2;
+                int y = (int) winCoords[1] - charHeight / 2;
                 textRenderer.draw("Y", x, y);
             }
-            
+
             // Z-axis label (Blue) - positioned along positive Z
-            boolean zProjected = glu.gluProject(0, 0, axisLength + labelOffset, 
-                                               modelview, 0, projection, 0, viewport, 0, 
-                                               winCoords, 0);
+            boolean zProjected = glu.gluProject(0, 0, axisLength + labelOffset,
+                    modelview, 0, projection, 0, viewport, 0,
+                    winCoords, 0);
             if (zProjected && winCoords[2] >= 0 && winCoords[2] <= 1) {
                 textRenderer.setColor(0.0f, 0.4f, 1.0f, 1.0f); // Bright blue
-                int x = (int)winCoords[0] - charWidth/2;
-                int y = (int)winCoords[1] - charHeight/2;
+                int x = (int) winCoords[0] - charWidth / 2;
+                int y = (int) winCoords[1] - charHeight / 2;
                 textRenderer.draw("Z", x, y);
             }
-            
+
             textRenderer.endRendering();
         }
-        
+
         /**
          * Renders small coordinate axes at the model's centroid.
          * Similar to SolidWorks model-space axes indicator.
@@ -1153,38 +1205,38 @@ public class GuiFX extends Application {
             if (modelCentroid == null) {
                 return; // No model loaded
             }
-            
+
             // Scale axis length based on model size (20% of max dimension)
             float modelSize = Geometry.getModelMaxDimension();
             float axisLength = Math.max(modelSize * 0.2f, 2.0f); // At least 2 units
-            
+
             float cx = modelCentroid[0];
             float cy = modelCentroid[1];
             float cz = modelCentroid[2];
-            
+
             gl.glPushAttrib(GL2.GL_ALL_ATTRIB_BITS);
             try {
                 gl.glDisable(GL2.GL_LIGHTING);
                 gl.glDisable(GL2.GL_DEPTH_TEST); // Draw on top
                 gl.glLineWidth(4.0f); // Thicker lines for visibility
-                
+
                 gl.glBegin(GL2.GL_LINES);
                 // X-axis (Red)
                 gl.glColor3f(1.0f, 0.0f, 0.0f);
                 gl.glVertex3f(cx, cy, cz);
                 gl.glVertex3f(cx + axisLength, cy, cz);
-                
+
                 // Y-axis (Green)
                 gl.glColor3f(0.0f, 1.0f, 0.0f);
                 gl.glVertex3f(cx, cy, cz);
                 gl.glVertex3f(cx, cy + axisLength, cz);
-                
+
                 // Z-axis (Blue)
                 gl.glColor3f(0.0f, 0.0f, 1.0f);
                 gl.glVertex3f(cx, cy, cz);
                 gl.glVertex3f(cx, cy, cz + axisLength);
                 gl.glEnd();
-                
+
                 // Draw larger point at centroid for visibility
                 gl.glColor3f(1.0f, 1.0f, 0.0f); // Yellow
                 gl.glPointSize(12.0f);
@@ -1338,7 +1390,7 @@ public class GuiFX extends Application {
             if (interactionManager != null && interactionManager.isDrawing()) {
                 renderGhost(gl, drawable);
             }
-            
+
             // Render dimension text labels
             if (textRenderer != null && sketch != null) {
                 renderDimensionText(gl, drawable);
@@ -1354,40 +1406,42 @@ public class GuiFX extends Application {
             gl.glMatrixMode(GL2.GL_MODELVIEW);
             gl.glEnable(GL2.GL_LIGHTING); // Re-enable lighting
         }
-        
+
         /**
          * Renders dimension text labels in 2D sketch view.
          */
         private void renderDimensionText(GL2 gl, GLAutoDrawable drawable) {
             List<cad.core.Dimension> dims = sketch.getDimensions();
-            if (dims.isEmpty()) return;
-            
+            if (dims.isEmpty())
+                return;
+
             // Get matrices for projection
             double[] modelview = new double[16];
             double[] projection = new double[16];
             int[] viewport = new int[4];
-            
+
             gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, modelview, 0);
             gl.glGetDoublev(GL2.GL_PROJECTION_MATRIX, projection, 0);
             gl.glGetIntegerv(GL2.GL_VIEWPORT, viewport, 0);
-            
+
             double[] winCoords = new double[3];
-            
+
             textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
             textRenderer.setColor(0.3f, 0.3f, 0.3f, 1.0f); // Professional dark gray
-            
+
             for (cad.core.Dimension dim : dims) {
-                if (!dim.isVisible()) continue;
-                
+                if (!dim.isVisible())
+                    continue;
+
                 // Project 3D text position to 2D screen coordinates
-                if (glu.gluProject(dim.getTextX(), dim.getTextY(), dim.getTextZ(), 
-                                  modelview, 0, projection, 0, viewport, 0, 
-                                  winCoords, 0)) {
+                if (glu.gluProject(dim.getTextX(), dim.getTextY(), dim.getTextZ(),
+                        modelview, 0, projection, 0, viewport, 0,
+                        winCoords, 0)) {
                     // Draw dimension label at projected position
-                    textRenderer.draw(dim.getLabel(), (int)winCoords[0], (int)winCoords[1]);
+                    textRenderer.draw(dim.getLabel(), (int) winCoords[0], (int) winCoords[1]);
                 }
             }
-            
+
             textRenderer.endRendering();
         }
 
@@ -1400,7 +1454,7 @@ public class GuiFX extends Application {
             float y1 = interactionManager.getStartY();
             float x2 = interactionManager.getCurrentX();
             float y2 = interactionManager.getCurrentY();
-            
+
             String dimensionText = ""; // Will hold live dimension value
 
             if (interactionManager.getMode() == SketchInteractionManager.InteractionMode.SKETCH_LINE) {
@@ -1408,11 +1462,11 @@ public class GuiFX extends Application {
                 gl.glVertex2f(x1, y1);
                 gl.glVertex2f(x2, y2);
                 gl.glEnd();
-                
+
                 // Draw small circles at endpoints for better visibility
                 drawPoint(gl, x1, y1, 3.0f);
                 drawPoint(gl, x2, y2, 3.0f);
-                
+
                 // Calculate length for live dimension
                 float length = (float) Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
                 dimensionText = String.format("%.2f %s", length, currentUnits.getAbbreviation());
@@ -1427,8 +1481,7 @@ public class GuiFX extends Application {
                 gl.glEnd();
                 // Draw center point
                 drawPoint(gl, x1, y1, 4.0f);
-                
-                
+
                 // Live dimension for radius
                 dimensionText = String.format("R%.2f %s", radius, currentUnits.getAbbreviation());
             } else if (interactionManager.getMode() == SketchInteractionManager.InteractionMode.SKETCH_POLYGON) {
@@ -1442,34 +1495,34 @@ public class GuiFX extends Application {
                 gl.glEnd();
                 // Draw center point
                 drawPoint(gl, x1, y1, 4.0f);
-                
+
                 // Live dimension for radius
                 dimensionText = String.format("R%.2f %s", radius, currentUnits.getAbbreviation());
             }
-            
+
             gl.glLineWidth(1.0f); // Reset line width
-            
+
             // Render live dimension text near cursor
             if (!dimensionText.isEmpty() && textRenderer != null) {
                 // Project cursor position to screen
                 double[] modelview = new double[16];
                 double[] projection = new double[16];
                 int[] viewport = new int[4];
-                
+
                 gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, modelview, 0);
                 gl.glGetDoublev(GL2.GL_PROJECTION_MATRIX, projection, 0);
                 gl.glGetIntegerv(GL2.GL_VIEWPORT, viewport, 0);
-                
+
                 double[] winCoords = new double[3];
-                
+
                 if (glu.gluProject(x2, y2, 0, modelview, 0, projection, 0, viewport, 0, winCoords, 0)) {
                     textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
                     textRenderer.setColor(0.2f, 0.5f, 1.0f, 1.0f); // Blue like ghost
-                    
+
                     // Offset text from cursor (right and above)
-                    int textX = (int)winCoords[0] + 15;
-                    int textY = (int)winCoords[1] + 15;
-                    
+                    int textX = (int) winCoords[0] + 15;
+                    int textY = (int) winCoords[1] + 15;
+
                     textRenderer.draw(dimensionText, textX, textY);
                     textRenderer.endRendering();
                 }
@@ -1481,7 +1534,8 @@ public class GuiFX extends Application {
          */
         private void renderSelectionHighlights(GL2 gl) {
             List<Entity> selected = interactionManager.getSelectedEntities();
-            if (selected.isEmpty()) return;
+            if (selected.isEmpty())
+                return;
 
             gl.glDisable(GL2.GL_LIGHTING);
             gl.glColor3f(1.0f, 0.5f, 0.0f); // Orange highlight
@@ -1534,43 +1588,43 @@ public class GuiFX extends Application {
         public void handle3DDimensionClick(int mouseX, int mouseY) {
             // Convert mouse Y to OpenGL Y (invert)
             int glY = viewport[3] - mouseY;
-            
+
             double[] nearPoint = new double[3];
             double[] farPoint = new double[3];
-            
+
             // UnProject Near Plane (z=0.0)
             glu.gluUnProject(mouseX, glY, 0.0, modelviewMatrix, 0, projectionMatrix, 0, viewport, 0, nearPoint, 0);
-            
+
             // UnProject Far Plane (z=1.0)
             glu.gluUnProject(mouseX, glY, 1.0, modelviewMatrix, 0, projectionMatrix, 0, viewport, 0, farPoint, 0);
-            
-            float[] rayOrigin = { (float)nearPoint[0], (float)nearPoint[1], (float)nearPoint[2] };
-            float[] rayDir = { 
-                (float)(farPoint[0] - nearPoint[0]), 
-                (float)(farPoint[1] - nearPoint[1]), 
-                (float)(farPoint[2] - nearPoint[2]) 
+
+            float[] rayOrigin = { (float) nearPoint[0], (float) nearPoint[1], (float) nearPoint[2] };
+            float[] rayDir = {
+                    (float) (farPoint[0] - nearPoint[0]),
+                    (float) (farPoint[1] - nearPoint[1]),
+                    (float) (farPoint[2] - nearPoint[2])
             };
-            
+
             // Normalize direction
-            float len = (float)Math.sqrt(rayDir[0]*rayDir[0] + rayDir[1]*rayDir[1] + rayDir[2]*rayDir[2]);
+            float len = (float) Math.sqrt(rayDir[0] * rayDir[0] + rayDir[1] * rayDir[1] + rayDir[2] * rayDir[2]);
             if (len > 0) {
                 rayDir[0] /= len;
                 rayDir[1] /= len;
                 rayDir[2] /= len;
             }
-            
+
             // Perform intersection test
             float[] triangle = Geometry.pickFace(rayOrigin, rayDir);
-            
+
             if (triangle != null) {
-                // Determine what to calculate based on context (Simplicity: Area for single click)
+                // Determine what to calculate based on context (Simplicity: Area for single
+                // click)
                 float area = Geometry.calculateTriangleArea(triangle);
                 appendOutput(String.format("Selected Face Area: %.4f sq units", area));
             } else {
                 appendOutput("No geometry selected.");
             }
         }
-
 
         /**
          * Sets the list of triangles to be rendered as an STL model.
@@ -1586,21 +1640,22 @@ public class GuiFX extends Application {
             setShowSketch(false); // When STL is loaded, hide sketch view
             glCanvas.repaint(); // Request a repaint of the canvas
         }
-        
+
         /**
          * Calculates the geometric centroid of an STL model.
          * 
          * @param triangles List of STL triangles
-         * @return Array of [x, y, z] coordinates of the centroid, or null if no triangles
+         * @return Array of [x, y, z] coordinates of the centroid, or null if no
+         *         triangles
          */
         private float[] calculateStlCentroid(List<float[]> triangles) {
             if (triangles == null || triangles.isEmpty()) {
                 return null;
             }
-            
+
             float sumX = 0, sumY = 0, sumZ = 0;
             int vertexCount = 0;
-            
+
             // Sum all vertex positions
             for (float[] triangle : triangles) {
                 // Each triangle has: [nx, ny, nz, v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z]
@@ -1612,16 +1667,16 @@ public class GuiFX extends Application {
                     vertexCount++;
                 }
             }
-            
+
             // Calculate average
             if (vertexCount > 0) {
                 return new float[] {
-                    sumX / vertexCount,
-                    sumY / vertexCount,
-                    sumZ / vertexCount
+                        sumX / vertexCount,
+                        sumY / vertexCount,
+                        sumZ / vertexCount
                 };
             }
-            
+
             return null;
         }
 
@@ -1673,24 +1728,24 @@ public class GuiFX extends Application {
         @Override
         public void mouseClicked(MouseEvent e) {
             // Check if in dimension tool mode
-            if (interactionManager != null && 
-                interactionManager.getMode() == SketchInteractionManager.InteractionMode.DIMENSION_TOOL &&
-                glRenderer != null && glRenderer.isShowingSketch()) {
-                
+            if (interactionManager != null &&
+                    interactionManager.getMode() == SketchInteractionManager.InteractionMode.DIMENSION_TOOL &&
+                    glRenderer != null && glRenderer.isShowingSketch()) {
+
                 float[] worldCoords = getSketchWorldCoordinates(e.getX(), e.getY());
                 handleDimensionClick(worldCoords[0], worldCoords[1]);
                 return;
             }
-            
+
             // Check if in 3D dimensioning mode
-             if (interactionManager != null && 
-                interactionManager.getMode() == SketchInteractionManager.InteractionMode.DIMENSION_TOOL &&
-                glRenderer != null && !glRenderer.isShowingSketch()) {
-                 
-                 glRenderer.handle3DDimensionClick(e.getX(), e.getY());
-                 return;
+            if (interactionManager != null &&
+                    interactionManager.getMode() == SketchInteractionManager.InteractionMode.DIMENSION_TOOL &&
+                    glRenderer != null && !glRenderer.isShowingSketch()) {
+
+                glRenderer.handle3DDimensionClick(e.getX(), e.getY());
+                return;
             }
-            
+
             glCanvas.requestFocusInWindow(); // Request focus on click to enable keyboard controls
             // Also request focus on the JavaFX SwingNode to capture arrow keys
             Platform.runLater(() -> {
@@ -2067,9 +2122,9 @@ public class GuiFX extends Application {
                 // Cancel drawing or request focus
                 case KeyEvent.VK_ESCAPE:
                     // If a sketch tool is active, cancel it
-                    if (interactionManager != null && 
-                        interactionManager.getMode() != SketchInteractionManager.InteractionMode.IDLE &&
-                        interactionManager.getMode() != SketchInteractionManager.InteractionMode.VIEW_ROTATE) {
+                    if (interactionManager != null &&
+                            interactionManager.getMode() != SketchInteractionManager.InteractionMode.IDLE &&
+                            interactionManager.getMode() != SketchInteractionManager.InteractionMode.VIEW_ROTATE) {
                         interactionManager.setMode(SketchInteractionManager.InteractionMode.VIEW_ROTATE);
                         appendOutput("Drawing cancelled. Select a tool to draw again.");
                         viewChanged = true;
@@ -2109,7 +2164,8 @@ public class GuiFX extends Application {
      * Activates a sketch tool and automatically switches to sketch view if needed.
      * Provides user feedback about the selected tool.
      * 
-     * @param mode The interaction mode to activate (SKETCH_LINE, SKETCH_CIRCLE, etc.)
+     * @param mode    The interaction mode to activate (SKETCH_LINE, SKETCH_CIRCLE,
+     *                etc.)
      * @param message The message to display to the user about how to use the tool
      */
     private void activateSketchTool(SketchInteractionManager.InteractionMode mode, String message) {
@@ -2117,31 +2173,32 @@ public class GuiFX extends Application {
         if (interactionManager != null) {
             interactionManager.setMode(mode);
         }
-        
+
         // Auto-switch to sketch view if not already active
         if (glRenderer != null) {
             glRenderer.setShowSketch(true); // Ensure sketch view
             appendOutput("Switched to 2D sketch mode");
-            if (statusLabel != null) statusLabel.setText(message);
+            if (statusLabel != null)
+                statusLabel.setText(message);
         }
-        
+
         // Provide user feedback
         appendOutput(message);
         appendOutput("Press ESC to cancel drawing");
-        
+
         // Request focus on canvas for immediate interaction
         Platform.runLater(() -> {
             if (canvasNode != null) {
                 canvasNode.requestFocus();
             }
         });
-        
+
         // Repaint canvas
         if (glCanvas != null) {
             glCanvas.repaint();
         }
     }
-    
+
     /**
      * Performs undo operation.
      */
@@ -2156,7 +2213,7 @@ public class GuiFX extends Application {
             appendOutput("Nothing to undo");
         }
     }
-    
+
     /**
      * Performs redo operation.
      */
@@ -2171,7 +2228,7 @@ public class GuiFX extends Application {
             appendOutput("Nothing to redo");
         }
     }
-    
+
     /**
      * Activates the dimension tool for measuring entities.
      * User can click entities to create dimensions.
@@ -2182,36 +2239,37 @@ public class GuiFX extends Application {
         if (interactionManager != null) {
             interactionManager.setMode(SketchInteractionManager.InteractionMode.DIMENSION_TOOL);
         }
-        
+
         // Update status
-        if (statusLabel != null) statusLabel.setText("Dimension Tool: Select Line/Circle/2 Points to measure");
-        
+        if (statusLabel != null)
+            statusLabel.setText("Dimension Tool: Select Line/Circle/2 Points to measure");
+
         // Auto-switch to sketch view if not already active
         if (glRenderer != null && !glRenderer.isShowingSketch()) {
             glRenderer.setShowSketch(true);
             appendOutput("Switched to 2D sketch mode for dimensioning");
         }
-        
+
         // Provide user feedback
         appendOutput("Dimension Tool: Click an entity to measure it");
         appendOutput("  - Line: shows length");
         appendOutput("  - Circle: shows radius");
         appendOutput("  - Polygon: shows edge length");
         appendOutput("Press ESC to deactivate tool");
-        
+
         // Request focus on canvas
         Platform.runLater(() -> {
             if (canvasNode != null) {
                 canvasNode.requestFocus();
             }
         });
-        
+
         // Repaint canvas
         if (glCanvas != null) {
             glCanvas.repaint();
         }
     }
-    
+
     /**
      * Handles a click when dimension tool is active.
      * Finds the closest entity and creates a dimension for it.
@@ -2221,10 +2279,10 @@ public class GuiFX extends Application {
             appendOutput("No sketch to dimension");
             return;
         }
-        
+
         // Find closest entity to click (within 2.0 units)
         Sketch.Entity entity = sketch.findClosestEntity(worldX, worldY, 2.0f);
-        
+
         if (entity != null) {
             // Entity found - create dimension
             cad.core.Dimension dim = sketch.createDimensionFor(entity);
@@ -2239,21 +2297,23 @@ public class GuiFX extends Application {
             appendOutput("No entity found at click location (click closer to an entity)");
         }
     }
-    
+
     /**
      * Orients the 3D view to align with the selected plane.
      * Double-clicking a plane in the feature tree calls this method.
      * 
-     * @param planeName The name of the plane (e.g., "Front Plane", "Top Plane", "Right Plane")
+     * @param planeName The name of the plane (e.g., "Front Plane", "Top Plane",
+     *                  "Right Plane")
      */
     private void orientViewToPlane(String planeName) {
-        if (glRenderer == null) return;
-        
+        if (glRenderer == null)
+            return;
+
         // Switch to 3D view if in sketch mode
         if (glRenderer.isShowingSketch()) {
             glRenderer.setShowSketch(false);
         }
-        
+
         // Set rotation based on plane
         if (planeName.contains("Front")) {
             // Front Plane (XY plane) - Look from +Z
@@ -2276,16 +2336,16 @@ public class GuiFX extends Application {
             rotationY = 45.0f;
             appendOutput("View oriented to Isometric");
         }
-        
+
         // Reset zoom to default
         zoom = -50.0f;
-        
+
         // Repaint to show new orientation
         if (glCanvas != null) {
             glCanvas.repaint();
         }
     }
-    
+
     /**
      * Toggles between 2D sketch view and 3D model view.
      */
@@ -2453,27 +2513,28 @@ public class GuiFX extends Application {
         helpPane.setExpanded(false); // Collapsed by default
         return helpPane;
     }
+
     private void showHelp() {
-        if (helpText == null) return;
+        if (helpText == null)
+            return;
         helpText.setText(
                 "Keyboard Shortcuts:\n" +
-                "-------------------\n" +
-                "Rotate View:   Arrow Keys\n" +
-                "Zoom View:     Mouse Scroll\n" +
-                "Reset View:    Double-click Planes in Tree\n" +
-                "Undo:          Ctrl + Z\n" +
-                "Redo:          Ctrl + Shift + Z\n" +
-                "Help:          H\n\n" +
-                "Features:\n" +
-                "---------\n" +
-                "Sketches:      Create 2D profiles on Z=0 plane\n" +
-                "Constraints:   Apply Geometric relations (Horiz, Vert)\n" +
-                "Dimensions:    Context-aware 2D and 3D measurements\n" +
-                "Extrude:       Convert closed sketch to 3D solid\n" +
-                "Revolve:       Revolve sketch (requires CL centerline)\n" +
-                "Tree View:     Manage history and view planes\n\n" +
-                "Tip: Switch to 'Sketch' tab to start drawing!"
-        );
+                        "-------------------\n" +
+                        "Rotate View:   Arrow Keys\n" +
+                        "Zoom View:     Mouse Scroll\n" +
+                        "Reset View:    Double-click Planes in Tree\n" +
+                        "Undo:          Ctrl + Z\n" +
+                        "Redo:          Ctrl + Shift + Z\n" +
+                        "Help:          H\n\n" +
+                        "Features:\n" +
+                        "---------\n" +
+                        "Sketches:      Create 2D profiles on Z=0 plane\n" +
+                        "Constraints:   Apply Geometric relations (Horiz, Vert)\n" +
+                        "Dimensions:    Context-aware 2D and 3D measurements\n" +
+                        "Extrude:       Convert closed sketch to 3D solid\n" +
+                        "Revolve:       Revolve sketch (requires CL centerline)\n" +
+                        "Tree View:     Manage history and view planes\n\n" +
+                        "Tip: Switch to 'Sketch' tab to start drawing!");
     }
 
     /**
@@ -2778,9 +2839,10 @@ public class GuiFX extends Application {
      * locations, endpoints for lines, centers for circles, or vertices for
      * polygons.
      * 
-    // Legacy sketch methods (sketchPoint, sketchLine, sketchCircle, sketchPolygon) removed
-
-    /**
+     * // Legacy sketch methods (sketchPoint, sketchLine, sketchCircle,
+     * sketchPolygon) removed
+     * 
+     * /**
      * Extrudes the current 2D sketch into a 3D shape.
      * Opens a custom dialog window to get the extrusion height from the user.
      */
@@ -2891,7 +2953,7 @@ public class GuiFX extends Application {
     }
 
     // === New Dialog methods for Features ===
-    
+
     /**
      * Shows a dialog to collect polygon parameters before drawing.
      */
@@ -2899,24 +2961,29 @@ public class GuiFX extends Application {
         Stage dialog = new Stage();
         dialog.setTitle("Create Kite");
         dialog.initModality(Modality.APPLICATION_MODAL);
-        
+
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
         grid.setPadding(new Insets(20));
-        
+
         TextField cxField = new TextField("0");
         TextField cyField = new TextField("0");
         TextField vField = new TextField("10"); // Vertical diagonal
-        TextField hField = new TextField("6");  // Horizontal diagonal
+        TextField hField = new TextField("6"); // Horizontal diagonal
         TextField angleField = new TextField("0");
-        
-        grid.add(new Label("Center X:"), 0, 0); grid.add(cxField, 1, 0);
-        grid.add(new Label("Center Y:"), 0, 1); grid.add(cyField, 1, 1);
-        grid.add(new Label("Vertical Diag:"), 0, 2); grid.add(vField, 1, 2);
-        grid.add(new Label("Horizontal Diag:"), 0, 3); grid.add(hField, 1, 3);
-        grid.add(new Label("Angle (deg):"), 0, 4); grid.add(angleField, 1, 4);
-        
+
+        grid.add(new Label("Center X:"), 0, 0);
+        grid.add(cxField, 1, 0);
+        grid.add(new Label("Center Y:"), 0, 1);
+        grid.add(cyField, 1, 1);
+        grid.add(new Label("Vertical Diag:"), 0, 2);
+        grid.add(vField, 1, 2);
+        grid.add(new Label("Horizontal Diag:"), 0, 3);
+        grid.add(hField, 1, 3);
+        grid.add(new Label("Angle (deg):"), 0, 4);
+        grid.add(angleField, 1, 4);
+
         Button btnCreate = new Button("Create");
         btnCreate.setOnAction(e -> {
             try {
@@ -2933,7 +3000,7 @@ public class GuiFX extends Application {
                 appendOutput("Invalid number format for Kite");
             }
         });
-        
+
         grid.add(btnCreate, 1, 5);
         Scene scene = new Scene(grid);
         dialog.setScene(scene);
@@ -2944,33 +3011,34 @@ public class GuiFX extends Application {
         Stage dialog = new Stage();
         dialog.setTitle("Create Cube");
         dialog.initModality(Modality.APPLICATION_MODAL);
-        
+
         VBox layout = new VBox(10);
         layout.setPadding(new Insets(20));
-        
+
         TextField sizeField = new TextField("10.0");
         TextField divField = new TextField(String.valueOf(cubeDivisions));
-        
+
         layout.getChildren().addAll(
-            new Label("Size:"), sizeField,
-            new Label("Divisions:"), divField,
-            new Button("Create") {{
-                setOnAction(e -> {
-                    try {
-                        float size = Float.parseFloat(sizeField.getText());
-                        int divs = Integer.parseInt(divField.getText());
-                        cubeDivisions = divs;
-                        Geometry.createCube(size, divs);
-                        appendOutput("Cube created: size=" + size + ", divs=" + divs);
-                        glCanvas.repaint();
-                        dialog.close();
-                    } catch (Exception ex) {
-                        appendOutput("Invalid input for Cube");
+                new Label("Size:"), sizeField,
+                new Label("Divisions:"), divField,
+                new Button("Create") {
+                    {
+                        setOnAction(e -> {
+                            try {
+                                float size = Float.parseFloat(sizeField.getText());
+                                int divs = Integer.parseInt(divField.getText());
+                                cubeDivisions = divs;
+                                Geometry.createCube(size, divs);
+                                appendOutput("Cube created: size=" + size + ", divs=" + divs);
+                                glCanvas.repaint();
+                                dialog.close();
+                            } catch (Exception ex) {
+                                appendOutput("Invalid input for Cube");
+                            }
+                        });
                     }
                 });
-            }}
-        );
-        
+
         dialog.setScene(new Scene(layout, 250, 200));
         dialog.show();
     }
@@ -2979,37 +3047,38 @@ public class GuiFX extends Application {
         Stage dialog = new Stage();
         dialog.setTitle("Create Sphere");
         dialog.initModality(Modality.APPLICATION_MODAL);
-        
+
         VBox layout = new VBox(10);
         layout.setPadding(new Insets(20));
-        
+
         TextField radiusField = new TextField("5.0");
         TextField latField = new TextField(String.valueOf(sphereLatDiv));
         TextField lonField = new TextField(String.valueOf(sphereLonDiv));
-        
+
         layout.getChildren().addAll(
-            new Label("Radius:"), radiusField,
-            new Label("Lat. Divisions:"), latField,
-            new Label("Lon. Divisions:"), lonField,
-            new Button("Create") {{
-                setOnAction(e -> {
-                    try {
-                        float r = Float.parseFloat(radiusField.getText());
-                        int lat = Integer.parseInt(latField.getText());
-                        int lon = Integer.parseInt(lonField.getText());
-                        sphereLatDiv = lat;
-                        sphereLonDiv = lon;
-                        Geometry.createSphere(r, lat, lon);
-                        appendOutput("Sphere created: r=" + r);
-                        glCanvas.repaint();
-                        dialog.close();
-                    } catch (Exception ex) {
-                        appendOutput("Invalid input for Sphere");
+                new Label("Radius:"), radiusField,
+                new Label("Lat. Divisions:"), latField,
+                new Label("Lon. Divisions:"), lonField,
+                new Button("Create") {
+                    {
+                        setOnAction(e -> {
+                            try {
+                                float r = Float.parseFloat(radiusField.getText());
+                                int lat = Integer.parseInt(latField.getText());
+                                int lon = Integer.parseInt(lonField.getText());
+                                sphereLatDiv = lat;
+                                sphereLonDiv = lon;
+                                Geometry.createSphere(r, lat, lon);
+                                appendOutput("Sphere created: r=" + r);
+                                glCanvas.repaint();
+                                dialog.close();
+                            } catch (Exception ex) {
+                                appendOutput("Invalid input for Sphere");
+                            }
+                        });
                     }
                 });
-            }}
-        );
-        
+
         dialog.setScene(new Scene(layout, 250, 250));
         dialog.show();
     }
@@ -3018,30 +3087,30 @@ public class GuiFX extends Application {
         Stage dialog = new Stage();
         dialog.setTitle("Polygon Parameters");
         dialog.initModality(Modality.APPLICATION_MODAL);
-        
+
         GridPane layout = new GridPane();
         layout.setHgap(10);
         layout.setVgap(10);
         layout.setPadding(new Insets(15));
-        
+
         // Number of sides spinner
         Label sidesLabel = new Label("Number of Sides:");
         javafx.scene.control.Spinner<Integer> sidesSpinner = new javafx.scene.control.Spinner<>(3, 20, 6);
         sidesSpinner.setEditable(true);
         sidesSpinner.setPrefWidth(100);
-        
+
         layout.add(sidesLabel, 0, 0);
         layout.add(sidesSpinner, 1, 0);
-        
+
         // Buttons
         HBox buttons = new HBox(10);
         buttons.setAlignment(Pos.CENTER_RIGHT);
         Button okButton = new Button("OK");
         Button cancelButton = new Button("Cancel");
         buttons.getChildren().addAll(okButton, cancelButton);
-        
+
         layout.add(buttons, 0, 1, 2, 1);
-        
+
         // Button handlers
         okButton.setOnAction(e -> {
             int sides = sidesSpinner.getValue();
@@ -3049,25 +3118,24 @@ public class GuiFX extends Application {
                 interactionManager.setPolygonSides(sides);
             }
             activateSketchTool(
-                SketchInteractionManager.InteractionMode.SKETCH_POLYGON,
-                sides + "-sided Polygon: Click center, drag to set radius"
-            );
+                    SketchInteractionManager.InteractionMode.SKETCH_POLYGON,
+                    sides + "-sided Polygon: Click center, drag to set radius");
             dialog.close();
         });
-        
+
         cancelButton.setOnAction(e -> dialog.close());
-        
+
         // Create scene and show dialog
         Scene scene = new Scene(layout, 280, 120);
         dialog.setScene(scene);
         dialog.initOwner(outputArea.getScene().getWindow());
-        
+
         // Focus on spinner when dialog opens
         Platform.runLater(() -> sidesSpinner.requestFocus());
-        
+
         dialog.showAndWait();
     }
-    
+
     /**
      * Shows dialog for creating a custom reference plane.
      * User can define name and orientation angles.
@@ -3077,19 +3145,19 @@ public class GuiFX extends Application {
         dialog.setTitle("Create Custom Plane");
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setResizable(false);
-        
+
         GridPane layout = new GridPane();
         layout.setHgap(10);
         layout.setVgap(10);
         layout.setPadding(new Insets(20));
-        
+
         // Plane Name
         Label nameLabel = new Label("Plane Name:");
         TextField nameField = new TextField("Custom Plane 1");
         nameField.setPrefWidth(200);
         layout.add(nameLabel, 0, 0);
         layout.add(nameField, 1, 0);
-        
+
         // Reference Plane selector
         Label refLabel = new Label("Parallel To:");
         javafx.scene.control.ComboBox<String> refCombo = new javafx.scene.control.ComboBox<>();
@@ -3097,7 +3165,7 @@ public class GuiFX extends Application {
         refCombo.setValue("Front Plane");
         layout.add(refLabel, 0, 1);
         layout.add(refCombo, 1, 1);
-        
+
         // Offset distance
         Label offsetLabel = new Label("Offset Distance:");
         Spinner<Double> offsetSpinner = new Spinner<>(-1000.0, 1000.0, 0.0, 1.0);
@@ -3107,7 +3175,7 @@ public class GuiFX extends Application {
         HBox offsetBox = new HBox(5, offsetSpinner, unitLabel);
         layout.add(offsetLabel, 0, 2);
         layout.add(offsetBox, 1, 2);
-        
+
         // Buttons
         HBox buttons = new HBox(10);
         buttons.setAlignment(Pos.CENTER_RIGHT);
@@ -3117,7 +3185,7 @@ public class GuiFX extends Application {
         Button cancelButton = new Button("Cancel");
         buttons.getChildren().addAll(okButton, cancelButton);
         layout.add(buttons, 0, 3, 2, 1);
-        
+
         // Create action
         okButton.setOnAction(e -> {
             String planeName = nameField.getText().trim();
@@ -3125,25 +3193,26 @@ public class GuiFX extends Application {
                 // Add new plane to tree
                 TreeItem<String> newPlane = new TreeItem<>(planeName + " Plane");
                 rootItem.getChildren().add(newPlane);
-                
+
                 // Store plane data for orientation
                 String refPlane = refCombo.getValue();
                 double offset = offsetSpinner.getValue();
-                
-                appendOutput("Created custom plane: " + planeName + 
-                            " (parallel to " + refPlane + ", offset " + offset + " " + currentUnits.getAbbreviation() + ")");
-                
+
+                appendOutput("Created custom plane: " + planeName +
+                        " (parallel to " + refPlane + ", offset " + offset + " " + currentUnits.getAbbreviation()
+                        + ")");
+
                 dialog.close();
             }
         });
-        
+
         cancelButton.setOnAction(e -> dialog.close());
-        
+
         Scene scene = new Scene(layout, 350, 180);
         dialog.setScene(scene);
         dialog.showAndWait();
     }
-    
+
     /**
      * Shows the unit selection dialog at application startup.
      * Allows user to choose their preferred unit system.
@@ -3153,44 +3222,44 @@ public class GuiFX extends Application {
         dialog.setTitle("Select Units - SketchApp 4.0");
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setResizable(false);
-        
+
         VBox layout = new VBox(12);
         layout.setPadding(new Insets(20));
         layout.setAlignment(Pos.CENTER);
         layout.setStyle("-fx-background-color: #f9f9f9;");
-        
+
         Label promptLabel = new Label("Choose your preferred unit system:");
         promptLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
-        
+
         // Create radio buttons for each unit system
         ToggleGroup unitGroup = new ToggleGroup();
-        
+
         RadioButton mmButton = new RadioButton("Millimeters (mm) - Precision engineering");
         mmButton.setToggleGroup(unitGroup);
         mmButton.setUserData(UnitSystem.MMGS);
         mmButton.setSelected(true); // Default
         mmButton.setStyle("-fx-font-size: 12px;");
-        
+
         RadioButton cmButton = new RadioButton("Centimeters (cm) - General use");
         cmButton.setToggleGroup(unitGroup);
         cmButton.setUserData(UnitSystem.CMGS);
         cmButton.setStyle("-fx-font-size: 12px;");
-        
+
         RadioButton mButton = new RadioButton("Meters (m) - Large scale");
         mButton.setToggleGroup(unitGroup);
         mButton.setUserData(UnitSystem.MGS);
         mButton.setStyle("-fx-font-size: 12px;");
-        
+
         RadioButton inButton = new RadioButton("Inches (in) - Imperial");
         inButton.setToggleGroup(unitGroup);
         inButton.setUserData(UnitSystem.IPS);
         inButton.setStyle("-fx-font-size: 12px;");
-        
+
         RadioButton ftButton = new RadioButton("Feet (ft) - Architecture");
         ftButton.setToggleGroup(unitGroup);
         ftButton.setUserData(UnitSystem.FTLBFS);
         ftButton.setStyle("-fx-font-size: 12px;");
-        
+
         // OK button
         Button okButton = new Button("OK");
         okButton.setDefaultButton(true);
@@ -3201,18 +3270,17 @@ public class GuiFX extends Application {
             setApplicationUnits(selected);
             dialog.close();
         });
-        
+
         layout.getChildren().addAll(
-            promptLabel,
-            mmButton, cmButton, mButton, inButton, ftButton,
-            okButton
-        );
-        
+                promptLabel,
+                mmButton, cmButton, mButton, inButton, ftButton,
+                okButton);
+
         Scene scene = new Scene(layout, 350, 300);
         dialog.setScene(scene);
         dialog.showAndWait();
     }
-    
+
     /**
      * Sets the application-wide unit system.
      * Updates sketch and current units field.
@@ -3348,10 +3416,10 @@ public class GuiFX extends Application {
         } else {
             appendOutput("Center of Gravity: N/A");
         }
-        
+
         float volume = Geometry.calculateVolume();
         float area = Geometry.calculateSurfaceArea();
-        
+
         appendOutput(String.format("Volume: %.4f cubic units", volume));
         appendOutput(String.format("Surface Area: %.4f square units", area));
     }
@@ -3360,191 +3428,199 @@ public class GuiFX extends Application {
         interactionManager.setMode(SketchInteractionManager.InteractionMode.SELECT);
         interactionManager.clearSelection();
         appendOutput("Selection Mode Active. Click to select entities.");
-        if (statusLabel != null) statusLabel.setText("Select entities. Click to toggle selection.");
+        if (statusLabel != null)
+            statusLabel.setText("Select entities. Click to toggle selection.");
     }
 
     private void applyHorizontalConstraint() {
         // Check if entities are already selected from a previous selection
         List<Entity> selected = interactionManager.getSelectedEntities();
-        
+
         if (selected.size() == 1 && selected.get(0) instanceof Line) {
-             // Apply constraint to selected line
-             Line line = (Line) selected.get(0);
-             Constraint c = new HorizontalConstraint(line.getStartPoint(), line.getEndPoint());
-             commandManager.executeCommand(new AddConstraintCommand(sketch, c));
-             appendOutput("Applied Horizontal Constraint to Line.");
-             interactionManager.clearSelection();
-             glCanvas.repaint();
-        } else if (selected.size() == 2 && selected.get(0) instanceof PointEntity && selected.get(1) instanceof PointEntity) {
-             // Apply constraint to selected points
-             PointEntity p1 = (PointEntity) selected.get(0);
-             PointEntity p2 = (PointEntity) selected.get(1);
-             Constraint c = new HorizontalConstraint(p1.getPoint(), p2.getPoint());
-             commandManager.executeCommand(new AddConstraintCommand(sketch, c));
-             appendOutput("Applied Horizontal Constraint to Points.");
-             interactionManager.clearSelection();
-             glCanvas.repaint();
+            // Apply constraint to selected line
+            Line line = (Line) selected.get(0);
+            Constraint c = new HorizontalConstraint(line.getStartPoint(), line.getEndPoint());
+            commandManager.executeCommand(new AddConstraintCommand(sketch, c));
+            appendOutput("Applied Horizontal Constraint to Line.");
+            interactionManager.clearSelection();
+            glCanvas.repaint();
+        } else if (selected.size() == 2 && selected.get(0) instanceof PointEntity
+                && selected.get(1) instanceof PointEntity) {
+            // Apply constraint to selected points
+            PointEntity p1 = (PointEntity) selected.get(0);
+            PointEntity p2 = (PointEntity) selected.get(1);
+            Constraint c = new HorizontalConstraint(p1.getPoint(), p2.getPoint());
+            commandManager.executeCommand(new AddConstraintCommand(sketch, c));
+            appendOutput("Applied Horizontal Constraint to Points.");
+            interactionManager.clearSelection();
+            glCanvas.repaint();
         } else {
-             // No valid selection - activate selection mode
-             interactionManager.clearSelection();
-             interactionManager.setMode(SketchInteractionManager.InteractionMode.SELECT);
-             
-             // Auto-switch to sketch view if not already active
-             if (glRenderer != null && !glRenderer.isShowingSketch()) {
-                 glRenderer.setShowSketch(true);
-                 appendOutput("Switched to 2D sketch mode");
-             }
-             
-             appendOutput("Horizontal Constraint: Click to select 1 Line or 2 Points, then click this button again.");
-             if (statusLabel != null) statusLabel.setText("Select 1 Line or 2 Points for Horizontal Constraint");
-             
-             // Request focus on canvas for interaction
-             Platform.runLater(() -> {
-                 if (canvasNode != null) {
-                     canvasNode.requestFocus();
-                 }
-             });
+            // No valid selection - activate selection mode
+            interactionManager.clearSelection();
+            interactionManager.setMode(SketchInteractionManager.InteractionMode.SELECT);
+
+            // Auto-switch to sketch view if not already active
+            if (glRenderer != null && !glRenderer.isShowingSketch()) {
+                glRenderer.setShowSketch(true);
+                appendOutput("Switched to 2D sketch mode");
+            }
+
+            appendOutput("Horizontal Constraint: Click to select 1 Line or 2 Points, then click this button again.");
+            if (statusLabel != null)
+                statusLabel.setText("Select 1 Line or 2 Points for Horizontal Constraint");
+
+            // Request focus on canvas for interaction
+            Platform.runLater(() -> {
+                if (canvasNode != null) {
+                    canvasNode.requestFocus();
+                }
+            });
         }
     }
 
     private void applyVerticalConstraint() {
         // Check if entities are already selected from a previous selection
         List<Entity> selected = interactionManager.getSelectedEntities();
-        
+
         if (selected.size() == 1 && selected.get(0) instanceof Line) {
-             // Apply constraint to selected line
-             Line line = (Line) selected.get(0);
-             Constraint c = new VerticalConstraint(line.getStartPoint(), line.getEndPoint());
-             commandManager.executeCommand(new AddConstraintCommand(sketch, c));
-             appendOutput("Applied Vertical Constraint to Line.");
-             interactionManager.clearSelection();
-             glCanvas.repaint();
-        } else if (selected.size() == 2 && selected.get(0) instanceof PointEntity && selected.get(1) instanceof PointEntity) {
-             // Apply constraint to selected points
-             PointEntity p1 = (PointEntity) selected.get(0);
-             PointEntity p2 = (PointEntity) selected.get(1);
-             Constraint c = new VerticalConstraint(p1.getPoint(), p2.getPoint());
-             commandManager.executeCommand(new AddConstraintCommand(sketch, c));
-             appendOutput("Applied Vertical Constraint to Points.");
-             interactionManager.clearSelection();
-             glCanvas.repaint();
+            // Apply constraint to selected line
+            Line line = (Line) selected.get(0);
+            Constraint c = new VerticalConstraint(line.getStartPoint(), line.getEndPoint());
+            commandManager.executeCommand(new AddConstraintCommand(sketch, c));
+            appendOutput("Applied Vertical Constraint to Line.");
+            interactionManager.clearSelection();
+            glCanvas.repaint();
+        } else if (selected.size() == 2 && selected.get(0) instanceof PointEntity
+                && selected.get(1) instanceof PointEntity) {
+            // Apply constraint to selected points
+            PointEntity p1 = (PointEntity) selected.get(0);
+            PointEntity p2 = (PointEntity) selected.get(1);
+            Constraint c = new VerticalConstraint(p1.getPoint(), p2.getPoint());
+            commandManager.executeCommand(new AddConstraintCommand(sketch, c));
+            appendOutput("Applied Vertical Constraint to Points.");
+            interactionManager.clearSelection();
+            glCanvas.repaint();
         } else {
-             // No valid selection - activate selection mode
-             interactionManager.clearSelection();
-             interactionManager.setMode(SketchInteractionManager.InteractionMode.SELECT);
-             
-             // Auto-switch to sketch view if not already active
-             if (glRenderer != null && !glRenderer.isShowingSketch()) {
-                 glRenderer.setShowSketch(true);
-                 appendOutput("Switched to 2D sketch mode");
-             }
-             
-             appendOutput("Vertical Constraint: Click to select 1 Line or 2 Points, then click this button again.");
-             if (statusLabel != null) statusLabel.setText("Select 1 Line or 2 Points for Vertical Constraint");
-             
-             // Request focus on canvas for interaction
-             Platform.runLater(() -> {
-                 if (canvasNode != null) {
-                     canvasNode.requestFocus();
-                 }
-             });
+            // No valid selection - activate selection mode
+            interactionManager.clearSelection();
+            interactionManager.setMode(SketchInteractionManager.InteractionMode.SELECT);
+
+            // Auto-switch to sketch view if not already active
+            if (glRenderer != null && !glRenderer.isShowingSketch()) {
+                glRenderer.setShowSketch(true);
+                appendOutput("Switched to 2D sketch mode");
+            }
+
+            appendOutput("Vertical Constraint: Click to select 1 Line or 2 Points, then click this button again.");
+            if (statusLabel != null)
+                statusLabel.setText("Select 1 Line or 2 Points for Vertical Constraint");
+
+            // Request focus on canvas for interaction
+            Platform.runLater(() -> {
+                if (canvasNode != null) {
+                    canvasNode.requestFocus();
+                }
+            });
         }
     }
 
     private void applyCoincidentConstraint() {
         // Check if entities are already selected from a previous selection
         List<Entity> selected = interactionManager.getSelectedEntities();
-        
+
         if (selected.size() == 2 && selected.get(0) instanceof PointEntity && selected.get(1) instanceof PointEntity) {
-             // Apply constraint to selected points
-             PointEntity p1 = (PointEntity) selected.get(0);
-             PointEntity p2 = (PointEntity) selected.get(1);
-             Constraint c = new CoincidentConstraint(p1.getPoint(), p2.getPoint());
-             commandManager.executeCommand(new AddConstraintCommand(sketch, c));
-             appendOutput("Applied Coincident Constraint.");
-             interactionManager.clearSelection();
-             glCanvas.repaint();
+            // Apply constraint to selected points
+            PointEntity p1 = (PointEntity) selected.get(0);
+            PointEntity p2 = (PointEntity) selected.get(1);
+            Constraint c = new CoincidentConstraint(p1.getPoint(), p2.getPoint());
+            commandManager.executeCommand(new AddConstraintCommand(sketch, c));
+            appendOutput("Applied Coincident Constraint.");
+            interactionManager.clearSelection();
+            glCanvas.repaint();
         } else {
-             // No valid selection - activate selection mode
-             interactionManager.clearSelection();
-             interactionManager.setMode(SketchInteractionManager.InteractionMode.SELECT);
-             
-             // Auto-switch to sketch view if not already active
-             if (glRenderer != null && !glRenderer.isShowingSketch()) {
-                 glRenderer.setShowSketch(true);
-                 appendOutput("Switched to 2D sketch mode");
-             }
-             
-             appendOutput("Coincident Constraint: Click to select 2 Points, then click this button again.");
-             if (statusLabel != null) statusLabel.setText("Select 2 Points for Coincident Constraint");
-             
-             // Request focus on canvas for interaction
-             Platform.runLater(() -> {
-                 if (canvasNode != null) {
-                     canvasNode.requestFocus();
-                 }
-             });
+            // No valid selection - activate selection mode
+            interactionManager.clearSelection();
+            interactionManager.setMode(SketchInteractionManager.InteractionMode.SELECT);
+
+            // Auto-switch to sketch view if not already active
+            if (glRenderer != null && !glRenderer.isShowingSketch()) {
+                glRenderer.setShowSketch(true);
+                appendOutput("Switched to 2D sketch mode");
+            }
+
+            appendOutput("Coincident Constraint: Click to select 2 Points, then click this button again.");
+            if (statusLabel != null)
+                statusLabel.setText("Select 2 Points for Coincident Constraint");
+
+            // Request focus on canvas for interaction
+            Platform.runLater(() -> {
+                if (canvasNode != null) {
+                    canvasNode.requestFocus();
+                }
+            });
         }
     }
 
     private void applyFixedConstraint() {
         // Check if entities are already selected from a previous selection
         List<Entity> selected = interactionManager.getSelectedEntities();
-        
+
         if (!selected.isEmpty()) {
-             int count = 0;
-             for (Entity e : selected) {
-                 if (e instanceof PointEntity) {
-                     PointEntity p = (PointEntity) e;
-                     Constraint c = new FixedConstraint(p.getPoint());
-                     commandManager.executeCommand(new AddConstraintCommand(sketch, c));
-                     count++;
-                 }
-             }
-             if (count > 0) {
-                 appendOutput("Fixed " + count + " points.");
-                 interactionManager.clearSelection();
-                 glCanvas.repaint();
-             } else {
-                 // Selection exists but no points - activate selection mode
-                 interactionManager.clearSelection();
-                 interactionManager.setMode(SketchInteractionManager.InteractionMode.SELECT);
-                 
-                 // Auto-switch to sketch view if not already active
-                 if (glRenderer != null && !glRenderer.isShowingSketch()) {
-                     glRenderer.setShowSketch(true);
-                     appendOutput("Switched to 2D sketch mode");
-                 }
-                 
-                 appendOutput("Fixed Constraint: Click to select Points, then click this button again.");
-                 if (statusLabel != null) statusLabel.setText("Select Points to Fix in Place");
-                 
-                 // Request focus on canvas for interaction
-                 Platform.runLater(() -> {
-                     if (canvasNode != null) {
-                         canvasNode.requestFocus();
-                     }
-                 });
-             }
+            int count = 0;
+            for (Entity e : selected) {
+                if (e instanceof PointEntity) {
+                    PointEntity p = (PointEntity) e;
+                    Constraint c = new FixedConstraint(p.getPoint());
+                    commandManager.executeCommand(new AddConstraintCommand(sketch, c));
+                    count++;
+                }
+            }
+            if (count > 0) {
+                appendOutput("Fixed " + count + " points.");
+                interactionManager.clearSelection();
+                glCanvas.repaint();
+            } else {
+                // Selection exists but no points - activate selection mode
+                interactionManager.clearSelection();
+                interactionManager.setMode(SketchInteractionManager.InteractionMode.SELECT);
+
+                // Auto-switch to sketch view if not already active
+                if (glRenderer != null && !glRenderer.isShowingSketch()) {
+                    glRenderer.setShowSketch(true);
+                    appendOutput("Switched to 2D sketch mode");
+                }
+
+                appendOutput("Fixed Constraint: Click to select Points, then click this button again.");
+                if (statusLabel != null)
+                    statusLabel.setText("Select Points to Fix in Place");
+
+                // Request focus on canvas for interaction
+                Platform.runLater(() -> {
+                    if (canvasNode != null) {
+                        canvasNode.requestFocus();
+                    }
+                });
+            }
         } else {
-             // No selection - activate selection mode
-             interactionManager.setMode(SketchInteractionManager.InteractionMode.SELECT);
-             
-             // Auto-switch to sketch view if not already active
-             if (glRenderer != null && !glRenderer.isShowingSketch()) {
-                 glRenderer.setShowSketch(true);
-                 appendOutput("Switched to 2D sketch mode");
-             }
-             
-             appendOutput("Fixed Constraint: Click to select Points, then click this button again.");
-             if (statusLabel != null) statusLabel.setText("Select Points to Fix in Place");
-             
-             // Request focus on canvas for interaction
-             Platform.runLater(() -> {
-                 if (canvasNode != null) {
-                     canvasNode.requestFocus();
-                 }
-             });
+            // No selection - activate selection mode
+            interactionManager.setMode(SketchInteractionManager.InteractionMode.SELECT);
+
+            // Auto-switch to sketch view if not already active
+            if (glRenderer != null && !glRenderer.isShowingSketch()) {
+                glRenderer.setShowSketch(true);
+                appendOutput("Switched to 2D sketch mode");
+            }
+
+            appendOutput("Fixed Constraint: Click to select Points, then click this button again.");
+            if (statusLabel != null)
+                statusLabel.setText("Select Points to Fix in Place");
+
+            // Request focus on canvas for interaction
+            Platform.runLater(() -> {
+                if (canvasNode != null) {
+                    canvasNode.requestFocus();
+                }
+            });
         }
     }
 
