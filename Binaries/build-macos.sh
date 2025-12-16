@@ -13,6 +13,14 @@ MAIN_CLASS="cad.Main"
 JAR_FILE="../target/SketchApp.jar"
 OUTPUT_DIR="installer"
 
+# Optional Architecture Argument
+ARCH=${1:-""}
+INSTALLER_NAME="$APP_NAME"
+if [ -n "$ARCH" ]; then
+    INSTALLER_NAME="$APP_NAME-$ARCH"
+    echo "Building for Architecture: $ARCH (Installer: $INSTALLER_NAME)"
+fi
+
 # Ensure output directory exists
 mkdir -p "$OUTPUT_DIR"
 
@@ -91,7 +99,7 @@ echo "Creating macOS DMG installer from App Image..."
 jpackage \
   --type dmg \
   --app-image "$OUTPUT_DIR/app-image/$APP_NAME.app" \
-  --name "$APP_NAME" \
+  --name "$INSTALLER_NAME" \
   --app-version "$APP_VERSION" \
   --vendor "SketchApp Team" \
   --dest "$OUTPUT_DIR"

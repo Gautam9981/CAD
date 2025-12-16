@@ -88,7 +88,7 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: '11.0'
         run: |
           cd Binaries
-          bash build-macos.sh
+          bash build-macos.sh "${{ matrix.architecture }}"
       
       - name: Upload macOS Installer
         uses: actions/upload-artifact@v4
