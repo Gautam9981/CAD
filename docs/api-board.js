@@ -314,33 +314,34 @@ function createMethodCard(method, isConstructor) {
 
 // Get description (use inferred if existing is poor)
 function getDescription(method, isConstructor) {
-    const existing = method.description;
+    let desc = method.description;
     const inferred = inferDescription(method, isConstructor);
 
-    // If no existing description, use inferred
-    if (!existing) return inferred;
+    // Decision logic: Use inferred if no existing or if existing is trivial
+    if (!desc) {
+        desc = inferred;
+    } else {
+        const cleanExisting = desc.toLowerCase().replace(/[^a-z]/g, '');
+        const cleanName = method.name.toLowerCase().replace(/[^a-z]/g, '');
 
-    // If existing is very short or just repeats the name, use inferred
-    const cleanExisting = existing.toLowerCase().replace(/[^a-z]/g, '');
-    const cleanName = method.name.toLowerCase().replace(/[^a-z]/g, '');
-
-    // Check for "trivial" descriptions
-    if (cleanExisting === cleanName ||
-        cleanExisting === cleanName + 'command' ||
-        existing.length < 15 ||
-        existing.toLowerCase().startsWith("handle " + method.name.replace('handle', '').toLowerCase()) ||
-        existing.toLowerCase().startsWith("represents") ||
-        existing.toLowerCase().trim() === "standard " + method.name.toLowerCase() ||
-        existing.toLowerCase().includes("instance of")) {
-        return inferred;
+        if (cleanExisting === cleanName ||
+            cleanExisting === cleanName + 'command' ||
+            (desc.length < 15 && !desc.includes(' ')) ||
+            desc.toLowerCase().startsWith("handle " + method.name.replace('handle', '').toLowerCase()) ||
+            desc.toLowerCase().startsWith("notify " + method.name.replace('notify', '').toLowerCase()) ||
+            desc.toLowerCase().startsWith("represents") || // Keep this from previous check
+            desc.toLowerCase().trim() === "standard " + method.name.toLowerCase() ||
+            desc.toLowerCase().includes("instance of")) {
+            desc = inferred;
+        }
     }
 
-    // Strip trailing period if it exists
-    if (existing.endsWith('.')) {
-        return existing.substring(0, existing.length - 1);
+    // Common cleanup: Strip trailing period
+    if (desc && desc.endsWith('.')) {
+        return desc.substring(0, desc.length - 1);
     }
 
-    return existing;
+    return desc;
 }
 
 // Get parameter description
@@ -386,7 +387,7 @@ function inferParamDescription(param) {
 // Infer description from method name
 function inferDescription(method, isConstructor) {
     if (isConstructor) {
-        return `Creates a new instance of ${method.name}.`;
+        return `Creates a new instance of ${method.name}`;
     }
 
     const name = method.name;
