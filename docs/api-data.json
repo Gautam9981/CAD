@@ -40,22 +40,6 @@
         "returns": ""
       },
       {
-        "name": "Unit",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "",
-        "parameters": [
-          {
-            "type": "float",
-            "name": "toMillimeter",
-            "description": ""
-          }
-        ],
-        "signature": "package-private  Unit(float toMillimeter)",
-        "description": "",
-        "returns": ""
-      },
-      {
         "name": "convertToMillimeters",
         "visibility": "private",
         "static": "static",
@@ -589,15 +573,30 @@
         "visibility": "public",
         "parameters": [
           {
-            "type": "Point",
+            "type": "cad.core.Point",
             "name": "p1"
           },
           {
-            "type": "Point",
+            "type": "cad.core.Point",
             "name": "p2"
           }
         ],
-        "signature": "public CoincidentConstraint(Point p1, Point p2)"
+        "signature": "public CoincidentConstraint(cad.core.Point p1, cad.core.Point p2)"
+      },
+      {
+        "name": "CoincidentConstraint",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "cad.core.Sketch.Entity",
+            "name": "e1"
+          },
+          {
+            "type": "cad.core.Sketch.Entity",
+            "name": "e2"
+          }
+        ],
+        "signature": "public CoincidentConstraint(cad.core.Sketch.Entity e1, cad.core.Sketch.Entity e2)"
       }
     ],
     "methods": [
@@ -612,12 +611,96 @@
         "returns": ""
       },
       {
+        "name": "getPointLineError",
+        "visibility": "private",
+        "static": "",
+        "returnType": "double",
+        "parameters": [
+          {
+            "type": "cad.core.Point",
+            "name": "p",
+            "description": ""
+          },
+          {
+            "type": "cad.core.Sketch.Line",
+            "name": "line",
+            "description": ""
+          }
+        ],
+        "signature": "private double getPointLineError(cad.core.Point p, cad.core.Sketch.Line line)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getPointCircleError",
+        "visibility": "private",
+        "static": "",
+        "returnType": "double",
+        "parameters": [
+          {
+            "type": "cad.core.Point",
+            "name": "p",
+            "description": ""
+          },
+          {
+            "type": "cad.core.Sketch.Circle",
+            "name": "c",
+            "description": ""
+          }
+        ],
+        "signature": "private double getPointCircleError(cad.core.Point p, cad.core.Sketch.Circle c)",
+        "description": "",
+        "returns": ""
+      },
+      {
         "name": "solve",
         "visibility": "public",
         "static": "",
         "returnType": "void",
         "parameters": [],
         "signature": "public void solve()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "solvePointLine",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "cad.core.Point",
+            "name": "p",
+            "description": ""
+          },
+          {
+            "type": "cad.core.Sketch.Line",
+            "name": "line",
+            "description": ""
+          }
+        ],
+        "signature": "private void solvePointLine(cad.core.Point p, cad.core.Sketch.Line line)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "solvePointCircle",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "cad.core.Point",
+            "name": "p",
+            "description": ""
+          },
+          {
+            "type": "cad.core.Sketch.Circle",
+            "name": "c",
+            "description": ""
+          }
+        ],
+        "signature": "private void solvePointCircle(cad.core.Point p, cad.core.Sketch.Circle c)",
         "description": "",
         "returns": ""
       }
@@ -1208,16 +1291,6 @@
         "signature": "public static float getModelMaxDimension()",
         "description": "Calculates maximum dimension of current model for auto-scaling views.",
         "returns": "Maximum width, height, or depth of the model"
-      },
-      {
-        "name": "synchronized",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "",
-        "parameters": [],
-        "signature": "package-private  synchronized()",
-        "description": "",
-        "returns": ""
       },
       {
         "name": "loadStl",
@@ -1995,27 +2068,6 @@
     "constructors": [],
     "methods": [
       {
-        "name": "MacroCommand",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "public",
-        "parameters": [
-          {
-            "type": "ActionType",
-            "name": "action",
-            "description": ""
-          },
-          {
-            "type": "Map<String, Object>",
-            "name": "params",
-            "description": ""
-          }
-        ],
-        "signature": "package-private public MacroCommand(ActionType action, Map<String, Object> params)",
-        "description": "",
-        "returns": ""
-      },
-      {
         "name": "toScriptLine",
         "visibility": "public",
         "static": "",
@@ -2393,43 +2445,6 @@
     "constructors": [],
     "methods": [
       {
-        "name": "PointEntity",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "public",
-        "parameters": [
-          {
-            "type": "Point",
-            "name": "p",
-            "description": ""
-          }
-        ],
-        "signature": "package-private public PointEntity(Point p)",
-        "description": "",
-        "returns": ""
-      },
-      {
-        "name": "PointEntity",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "public",
-        "parameters": [
-          {
-            "type": "float",
-            "name": "x",
-            "description": ""
-          },
-          {
-            "type": "float",
-            "name": "y",
-            "description": ""
-          }
-        ],
-        "signature": "package-private public PointEntity(float x, float y)",
-        "description": "",
-        "returns": ""
-      },
-      {
         "name": "getX",
         "visibility": "public",
         "static": "",
@@ -2487,58 +2502,6 @@
         "returnType": "String",
         "parameters": [],
         "signature": "public String toString()",
-        "description": "",
-        "returns": ""
-      },
-      {
-        "name": "Line",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "public",
-        "parameters": [
-          {
-            "type": "Point",
-            "name": "start",
-            "description": ""
-          },
-          {
-            "type": "Point",
-            "name": "end",
-            "description": ""
-          }
-        ],
-        "signature": "package-private public Line(Point start, Point end)",
-        "description": "",
-        "returns": ""
-      },
-      {
-        "name": "Line",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "public",
-        "parameters": [
-          {
-            "type": "float",
-            "name": "x1",
-            "description": ""
-          },
-          {
-            "type": "float",
-            "name": "y1",
-            "description": ""
-          },
-          {
-            "type": "float",
-            "name": "x2",
-            "description": ""
-          },
-          {
-            "type": "float",
-            "name": "y2",
-            "description": ""
-          }
-        ],
-        "signature": "package-private public Line(float x1, float y1, float x2, float y2)",
         "description": "",
         "returns": ""
       },
@@ -2655,53 +2618,6 @@
         "returns": ""
       },
       {
-        "name": "Circle",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "public",
-        "parameters": [
-          {
-            "type": "Point",
-            "name": "center",
-            "description": ""
-          },
-          {
-            "type": "float",
-            "name": "r",
-            "description": ""
-          }
-        ],
-        "signature": "package-private public Circle(Point center, float r)",
-        "description": "",
-        "returns": ""
-      },
-      {
-        "name": "Circle",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "public",
-        "parameters": [
-          {
-            "type": "float",
-            "name": "x",
-            "description": ""
-          },
-          {
-            "type": "float",
-            "name": "y",
-            "description": ""
-          },
-          {
-            "type": "float",
-            "name": "r",
-            "description": ""
-          }
-        ],
-        "signature": "package-private public Circle(float x, float y, float r)",
-        "description": "",
-        "returns": ""
-      },
-      {
         "name": "getCenterPoint",
         "visibility": "public",
         "static": "",
@@ -2789,22 +2705,6 @@
         "returns": ""
       },
       {
-        "name": "Polygon",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "public",
-        "parameters": [
-          {
-            "type": "List<PointEntity>",
-            "name": "points",
-            "description": ""
-          }
-        ],
-        "signature": "package-private public Polygon(List<PointEntity> points)",
-        "description": "",
-        "returns": ""
-      },
-      {
         "name": "toString",
         "visibility": "public",
         "static": "",
@@ -2835,27 +2735,6 @@
         "returns": ""
       },
       {
-        "name": "Point2D",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "public",
-        "parameters": [
-          {
-            "type": "float",
-            "name": "x",
-            "description": ""
-          },
-          {
-            "type": "float",
-            "name": "y",
-            "description": ""
-          }
-        ],
-        "signature": "package-private public Point2D(float x, float y)",
-        "description": "",
-        "returns": ""
-      },
-      {
         "name": "getX",
         "visibility": "public",
         "static": "",
@@ -2872,32 +2751,6 @@
         "returnType": "float",
         "parameters": [],
         "signature": "public float getY()",
-        "description": "",
-        "returns": ""
-      },
-      {
-        "name": "Point3D",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "public",
-        "parameters": [
-          {
-            "type": "float",
-            "name": "x",
-            "description": ""
-          },
-          {
-            "type": "float",
-            "name": "y",
-            "description": ""
-          },
-          {
-            "type": "float",
-            "name": "z",
-            "description": ""
-          }
-        ],
-        "signature": "package-private public Point3D(float x, float y, float z)",
         "description": "",
         "returns": ""
       },
@@ -2928,53 +2781,6 @@
         "returnType": "float",
         "parameters": [],
         "signature": "public float getZ()",
-        "description": "",
-        "returns": ""
-      },
-      {
-        "name": "Face3D",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "public",
-        "parameters": [
-          {
-            "type": "Point3D",
-            "name": "p1",
-            "description": ""
-          },
-          {
-            "type": "Point3D",
-            "name": "p2",
-            "description": ""
-          },
-          {
-            "type": "Point3D",
-            "name": "p3",
-            "description": ""
-          },
-          {
-            "type": "Point3D",
-            "name": "p4",
-            "description": ""
-          }
-        ],
-        "signature": "package-private public Face3D(Point3D p1, Point3D p2, Point3D p3, Point3D p4)",
-        "description": "",
-        "returns": ""
-      },
-      {
-        "name": "Face3D",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "public",
-        "parameters": [
-          {
-            "type": "List<Point3D>",
-            "name": "vertices",
-            "description": ""
-          }
-        ],
-        "signature": "package-private public Face3D(List<Point3D> vertices)",
         "description": "",
         "returns": ""
       },
@@ -3195,7 +3001,38 @@
           {
             "type": "float",
             "name": "centerX",
-            "description": "X-coordinate of the polygon's center."
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "centerY",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "radius",
+            "description": ""
+          },
+          {
+            "type": "int",
+            "name": "sides",
+            "description": ""
+          }
+        ],
+        "signature": "public int addNSidedPolygon(float centerX, float centerY, float radius, int sides)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "addNSidedPolygon",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "centerX",
+            "description": ""
           },
           {
             "type": "float",
@@ -3205,16 +3042,21 @@
           {
             "type": "float",
             "name": "radius",
-            "description": "Radius of the circumcircle."
+            "description": "Radius (inscribed or circumscribed depending on flag)."
           },
           {
             "type": "int",
             "name": "sides",
             "description": "Number of sides (3-25)."
+          },
+          {
+            "type": "boolean",
+            "name": "circumscribed",
+            "description": "If true, the polygon is circumscribed about the circle"
           }
         ],
-        "signature": "public int addNSidedPolygon(float centerX, float centerY, float radius, int sides)",
-        "description": "Adds an N-sided regular polygon to the sketch.",
+        "signature": "public int addNSidedPolygon(float centerX, float centerY, float radius, int sides, boolean circumscribed)",
+        "description": "of given radius. If false, it is inscribed in the circle.",
         "returns": "0 on success, 1 on error."
       },
       {
@@ -4349,22 +4191,6 @@
         "returns": "A configured Button object."
       },
       {
-        "name": "OpenGLRenderer",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "public",
-        "parameters": [
-          {
-            "type": "SketchInteractionManager",
-            "name": "interactionManager",
-            "description": ""
-          }
-        ],
-        "signature": "package-private public OpenGLRenderer(SketchInteractionManager interactionManager)",
-        "description": "",
-        "returns": ""
-      },
-      {
         "name": "init",
         "visibility": "public",
         "static": "",
@@ -5472,22 +5298,6 @@
     ],
     "methods": [
       {
-        "name": "addMouseListener",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "",
-        "parameters": [
-          {
-            "type": "new",
-            "name": "MouseAdapter(",
-            "description": ""
-          }
-        ],
-        "signature": "package-private  addMouseListener(new MouseAdapter()",
-        "description": "",
-        "returns": ""
-      },
-      {
         "name": "mousePressed",
         "visibility": "public",
         "static": "",
@@ -5520,22 +5330,6 @@
         "returns": ""
       },
       {
-        "name": "addMouseMotionListener",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "",
-        "parameters": [
-          {
-            "type": "new",
-            "name": "MouseMotionAdapter(",
-            "description": ""
-          }
-        ],
-        "signature": "package-private  addMouseMotionListener(new MouseMotionAdapter()",
-        "description": "",
-        "returns": ""
-      },
-      {
         "name": "mouseDragged",
         "visibility": "public",
         "static": "",
@@ -5549,22 +5343,6 @@
         ],
         "signature": "public void mouseDragged(MouseEvent e)",
         "description": "Handles mouse dragging for rotation (left-click drag) and basic zoom/pan (right-click drag).",
-        "returns": ""
-      },
-      {
-        "name": "addKeyListener",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "",
-        "parameters": [
-          {
-            "type": "new",
-            "name": "KeyAdapter(",
-            "description": ""
-          }
-        ],
-        "signature": "package-private  addKeyListener(new KeyAdapter()",
-        "description": "",
         "returns": ""
       },
       {
@@ -6108,22 +5886,6 @@
     ],
     "methods": [
       {
-        "name": "addKeyListener",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "",
-        "parameters": [
-          {
-            "type": "new",
-            "name": "KeyAdapter(",
-            "description": ""
-          }
-        ],
-        "signature": "package-private  addKeyListener(new KeyAdapter()",
-        "description": "",
-        "returns": ""
-      },
-      {
         "name": "keyPressed",
         "visibility": "public",
         "static": "",
@@ -6666,27 +6428,6 @@
           }
         ],
         "signature": "private double[] getCoords(Object v)",
-        "description": "",
-        "returns": ""
-      },
-      {
-        "name": "TessCallback",
-        "visibility": "package-private",
-        "static": "",
-        "returnType": "public",
-        "parameters": [
-          {
-            "type": "List<Float>",
-            "name": "verts",
-            "description": ""
-          },
-          {
-            "type": "List<Float>",
-            "name": "norms",
-            "description": ""
-          }
-        ],
-        "signature": "package-private public TessCallback(List<Float> verts, List<Float> norms)",
         "description": "",
         "returns": ""
       },
