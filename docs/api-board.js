@@ -273,7 +273,7 @@ function createMethodCard(method, isConstructor) {
         </div>
         
         <div class="method-description">
-            ${escapeHtml(inferDescription(method, isConstructor))}
+            ${escapeHtml(getDescription(method, isConstructor))}
         </div>
         
         <div class="method-details">
@@ -311,6 +311,29 @@ function createMethodCard(method, isConstructor) {
     return card;
 }
 
+// Get description (use inferred if existing is poor)
+function getDescription(method, isConstructor) {
+    const existing = method.description;
+    const inferred = inferDescription(method, isConstructor);
+
+    // If no existing description, use inferred
+    if (!existing) return inferred;
+
+    // If existing is very short or just repeats the name, use inferred
+    const cleanExisting = existing.toLowerCase().replace(/[^a-z]/g, '');
+    const cleanName = method.name.toLowerCase().replace(/[^a-z]/g, '');
+
+    // Check for "trivial" descriptions
+    if (cleanExisting === cleanName ||
+        cleanExisting === cleanName + 'command' ||
+        existing.length < 15 ||
+        existing.toLowerCase().startsWith("handle " + method.name.replace('handle', '').toLowerCase())) {
+        return inferred;
+    }
+
+    return existing;
+}
+
 // Infer description from method name
 function inferDescription(method, isConstructor) {
     if (isConstructor) {
@@ -325,40 +348,48 @@ function inferDescription(method, isConstructor) {
     // Helper to capitalize first letter
     const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
+    const verb = words[0];
+    const noun = words.slice(1).join(' ');
+
     // Handle specific verbs
-    if (words[0] === 'get') {
-        const noun = words.slice(1).join(' ');
+    if (verb === 'get') {
         return `Retrieves the ${noun || 'value'}.`;
     }
-    if (words[0] === 'set') {
-        const noun = words.slice(1).join(' ');
+    if (verb === 'set') {
         return `Sets the ${noun || 'value'}.`;
     }
-    if (words[0] === 'is' || words[0] === 'has') {
-        const noun = words.slice(1).join(' ');
+    if (verb === 'is' || verb === 'has' || verb === 'can') {
         return `Checks if ${noun ? 'it ' + name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase() : 'condition is true'}.`;
     }
-    if (words[0] === 'add') {
-        const noun = words.slice(1).join(' ');
-        return `Adds a new ${noun || 'item'}.`;
+    if (verb === 'add') {
+        return `Adds a new ${noun || 'item'} to the collection.`;
     }
-    if (words[0] === 'remove') {
-        const noun = words.slice(1).join(' ');
+    if (verb === 'remove' || verb === 'delete') {
         return `Removes the specified ${noun || 'item'}.`;
     }
-    if (words[0] === 'create') {
-        const noun = words.slice(1).join(' ');
-        return `Creates a new ${noun || 'object'}.`;
+    if (verb === 'create' || verb === 'make' || verb === 'build') {
+        return `Constructs and returns a new ${noun || 'object'}.`;
     }
-    if (words[0] === 'compute' || words[0] === 'calculate') {
-        const noun = words.slice(1).join(' ');
-        return `Calculates the ${noun || 'result'}.`;
+    if (verb === 'compute' || verb === 'calculate') {
+        return `Calculates the ${noun || 'value'} based on current state.`;
     }
-    if (words[0] === 'solve') {
-        return `Solves the constraints or equations.`;
+    if (verb === 'solve') {
+        return `Solves the active limits or equations.`;
     }
-    if (words[0] === 'update') {
-        return `Updates the state of the ${words.slice(1).join(' ') || 'object'}.`;
+    if (verb === 'update') {
+        return `Updates the ${noun || 'internal state'}.`;
+    }
+    if (verb === 'handle') {
+        return `Executes the logic for the '${noun}' command or event.`;
+    }
+    if (verb === 'render' || verb === 'draw') {
+        return `Renders the ${noun || 'component'} to the graphics context.`;
+    }
+    if (verb === 'export') {
+        return `Exports the ${noun || 'data'} to an external file format.`;
+    }
+    if (verb === 'load' || verb === 'import') {
+        return `Loads ${noun || 'data'} from an external source.`;
     }
 
     // Default: "Do Something" -> "Do something."

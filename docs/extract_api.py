@@ -206,7 +206,7 @@ class JavaMethodExtractor:
         constructors = []
         
         # Match constructor pattern
-        constructor_pattern = rf'(public|protected|private)?\s+{class_name}\s*\((.*?)\)\s*\{{' 
+        constructor_pattern = rf'^\s*(public|protected|private)?\s+{class_name}\s*\((.*?)\)\s*\{{' 
         
         for match in re.finditer(constructor_pattern, content, re.MULTILINE | re.DOTALL):
             visibility = match.group(1) or "package-private"
