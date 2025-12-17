@@ -328,6 +328,7 @@ function getDescription(method, isConstructor) {
         if (cleanExisting === cleanName ||
             cleanExisting === cleanName + 'command' ||
             (desc.length < 15 && !desc.includes(' ')) ||
+            (desc.length < 25 && desc.match(/^(get|set|gets|sets|is|has)\s+(the\s+)?\w+\.?$/i)) ||
             desc.toLowerCase().startsWith("handle " + method.name.replace('handle', '').toLowerCase()) ||
             desc.toLowerCase().startsWith("notify " + method.name.replace('notify', '').toLowerCase()) ||
             desc.toLowerCase().startsWith("represents") || // Keep this from previous check
@@ -337,7 +338,6 @@ function getDescription(method, isConstructor) {
         }
     }
 
-    // Common cleanup: Strip trailing period
     // Common cleanup: Strip trailing period and whitespace
     if (desc) {
         return desc.replace(/\.+\s*$/, '');
@@ -403,12 +403,31 @@ function inferDescription(method, isConstructor) {
     const verb = words[0];
     const noun = words.slice(1).join(' ');
 
+    // Improve noun for single letter variables or common abbreviations
+    let enhancedNoun = noun || 'value';
+
+    // Exact noun matches
+    if (noun === 'x') enhancedNoun = 'X coordinate';
+    else if (noun === 'y') enhancedNoun = 'Y coordinate';
+    else if (noun === 'z') enhancedNoun = 'Z coordinate';
+    else if (noun === 'w' || noun === 'width') enhancedNoun = 'width value';
+    else if (noun === 'h' || noun === 'height') enhancedNoun = 'height value';
+    else if (noun === 'l' || noun === 'length') enhancedNoun = 'length value';
+    else if (noun === 'id') enhancedNoun = 'unique identifier';
+    else if (noun === 'name') enhancedNoun = 'name identifier';
+    else if (noun === 'start' || noun === 'p1') enhancedNoun = 'start point';
+    else if (noun === 'end' || noun === 'p2') enhancedNoun = 'end point';
+    else if (noun === 'p' || noun === 'pt' || noun === 'point') enhancedNoun = 'point object';
+    else if (noun === 'type') enhancedNoun = 'type identifier';
+    else if (noun === 'count') enhancedNoun = 'total count';
+    else if (noun === 'msg' || noun === 'message') enhancedNoun = 'message text';
+
     // Handle specific verbs
     if (verb === 'get') {
-        return `Retrieves the ${noun || 'value'}`;
+        return `Retrieves the ${enhancedNoun}`;
     }
     if (verb === 'set') {
-        return `Sets the ${noun || 'value'}`;
+        return `Sets the ${enhancedNoun}`;
     }
     if (verb === 'is' || verb === 'has' || verb === 'can') {
         return `Checks if ${noun ? 'it ' + name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase() : 'condition is true'}`;
@@ -443,6 +462,12 @@ function inferDescription(method, isConstructor) {
     if (verb === 'load' || verb === 'import') {
         return `Loads ${noun || 'data'} from an external source`;
     }
+    if (verb === 'parse') {
+        return `Parses the ${noun || 'input'} string`;
+    }
+    if (verb === 'convert') {
+        return `Converts the object to ${noun || 'another format'}`;
+    }
 
     // exact method name checks
     if (name === 'execute') return "Executes the command operation";
@@ -451,6 +476,7 @@ function inferDescription(method, isConstructor) {
     if (name === 'toString') return "Returns a string representation of this object";
     if (name === 'hashCode') return "Returns a hash code value for the object";
     if (name === 'equals') return "Indicates whether some other object is equal to this one";
+    if (name === 'run') return "Executes the runnable task";
 
     // Default: "Do Something" -> "Do something"
     // If it's a single word and not a common verb, try to deduce meaning
