@@ -3963,6 +3963,64 @@
       }
     ]
   },
+  "cad.core.ViewChangeCommand": {
+    "package": "cad.core",
+    "className": "ViewChangeCommand",
+    "file": "cad/core/ViewChangeCommand.java",
+    "constructors": [
+      {
+        "name": "ViewChangeCommand",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "GuiFX",
+            "name": "gui"
+          },
+          {
+            "type": "boolean",
+            "name": "newState"
+          },
+          {
+            "type": "boolean",
+            "name": "oldState"
+          }
+        ],
+        "signature": "public ViewChangeCommand(GuiFX gui, boolean newState, boolean oldState)"
+      }
+    ],
+    "methods": [
+      {
+        "name": "execute",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void execute()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "undo",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "public void undo()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getDescription",
+        "visibility": "public",
+        "static": "",
+        "returnType": "String",
+        "parameters": [],
+        "signature": "public String getDescription()",
+        "description": "",
+        "returns": ""
+      }
+    ]
+  },
   "cad.gui.GuiFX": {
     "package": "cad.gui",
     "className": "GuiFX",
@@ -4131,6 +4189,38 @@
         "parameters": [],
         "signature": "private VBox createConfigurationManager()",
         "description": "",
+        "returns": ""
+      },
+      {
+        "name": "setViewMode",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "boolean",
+            "name": "showSketch",
+            "description": ""
+          }
+        ],
+        "signature": "public void setViewMode(boolean showSketch)",
+        "description": "Directly sets the view mode (Sketch or 3D). Used by ViewChangeCommand for undo/redo operations.",
+        "returns": ""
+      },
+      {
+        "name": "requestViewChange",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "boolean",
+            "name": "showSketch",
+            "description": "true for 2D Sketch, false for 3D View"
+          }
+        ],
+        "signature": "private void requestViewChange(boolean showSketch)",
+        "description": "Requests a change in view mode, recording it on the Undo stack.",
         "returns": ""
       },
       {
@@ -4504,6 +4594,16 @@
         ],
         "signature": "public void setStlTriangles(List<float[]> triangles)",
         "description": "Sets the list of triangles to be rendered as an STL model. Automatically switches the view to hide the sketch and shows the STL model. Also calculates the centroid of the model for display. triangle (normal + 3 vertices).",
+        "returns": ""
+      },
+      {
+        "name": "isShowSketch",
+        "visibility": "public",
+        "static": "",
+        "returnType": "boolean",
+        "parameters": [],
+        "signature": "public boolean isShowSketch()",
+        "description": "",
         "returns": ""
       },
       {
