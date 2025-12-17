@@ -295,6 +295,7 @@ function createMethodCard(method, isConstructor) {
                                         <span class="param-type">${escapeHtml(p.type)}</span>
                                         <span class="param-name">${escapeHtml(p.name)}</span>
                                     </div>
+                                    <div class="param-description">${escapeHtml(getParamDescription(p))}</div>
                                 </div>
                             `).join('')}
                         </div>
@@ -340,6 +341,46 @@ function getDescription(method, isConstructor) {
     }
 
     return existing;
+}
+
+// Get parameter description
+function getParamDescription(param) {
+    if (param.description && param.description.trim().length > 0) {
+        return param.description;
+    }
+    return inferParamDescription(param);
+}
+
+// Infer parameter description
+function inferParamDescription(param) {
+    const name = param.name.toLowerCase();
+    const type = param.type.toLowerCase();
+
+    // Common abbreviations
+    if (name === 'x') return 'The X coordinate';
+    if (name === 'y') return 'The Y coordinate';
+    if (name === 'z') return 'The Z coordinate';
+    if (name === 'w' || name === 'width') return 'The width value';
+    if (name === 'h' || name === 'height') return 'The height value';
+    if (name === 'l' || name === 'length') return 'The length value';
+
+    // Points
+    if (name === 'p' || name === 'p1' || name === 'start') return 'The start point';
+    if (name === 'p2' || name === 'end') return 'The end point';
+    if (name === 'pt' || name === 'point') return 'The point object';
+
+    // Graphics/Events
+    if (name === 'g' || name === 'graphics' || name === 'gc') return 'The graphics context used for drawing';
+    if (name === 'e' || name === 'event' || name === 'evt') return 'The event object';
+
+    // Common types
+    if (type.includes('string') && name === 'name') return 'The name identifier';
+    if (type.includes('color') || name === 'color') return 'The color to apply';
+    if (name === 'text' || name === 'msg' || name === 'message') return 'The text content';
+    if (name === 'idx' || name === 'index') return 'The zero-based index';
+
+    // Default fallback
+    return `The ${param.name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()} parameter`;
 }
 
 // Infer description from method name
@@ -409,6 +450,18 @@ function inferDescription(method, isConstructor) {
     if (name === 'equals') return "Indicates whether some other object is equal to this one";
 
     // Default: "Do Something" -> "Do something"
+    // If it's a single word and not a common verb, try to deduce meaning
+    if (words.length === 1) {
+        // If void return and no params, it might be an action like "init" or "reset"
+        if (method.returnType === 'void') {
+            return `Performs the ${name} operation`;
+        }
+        // If it returns something, it might be a getter-like: e.g. "length()"
+        if (method.returnType !== 'void' && method.parameters.length === 0) {
+            return `Gets the ${name} of the object`;
+        }
+    }
+
     return capitalize(words.join(' '));
 }
 
