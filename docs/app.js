@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     try {
-        const response = await fetch('codex.json');
+        const response = await fetch(`codex.json?v=${new Date().getTime()}`);
         codex = await response.json();
 
         renderFlow();
