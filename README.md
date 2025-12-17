@@ -257,8 +257,7 @@ Implemented kite creation functionality (sketching + extruding). Feature in inte
 
 ### Windows
 
-1. **Install JDK 21+** from [Oracle](https://www.oracle.com/java/technologies/downloads/) or [Adoptium](https://adoptium.net/)
-2. **Download** the `.exe` installer
+1. **Download** the `.exe` installer
 3. **Run** the `.exe` file
    - If Windows SmartScreen warning appears:
      - Click "More info"
@@ -271,7 +270,7 @@ Implemented kite creation functionality (sketching + extruding). Feature in inte
 
 ### Linux
 
-**Requirements:** JDK 21+ from [Oracle](https://www.oracle.com/java/technologies/downloads/) or [Adoptium](https://adoptium.net/)
+**No Java installation required.** The installer includes the necessary runtime.
 
 **For Debian/Ubuntu (.deb):**
 ```bash
@@ -326,8 +325,7 @@ The generic `.tar.gz` can be easily repackaged for other distributions:
 
 ### macOS
 
-1. **Install JDK 21+** from [Oracle](https://www.oracle.com/java/technologies/downloads/) or [Adoptium](https://adoptium.net/)
-2. **Download** the `.dmg` installer
+1. **Download** the `.dmg` installer
 3. **Double-click** the `.dmg` file
 4. **Drag** SketchApp.app to the Applications folder
 5. **Launch** from Launchpad or Applications folder
