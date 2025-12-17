@@ -32,7 +32,8 @@ class JavaParser:
             content = f.read()
 
         package = self.extract_pattern(r'package\s+([\w.]+);', content)
-        class_name = self.extract_pattern(r'(?:public\s+)?(?:abstract\s+)?(?:class|interface|enum|record)\s+(\w+)', content)
+        # Anchor to start of line to avoid matching comments like "// class for..."
+        class_name = self.extract_pattern(r'^\s*(?:public\s+|protected\s+|private\s+)?(?:abstract\s+|static\s+|final\s+)*(?:class|interface|enum|record)\s+(\w+)', content, re.MULTILINE)
         
         if not class_name:
             return
@@ -50,8 +51,8 @@ class JavaParser:
             "dependencies": self.extract_dependencies(content)
         }
 
-    def extract_pattern(self, pattern, content):
-        match = re.search(pattern, content)
+    def extract_pattern(self, pattern, content, flags=0):
+        match = re.search(pattern, content, flags)
         return match.group(1) if match else None
 
     def extract_methods(self, content, class_name):
@@ -82,17 +83,9 @@ class JavaParser:
             if name in ['if', 'for', 'while', 'switch', 'catch']: 
                 continue
 
-            # Check if it's a constructor (return type is same as method name usually?? No, constructor has NO return type in regex)
-            # Our regex forces a return type group 2. 
-            # Constructors: public ClassName(...) 
-            # Regex: modifier (returnType?) name ...
-            # If it's a constructor, 'returnType' might be empty or modifiers.
-            # Actually, standard method regex fails for constructors.
-            # Let's use a separate pass or accept that "ClassName" might be captured as return type?
-            # public ClassName() -> public (ClassName) () ?? No name.
-            # This regex needs name.
-            
-            # Simplify: Just extract body and infer from it.
+            # Skip constructors (extracted separately)
+            if name == class_name:
+                continue
             
             body = self.extract_body(content, start_index)
             inference = self.infer_method_logic(name, body, params, return_type)
@@ -193,10 +186,32 @@ class JavaParser:
         # Look for ClassName.staticMethod() or new ClassName()
         # Regex for Capitalized words
         potential_classes = set(re.findall(r'\b([A-Z]\w+)\b', body))
-        ignore_list = {'String', 'Math', 'System', 'List', 'ArrayList', 'Float', 'Integer', 'Object', 'Exception', 'Override', 'Deprecated'}
+        ignore_list = {
+            'String', 'Math', 'System', 'List', 'ArrayList', 'Float', 'Integer', 'Object', 
+            'Exception', 'Override', 'Deprecated', 'Boolean', 'Double', 'Long', 'Short', 'Byte', 'Char',
+            'Void', 'Class', 'Runnable', 'Thread', 'Runtime', 'StringBuilder', 'StringBuffer',
+            'If', 'Else', 'Try', 'Catch', 'Finally', 'For', 'While', 'Do', 'Switch', 'Case', 'Default',
+            'Return', 'Throw', 'New', 'This', 'Super', 'Instanceof', 'Break', 'Continue',
+            'Public', 'Private', 'Protected', 'Static', 'Final', 'Abstract', 'Volatile', 'Synchronized',
+            'True', 'False', 'Null', 'Main', 'Args', 'File', 'Scanner', 'Map', 'HashMap', 'Set', 'HashSet',
+            'Arrays', 'Collections', 'Iterator', 'Optional', 'Stream', 'Collectors', 'Files', 'Paths', 'Path',
+            'BufferedReader', 'FileReader', 'PrintWriter', 'FileWriter', 'IOException', 'InputStream', 'OutputStream',
+            'System', 'Out', 'Err', 'In', 'Print', 'Println', 'Printf', 'Format', 'Append', 'Length', 'Size',
+            'Get', 'Set', 'Is', 'Has', 'Add', 'Remove', 'Clear', 'Put', 'Contains', 'Equals', 'HashCode', 'ToString',
+            'To', 'From', 'Of', 'By', 'On', 'At', 'In', 'Out', 'Up', 'Down', 'Left', 'Right', 'Top', 'Bottom', 'Center',
+            'Min', 'Max', 'Abs', 'Pow', 'Sqrt', 'Sin', 'Cos', 'Tan', 'Asin', 'Acos', 'Atan', 'Atan2', 'ToRadians', 'ToDegrees',
+            'PI', 'E', 'NaN', 'Infinity', 'Round', 'Floor', 'Ceil', 'Random',
+            'Log', 'Info', 'Warn', 'Error', 'Debug', 'Trace', 'Fatal', 'Check', 'Todo', 'Fixme', 'Note', 'Important',
+            'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Zero',
+            'Start', 'End', 'Stop', 'Pause', 'Resume', 'Init', 'Create', 'Destroy', 'Update', 'Render', 'Draw',
+            'Click', 'Press', 'Release', 'Move', 'Drag', 'Enter', 'Exit', 'Key', 'Mouse', 'Event', 'Action',
+            'Width', 'Height', 'X', 'Y', 'Z', 'Red', 'Green', 'Blue', 'Alpha', 'Color', 'Font', 'Image', 'Icon',
+            'Button', 'Label', 'Text', 'Field', 'Area', 'Panel', 'Frame', 'Window', 'Dialog', 'Menu', 'Item',
+            'Shape', 'Point', 'Line', 'Rect', 'Circle', 'Oval', 'Poly', 'Path', 'Curve', 'Arc' # These might be real classes? Keep if unsure.
+        }
         
         for cls in potential_classes:
-            if cls not in ignore_list and cls != name: # Don't list self
+            if cls not in ignore_list and cls != name and len(cls) > 2: # Ignore 1-2 char words (e.g. constant prefixes)
                 connections.append(cls)
                 
         # Default fallback
