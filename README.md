@@ -243,8 +243,7 @@ Implemented kite creation functionality (sketching + extruding). Feature in inte
 - ✅ **Tessellation:** Fixed rendering of complex polygons (like gear teeth) to prevent "garbage" geometry.
 
 **Macro System & Testing:**
-- Validated and fixed complex macros (`gear-design.macro`, `flange.macro`).
-- Created automated test scripts (`test-gear.sh`, `test-flange.sh`) to verify geometry generation.
+- Validated and fixed complex macros (`gear-design.macro`).
 
 **API Documentation (v2):**
 - **Automated Generation:** Pipeline now fully parses Java source code to generate JSON data.
@@ -305,6 +304,10 @@ The installer creates:
 4. **Drag** SketchApp.app to the Applications folder
 5. **Launch** from Launchpad or Applications folder
 
+
+
+> [!NOTE]
+> The macOS builds are generated on macOS 15 (Sequoia). They may not run on older versions of macOS (e.g., older Intel Macs).
 
 ---
 
@@ -368,7 +371,6 @@ Help shape this project! [Feedback Form](https://forms.gle/6JeLGzmrWwT5CRcj8) (o
   - [Auto-generated API Reference](https://gautam9981.github.io/CAD/)
 
 ⚠️ **In Progress:**
-- Click and drag in sketchpad
 - Feature implementation behind modern UI
 - File editing capabilities
 

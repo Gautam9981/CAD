@@ -74,25 +74,7 @@ jpackage \
 
   --arguments "--gui"
 
-# Step 2: Modify Info.plist to support older macOS versions (11.0+)
-INFO_PLIST="$OUTPUT_DIR/app-image/$APP_NAME.app/Contents/Info.plist"
-if [ -f "$INFO_PLIST" ]; then
-    echo "Updating LSMinimumSystemVersion in Info.plist to 11.0..."
-    # Use plytool or sed. sed is safer to assume presence.
-    # We replace the value if it exists, or insert it.
-    # jpackage usually adds LSMinimumSystemVersion, so we verify and replace.
-    echo "Updating LSMinimumSystemVersion in Info.plist to 11.0..."
-    # Robustly set LSMinimumSystemVersion using PlistBuddy
-    # 1. Try to delete the key first to avoid type conflicts or errors if it exists
-    /usr/libexec/PlistBuddy -c "Delete :LSMinimumSystemVersion" "$INFO_PLIST" || true
-    # 2. Add the key as a string with value "11.0"
-    /usr/libexec/PlistBuddy -c "Add :LSMinimumSystemVersion string 11.0" "$INFO_PLIST"
-    
-    echo "Info.plist updated:"
-    grep -A 1 "LSMinimumSystemVersion" "$INFO_PLIST" || echo "Reference verified via PlistBuddy"
-else
-    echo "Warning: Info.plist not found at $INFO_PLIST"
-fi
+
 
 # Step 3: Create DMG from App Image
 echo "Creating macOS DMG installer from App Image..."
