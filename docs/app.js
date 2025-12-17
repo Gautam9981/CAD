@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             initSearch();
         }
 
+        renderSidebarMenu();
         updateStats();
     } catch (e) {
         console.error("Failed to load Codex:", e);
@@ -95,6 +96,57 @@ function updateStats() {
     if (statMethods) statMethods.textContent = `${methods} Methods`;
 }
 
+function renderSidebarMenu() {
+    const nav = document.querySelector('.sidebar');
+    if (!nav) return;
+
+    // Create container if not exists
+    let menuContainer = document.getElementById('classMenu');
+    if (!menuContainer) {
+        menuContainer = document.createElement('div');
+        menuContainer.id = 'classMenu';
+        menuContainer.className = 'class-menu';
+        // Insert before stats panel
+        const stats = document.querySelector('.stats-panel');
+        nav.insertBefore(menuContainer, stats);
+    }
+
+    menuContainer.innerHTML = '<div class="menu-label">Classes</div>';
+
+    const sortedClasses = Object.values(codex).sort((a, b) => a.name.localeCompare(b.name));
+
+    sortedClasses.forEach(cls => {
+        const item = document.createElement('a');
+        item.href = '#';
+        item.className = 'menu-item';
+        item.textContent = cls.name;
+        item.dataset.class = cls.name;
+
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            // If on flow page, go to index
+            if (window.location.pathname.endsWith('flow.html')) {
+                window.location.href = `index.html?class=${cls.name}`;
+            } else {
+                // Scroll to card
+                // Filter to show just this class or scroll? 
+                // Let's filter for now as it's cleaner
+                renderAPI(cls.name.toLowerCase());
+                // Highlight active
+                document.querySelectorAll('.menu-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            }
+        });
+
+        menuContainer.appendChild(item);
+    });
+}
+
+
+function sanitizeId(str) {
+    return str.replace(/[^a-zA-Z0-9]/g, '_');
+}
+
 async function renderFlow() {
     const chart = document.getElementById('flowChart');
     if (!chart) return;
@@ -105,16 +157,23 @@ async function renderFlow() {
     graph += "    edge [color=#30363d]\n\n";
 
     Object.values(codex).forEach(cls => {
+        const id = sanitizeId(cls.name);
         // Add Node
-        graph += `    ${cls.name}["${cls.name}"]\n`;
+        graph += `    ${id}["${cls.name}"]\n`;
 
         // Add Edges (Aggregate dependencies)
         const deps = new Set(cls.dependencies);
         cls.methods.forEach(m => m.connections.forEach(c => deps.add(c)));
 
         deps.forEach(dep => {
-            if (codex[Object.keys(codex).find(k => k.endsWith('.' + dep)) || dep]) { // Only link to known classes
-                graph += `    ${cls.name} --> ${dep}\n`;
+            // Find full name if possible or use short name
+            const targetCls = Object.values(codex).find(c => c.name === dep || c.name.endsWith('.' + dep));
+
+            if (targetCls) {
+                const targetId = sanitizeId(targetCls.name);
+                if (id !== targetId) {
+                    graph += `    ${id} --> ${targetId}\n`;
+                }
             }
         });
     });
@@ -122,7 +181,11 @@ async function renderFlow() {
     // Render
     chart.textContent = graph;
     if (window.mermaid) {
-        chart.innerHTML = `<pre class="mermaid">${graph}</pre>`;
-        await window.mermaid.run();
+        try {
+            chart.innerHTML = `<pre class="mermaid">${graph}</pre>`;
+            await window.mermaid.run();
+        } catch (e) {
+            chart.innerHTML = `<div style="color:red; padding:1rem;">Error rendering graph: ${e.message}</div><pre>${graph}</pre>`;
+        }
     }
 }

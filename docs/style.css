@@ -234,3 +234,55 @@ body {
     border-radius: 12px;
     border: 1px solid var(--border);
 }
+
+/* Sidebar Menu */
+.class-menu {
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 1rem;
+    padding-right: 0.5rem;
+}
+
+.menu-label {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.05em;
+}
+
+.menu-item {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    color: var(--text-main);
+    text-decoration: none;
+    font-size: 0.9rem;
+    border-radius: 6px;
+    margin-bottom: 2px;
+    transition: background 0.1s;
+    font-family: var(--font-mono);
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.menu-item.active {
+    background: var(--accent-glow);
+    color: var(--accent);
+}
+
+/* Scrollbar styles for sidebar */
+.class-menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.class-menu::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.class-menu::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}
