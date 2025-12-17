@@ -12,163 +12,35 @@ document.addEventListener('DOMContentLoaded', async () => {
         const response = await fetch(`codex.json?v=${new Date().getTime()}`);
         codex = await response.json();
 
-        renderFlow();
-        renderTable();
+        renderDependencyCards();
 
         const statClasses = document.getElementById('statClasses');
         if (statClasses) statClasses.textContent = `${Object.keys(codex).length} Classes`;
 
     } catch (e) {
         console.error("Failed to load Codex:", e);
-        document.getElementById('flowChart').innerHTML = "Failed to load system architecture.";
-    }
-
-    // View Toggles
-    const btnGraph = document.getElementById('btn-graph');
-    const btnTable = document.getElementById('btn-table');
-    const divGraph = document.getElementById('flowChart');
-    const divTable = document.getElementById('dependencyTable');
-
-    if (btnGraph && btnTable) {
-        // Default to Table View
-        btnTable.classList.add('active');
-        btnGraph.classList.remove('active');
-        divTable.style.display = 'block';
-        divGraph.style.display = 'none';
-
-        btnGraph.addEventListener('click', () => {
-            btnGraph.classList.add('active');
-            btnTable.classList.remove('active');
-            divGraph.style.display = 'flex';
-            divTable.style.display = 'none';
-        });
-
-        btnTable.addEventListener('click', () => {
-            btnTable.classList.add('active');
-            btnGraph.classList.remove('active');
-            divTable.style.display = 'block';
-            divGraph.style.display = 'none';
-        });
+        const container = document.getElementById('dependencyList');
+        if (container) container.innerHTML = "Failed to load system architecture.";
     }
 });
 
-function sanitizeId(str) {
-    // Replace ALL non-alphanumeric chars with underscore to ensure valid Mermaid IDs
-    // Also handle empty strings
-    if (!str) return 'unknown';
-    return str.replace(/[^a-zA-Z0-9]/g, '_');
-}
+function renderDependencyCards() {
+    const container = document.getElementById('dependencyList');
+    if (!container) return;
 
-async function renderFlow() {
-    const chart = document.getElementById('flowChart');
-    if (!chart) return;
-
-    // Generate Mermaid Graph
-    // Use flowchart to support autoscaling better than 'graph'
-    let graph = "flowchart TD\n";
-    graph += "    node [shape=rect, style=filled, color=#161b22, fillcolor=#161b22, fontcolor=#c9d1d9, fontname='Inter']\n";
-    graph += "    edge [color=#30363d]\n\n";
-
-    // Track added nodes to avoid duplicates if something weird happens
-    const addedNodes = new Set();
-
-    const classes = Object.values(codex);
-
-    // 1. Add all nodes first
-    classes.forEach(cls => {
-        const id = sanitizeId(cls.name);
-        if (!addedNodes.has(id)) {
-            // Escape the label
-            const label = cls.name.replace(/"/g, "'");
-            graph += `    ${id}["${label}"]\n`;
-            addedNodes.add(id);
-        }
-    });
-
-    // 2. Add edges
-    classes.forEach(cls => {
-        const sourceId = sanitizeId(cls.name);
-        const deps = new Set(cls.dependencies || []);
-
-        // Add specific method connections
-        if (cls.methods) {
-            cls.methods.forEach(m => {
-                if (m.connections) {
-                    m.connections.forEach(c => deps.add(c));
-                }
-            });
-        }
-
-        deps.forEach(depName => {
-            // Validate dependency target exists
-            const targetCls = classes.find(c => c.name === depName || c.name.endsWith('.' + depName));
-
-            if (targetCls) {
-                const targetId = sanitizeId(targetCls.name);
-                // Avoid self-loops if desired, or keep them
-                if (sourceId !== targetId) {
-                    graph += `    ${sourceId} --> ${targetId}\n`;
-                }
-            }
-        });
-    });
-
-    // Render
-    chart.textContent = graph;
-
-    if (window.mermaid) {
-        try {
-            // Clear and insert
-            chart.innerHTML = `<pre class="mermaid" style="width:100%; height:100%;">${graph}</pre>`;
-            await window.mermaid.run();
-
-            // Adjust SVG to fit
-            const svg = chart.querySelector('svg');
-            if (svg) {
-                svg.style.width = '100%';
-                svg.style.height = '100%';
-                svg.removeAttribute('max-width');
-            }
-        } catch (e) {
-            console.error(e);
-            chart.innerHTML = `<div style="color:#ff6b6b; padding:2rem;">
-                                <h3>Visualization Error</h3>
-                                <p>${e.message}</p>
-                                <pre style="background:#111; padding:1rem; overflow:auto;">${graph}</pre>
-                               </div>`;
-        }
-    }
-}
-
-function renderTable() {
-    const tableContainer = document.getElementById('dependencyTable');
-    if (!tableContainer) return;
-
-    let html = `
-        <table class="dep-table">
-            <thead>
-                <tr>
-                    <th style="width: 30%">Component</th>
-                    <th style="width: 70%">Dependencies</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
+    let html = '';
 
     // Sort classes alphabetically
     const classes = Object.keys(codex).sort();
 
     classes.forEach(cls => {
         const data = codex[cls];
-        // Collect all unique dependencies from method connections
-        const dependencies = new Set();
 
-        // Also check direct dependencies list if exists
+        // Collect all unique dependencies
+        const dependencies = new Set();
         if (data.dependencies) {
             data.dependencies.forEach(d => dependencies.add(d));
         }
-
-        // And method connections
         if (data.methods) {
             data.methods.forEach(m => {
                 if (m.connections) {
@@ -176,22 +48,73 @@ function renderTable() {
                 }
             });
         }
-
         // Filter out self-reference
         dependencies.delete(data.name);
 
-        const depTags = Array.from(dependencies).sort().map(dep =>
-            `<span class="tag">${dep}</span>`
-        ).join('');
+        const depList = Array.from(dependencies).sort();
+
+        // If no dependencies, maybe skip or show empty state? Let's show empty state.
+        let depTableRows = '';
+
+        if (depList.length === 0) {
+            depTableRows = `<tr><td colspan="2" style="color:var(--text-secondary); font-style:italic; padding:12px;">No explicit dependencies detected.</td></tr>`;
+        } else {
+            depTableRows = depList.map(depName => {
+                // Find "preview" description
+                // Dependency might be a full class key or just a name.
+                // Our extractor usually stores simple names in connections, but keys are full package names.
+                // We try to find the class in codex.
+                let depDescription = "No description available.";
+                let fullDepKey = Object.keys(codex).find(k => codex[k].name === depName || k.endsWith('.' + depName));
+
+                let isLinkable = false;
+
+                if (fullDepKey && codex[fullDepKey]) {
+                    // Use the class description
+                    depDescription = codex[fullDepKey].description || "No description available.";
+                    isLinkable = true;
+                } else {
+                    // It might be a Java std lib class or something we didn't parse fully
+                    depDescription = "External or System Component";
+                }
+
+                // Truncate if too long (preview)
+                if (depDescription.length > 80) {
+                    depDescription = depDescription.substring(0, 77) + "...";
+                }
+
+                const nameHtml = isLinkable
+                    ? `<a href="#" onclick="navigateToApi(event, '${depName}')" class="dep-link">${depName}</a>`
+                    : `<span class="dep-static">${depName}</span>`;
+
+                return `
+                    <tr>
+                        <td style="width: 30%; font-weight: 500">${nameHtml}</td>
+                        <td style="width: 70%; color: var(--text-secondary); font-size: 0.9em">${depDescription}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
 
         html += `
-            <tr>
-                <td><strong>${data.name}</strong><br><span style="font-size:0.8em; color:var(--text-secondary)">${data.package}</span></td>
-                <td>${depTags || '<span style="color:var(--text-secondary); font-style:italic">No explicit dependencies</span>'}</td>
-            </tr>
+            <div class="class-card" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; overflow: hidden;">
+                <div style="padding: 12px 16px; background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <div style="font-weight: 600; font-size: 1.1em; color: var(--accent);">${data.name}</div>
+                    <div style="font-size: 0.8em; color: var(--text-tertiary); font-family: monospace;">${data.package}</div>
+                </div>
+                <table class="dep-table" style="width:100%; border-collapse:collapse;">
+                    ${depTableRows}
+                </table>
+            </div>
         `;
     });
 
-    html += `</tbody></table>`;
-    tableContainer.innerHTML = html;
+    container.innerHTML = html;
 }
+
+// Global function for onclick handlers
+window.navigateToApi = function (event, className) {
+    event.preventDefault();
+    // Post message to parent (index.html)
+    window.parent.postMessage({ type: 'NAVIGATE_API', target: className }, '*');
+};

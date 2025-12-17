@@ -91,6 +91,27 @@ function initializeEventListeners() {
             scrollToClass(className);
         }
     });
+
+    // Cross-frame navigation (from Flow/Dependency view)
+    window.addEventListener('message', (event) => {
+        if (event.data.type === 'NAVIGATE_API' && event.data.target) {
+            // Switch to API tab programmatically
+            const tabs = document.querySelectorAll('.tab-btn');
+            const activeTab = document.querySelector('[data-tab="api"]');
+
+            if (activeTab) {
+                tabs.forEach(t => t.classList.remove('active'));
+                activeTab.classList.add('active');
+
+                document.getElementById('view-api').classList.remove('view-hidden');
+                document.getElementById('view-flow').classList.add('view-hidden');
+
+                // Navigate
+                scrollToClass(event.data.target);
+                window.location.hash = event.data.target;
+            }
+        }
+    });
 }
 
 // Populate package filter dropdown
