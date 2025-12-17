@@ -1,16 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CAD Application - API Documentation</title>
     <link rel="stylesheet" href="api-board.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 </head>
-
 <body>
     <!-- Header -->
     <header class="header">
@@ -20,9 +16,6 @@
                 CAD API Documentation
             </h1>
             <div class="header-stats">
-                <a href="flow.html" class="stat-link"
-                    style="color: #58a6ff; text-decoration: none; border: 1px solid #30363d; padding: 4px 10px; border-radius: 6px; margin-right: 15px; font-size: 0.9em; background: rgba(22,27,34,0.5);">🕸️
-                    System Flow</a>
                 <span class="stat" id="classCount">0 Classes</span>
                 <span class="stat-divider">|</span>
                 <span class="stat" id="methodCount">0 Methods</span>
@@ -34,13 +27,11 @@
     <div class="controls">
         <div class="search-container">
             <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            <input type="text" id="searchInput" class="search-input"
-                placeholder="Search methods, classes, parameters, return types...">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search methods, classes, parameters, return types...">
         </div>
-
+        
         <div class="filters">
             <div class="filter-group">
                 <label class="filter-label">Package:</label>
@@ -48,7 +39,7 @@
                     <option value="">All Packages</option>
                 </select>
             </div>
-
+            
             <div class="filter-group">
                 <label class="filter-label">Visibility:</label>
                 <select id="visibilityFilter" class="filter-select">
@@ -59,7 +50,7 @@
                     <option value="package-private">Package-Private</option>
                 </select>
             </div>
-
+            
             <button id="clearFilters" class="btn-clear">Clear Filters</button>
         </div>
     </div>
@@ -94,5 +85,4 @@
 
     <script src="api-board.js"></script>
 </body>
-
 </html>
