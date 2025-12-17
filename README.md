@@ -379,8 +379,7 @@ Help shape this project! [Feedback Form](https://forms.gle/6JeLGzmrWwT5CRcj8) (o
 - **Advanced Rendering:**
   - 4x MSAA (Anti-Aliasing)
   - Accurate lighting/shading for mechanical parts
-- **Documentation:**
-  - [Code Documentation](https://gautam9981.github.io/CAD/)
+
 
 ⚠️ **In Progress:**
 - Feature implementation behind modern UI
