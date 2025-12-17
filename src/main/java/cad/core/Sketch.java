@@ -514,16 +514,24 @@ public class Sketch {
         }
     }
 
+    public int addNSidedPolygon(float centerX, float centerY, float radius, int sides) {
+        return addNSidedPolygon(centerX, centerY, radius, sides, false);
+    }
+
     /**
      * Adds an N-sided regular polygon to the sketch.
      * 
-     * @param centerX X-coordinate of the polygon's center.
-     * @param centerY Y-coordinate of the polygon's center.
-     * @param radius  Radius of the circumcircle.
-     * @param sides   Number of sides (3-25).
+     * @param centerX       X-coordinate of the polygon's center.
+     * @param centerY       Y-coordinate of the polygon's center.
+     * @param radius        Radius (inscribed or circumscribed depending on flag).
+     * @param sides         Number of sides (3-25).
+     * @param circumscribed If true, the polygon is circumscribed about the circle
+     *                      of
+     *                      given radius.
+     *                      If false, it is inscribed in the circle.
      * @return 0 on success, 1 on error.
      */
-    public int addNSidedPolygon(float centerX, float centerY, float radius, int sides) {
+    public int addNSidedPolygon(float centerX, float centerY, float radius, int sides, boolean circumscribed) {
         if (sides < 3 || sides > 25) {
             System.out.println("Polygon must have between 3 and 25 sides.");
             return 1;
@@ -533,11 +541,17 @@ public class Sketch {
             return 1;
         }
 
+        double effectiveRadius = radius;
+        if (circumscribed) {
+            // R_circum = R_inscribed / cos(PI / n)
+            effectiveRadius = radius / Math.cos(Math.PI / sides);
+        }
+
         List<PointEntity> points = new ArrayList<>();
         for (int i = 0; i < sides; i++) {
             double angle = 2 * Math.PI * i / sides;
-            float x = centerX + (float) (radius * Math.cos(angle));
-            float y = centerY + (float) (radius * Math.sin(angle));
+            float x = centerX + (float) (effectiveRadius * Math.cos(angle));
+            float y = centerY + (float) (effectiveRadius * Math.sin(angle));
             points.add(new PointEntity(x, y));
         }
 

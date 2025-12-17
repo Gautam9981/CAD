@@ -133,23 +133,6 @@ body {
     /* Manage scroll internally */
 }
 
-#view-flow {
-    flex: 1;
-    overflow: hidden;
-    background: var(--bg-primary);
-}
-
-.view-hidden {
-    display: none !important;
-}
-
-.flow-frame {
-    width: 100%;
-    height: 100%;
-    border: none;
-    display: block;
-}
-
 
 /* ===== Controls ===== */
 .controls {

@@ -24,7 +24,7 @@ public class Cli {
 
     /** Sketch instance to manage 2D drawing entities */
     private static Sketch sketch = new Sketch();
-    
+
     /** Command manager for undo/redo */
     private static cad.core.CommandManager commandManager = new cad.core.CommandManager();
 
@@ -488,29 +488,32 @@ public class Cli {
      * @param args Command arguments for polygon creation
      */
     private static void sketchPolygon(String[] args) {
-        // Regular polygon mode: sketch_polygon <x> <y> <radius> <sides>
-        if (args.length == 5) {
+        // Regular polygon mode: sketch_polygon <x> <y> <radius> <sides> [c]
+        if (args.length == 5 || args.length == 6) {
             try {
                 float x = Float.parseFloat(args[1]);
                 float y = Float.parseFloat(args[2]);
                 float radius = Float.parseFloat(args[3]);
                 int sides = Integer.parseInt(args[4]);
 
+                boolean circumscribed = false;
+                if (args.length == 6) {
+                    String mode = args[5].toLowerCase();
+                    if (mode.equals("c") || mode.equals("circumscribed")) {
+                        circumscribed = true;
+                    } else if (!mode.equals("i") && !mode.equals("inscribed")) {
+                        System.out.println("Invalid mode. Use 'c' for circumscribed or 'i' for inscribed.");
+                        return;
+                    }
+                }
+
                 if (sides < 3 || sides > 25) {
                     System.out.println("Polygon sides must be between 3 and 25.");
                     return;
                 }
-                
-                List<cad.core.Sketch.PointEntity> points = new ArrayList<>();
-                for (int i = 0; i < sides; i++) {
-                    double angle = 2 * Math.PI * i / sides;
-                    float px = x + (float) (radius * Math.cos(angle));
-                    float py = y + (float) (radius * Math.sin(angle));
-                    points.add(new cad.core.Sketch.PointEntity(px, py));
-                }
 
-                cad.core.Sketch.Polygon poly = new cad.core.Sketch.Polygon(points);
-                commandManager.executeCommand(new cad.core.AddEntityCommand(sketch, poly, "Polygon"));
+                // Use the newly added method with circumscribed flag
+                sketch.addNSidedPolygon(x, y, radius, sides, circumscribed);
                 System.out.println("Polygon added to sketch.");
             } catch (NumberFormatException e) {
                 System.out.println("Invalid numeric value in arguments.");
@@ -539,10 +542,11 @@ public class Cli {
                 System.out.println("Invalid numeric value in polygon points.");
             }
         } else {
-             System.out.println("Usage:");
-             System.out.println("  sketch_polygon <x> <y> <radius> <sides>           - Regular polygon (3 to 25 sides)");
-             System.out.println(
-                     "  sketch_polygon <x1> <y1> <x2> <y2> ... <xn> <yn>   - Polygon from explicit points (3 to 25 points)");
+            System.out.println("Usage:");
+            System.out.println(
+                    "  sketch_polygon <x> <y> <radius> <sides> [c|i]     - Regular polygon (3 to 25 sides), optional c=circumscribed");
+            System.out.println(
+                    "  sketch_polygon <x1> <y1> <x2> <y2> ... <xn> <yn>   - Polygon from explicit points (3 to 25 points)");
         }
     }
 
@@ -726,18 +730,19 @@ public class Cli {
         Geometry.revolve(sketch, angle, steps);
         System.out.println("Revolve operation completed.");
     }
-    
+
     /**
      * Handles undo command.
      */
     private static void handleUndo() {
         if (commandManager.undo()) {
-            System.out.println("Undo successful: " + commandManager.getRedoDescription()); // Description of what was undone
+            System.out.println("Undo successful: " + commandManager.getRedoDescription()); // Description of what was
+                                                                                           // undone
         } else {
             System.out.println("Nothing to undo.");
         }
     }
-    
+
     /**
      * Handles redo command.
      */
