@@ -327,7 +327,10 @@ function getDescription(method, isConstructor) {
     if (cleanExisting === cleanName ||
         cleanExisting === cleanName + 'command' ||
         existing.length < 15 ||
-        existing.toLowerCase().startsWith("handle " + method.name.replace('handle', '').toLowerCase())) {
+        existing.toLowerCase().startsWith("handle " + method.name.replace('handle', '').toLowerCase()) ||
+        existing.toLowerCase().startsWith("represents") ||
+        existing.toLowerCase().trim() === "standard " + method.name.toLowerCase() ||
+        existing.toLowerCase().includes("instance of")) {
         return inferred;
     }
 
@@ -391,6 +394,14 @@ function inferDescription(method, isConstructor) {
     if (verb === 'load' || verb === 'import') {
         return `Loads ${noun || 'data'} from an external source.`;
     }
+
+    // exact method name checks
+    if (name === 'execute') return "Executes the command operation.";
+    if (name === 'undo') return "Reverses the effects of this command.";
+    if (name === 'redo') return "Re-applies the effects of this command.";
+    if (name === 'toString') return "Returns a string representation of this object.";
+    if (name === 'hashCode') return "Returns a hash code value for the object.";
+    if (name === 'equals') return "Indicates whether some other object is equal to this one.";
 
     // Default: "Do Something" -> "Do something."
     return capitalize(words.join(' ')) + ".";
