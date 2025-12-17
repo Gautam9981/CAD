@@ -31,6 +31,73 @@
             border-radius: 0;
             background: transparent;
         }
+
+        /* View Controls */
+        .view-controls {
+            display: flex;
+            gap: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px;
+            border-radius: 8px;
+        }
+
+        .btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .btn.active {
+            background: var(--accent);
+            color: white;
+            box-shadow: 0 2px 8px rgba(88, 166, 255, 0.3);
+        }
+
+        /* Table Styling */
+        .dep-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: var(--text-primary);
+        }
+
+        .dep-table th {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .dep-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: top;
+        }
+
+        .dep-table tr:hover {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .tag {
+            display: inline-block;
+            background: rgba(88, 166, 255, 0.1);
+            color: var(--accent);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            margin-right: 6px;
+            margin-bottom: 6px;
+        }
     </style>
 </head>
 
@@ -67,10 +134,17 @@
                         <div class="class-title">System Architecture</div>
                         <div class="class-package">Visualization of component dependencies</div>
                     </div>
+                    <div class="view-controls">
+                        <button id="btn-graph" class="btn active">Graph</button>
+                        <button id="btn-table" class="btn">Table</button>
+                    </div>
                 </div>
                 <div id="flowChart"
                     style="flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center;">
                     Loading Diagram...
+                </div>
+                <div id="dependencyTable" style="display: none; flex: 1; overflow: auto; padding: 1rem;">
+                    <!-- Table will be injected here -->
                 </div>
             </div>
         </main>

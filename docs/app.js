@@ -13,12 +13,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         codex = await response.json();
 
         renderFlow();
+        renderTable();
 
         const statClasses = document.getElementById('statClasses');
         if (statClasses) statClasses.textContent = `${Object.keys(codex).length} Classes`;
 
     } catch (e) {
         console.error("Failed to load Codex:", e);
+        document.getElementById('flowChart').innerHTML = "Failed to load system architecture.";
+    }
+
+    // View Toggles
+    const btnGraph = document.getElementById('btn-graph');
+    const btnTable = document.getElementById('btn-table');
+    const divGraph = document.getElementById('flowChart');
+    const divTable = document.getElementById('dependencyTable');
+
+    if (btnGraph && btnTable) {
+        btnGraph.addEventListener('click', () => {
+            btnGraph.classList.add('active');
+            btnTable.classList.remove('active');
+            divGraph.style.display = 'flex';
+            divTable.style.display = 'none';
+        });
+
+        btnTable.addEventListener('click', () => {
+            btnTable.classList.add('active');
+            btnGraph.classList.remove('active');
+            divTable.style.display = 'block';
+            divGraph.style.display = 'none';
+        });
     }
 });
 
@@ -108,4 +132,60 @@ async function renderFlow() {
                                </div>`;
         }
     }
+}
+
+function renderTable() {
+    const tableContainer = document.getElementById('dependencyTable');
+    if (!tableContainer) return;
+
+    let html = `
+        <table class="dep-table">
+            <thead>
+                <tr>
+                    <th style="width: 30%">Component</th>
+                    <th style="width: 70%">Dependencies</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    // Sort classes alphabetically
+    const classes = Object.keys(codex).sort();
+
+    classes.forEach(cls => {
+        const data = codex[cls];
+        // Collect all unique dependencies from method connections
+        const dependencies = new Set();
+
+        // Also check direct dependencies list if exists
+        if (data.dependencies) {
+            data.dependencies.forEach(d => dependencies.add(d));
+        }
+
+        // And method connections
+        if (data.methods) {
+            data.methods.forEach(m => {
+                if (m.connections) {
+                    m.connections.forEach(c => dependencies.add(c));
+                }
+            });
+        }
+
+        // Filter out self-reference
+        dependencies.delete(data.name);
+
+        const depTags = Array.from(dependencies).sort().map(dep =>
+            `<span class="tag">${dep}</span>`
+        ).join('');
+
+        html += `
+            <tr>
+                <td><strong>${data.name}</strong><br><span style="font-size:0.8em; color:var(--text-secondary)">${data.package}</span></td>
+                <td>${depTags || '<span style="color:var(--text-secondary); font-style:italic">No explicit dependencies</span>'}</td>
+            </tr>
+        `;
+    });
+
+    html += `</tbody></table>`;
+    tableContainer.innerHTML = html;
 }
