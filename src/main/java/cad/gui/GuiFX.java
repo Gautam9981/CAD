@@ -2643,27 +2643,61 @@ public class GuiFX extends Application {
      * @see #saveDXF(String) for DXF format saving
      */
     private void showSaveDialog() {
-        String filename = "model.stl"; // Default filename
-        if (filename.isEmpty()) {
-            appendOutput("Please enter a filename in the File Name field.");
-            return;
-        }
-
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save STL File");
-        fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("STL files (*.stl)", "*.stl"));
-        fileChooser.setInitialFileName(filename);
+        fileChooser.setTitle("Save File");
+
+        // Define extension filters
+        FileChooser.ExtensionFilter stlFilter = new FileChooser.ExtensionFilter("STL files (*.stl)", "*.stl");
+        FileChooser.ExtensionFilter dxfFilter = new FileChooser.ExtensionFilter("DXF files (*.dxf)", "*.dxf");
+
+        fileChooser.getExtensionFilters().addAll(stlFilter, dxfFilter);
+
+        // Default to STL
+        fileChooser.setSelectedExtensionFilter(stlFilter);
+        fileChooser.setInitialFileName("model.stl");
 
         // Get the window from a JavaFX component in the scene graph
         Window ownerWindow = outputArea.getScene().getWindow();
         File file = fileChooser.showSaveDialog(ownerWindow); // Show save dialog
 
         if (file != null) {
+            String filepath = file.getAbsolutePath();
+            String extension = "";
+
+            // Determine extension from file filter or filename
+            FileChooser.ExtensionFilter selectedFilter = fileChooser.getSelectedExtensionFilter();
+            if (selectedFilter == stlFilter) {
+                extension = "stl";
+            } else if (selectedFilter == dxfFilter) {
+                extension = "dxf";
+            } else {
+                // Fallback: check filename string
+                if (filepath.toLowerCase().endsWith(".dxf")) {
+                    extension = "dxf";
+                } else {
+                    extension = "stl"; // Default
+                }
+            }
+
+            // Ensure correct extension is appended if missing via check against filter
+            // (FileChooser usually handles this on Windows/Mac, but good to be safe)
+            if (extension.equals("stl") && !filepath.toLowerCase().endsWith(".stl")) {
+                filepath += ".stl";
+            } else if (extension.equals("dxf") && !filepath.toLowerCase().endsWith(".dxf")) {
+                filepath += ".dxf";
+            }
+
             try {
-                Geometry.saveStl(file.getAbsolutePath()); // Save the STL
-                appendOutput("File saved successfully to: " + file.getAbsolutePath());
+                if (extension.equals("stl")) {
+                    Geometry.saveStl(filepath);
+                    appendOutput("3D Model saved to: " + filepath);
+                } else if (extension.equals("dxf")) {
+                    sketch.exportSketchToDXF(filepath);
+                    appendOutput("2D Sketch exported to: " + filepath);
+                }
             } catch (Exception e) {
                 appendOutput("Error saving file: " + e.getMessage());
+                e.printStackTrace();
             }
         } else {
             appendOutput("File save cancelled.");
