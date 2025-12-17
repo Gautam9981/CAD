@@ -2283,17 +2283,6 @@
           }
         ],
         "signature": "public PointEntity(float x, float y)"
-      },
-      {
-        "name": "PointEntity",
-        "visibility": "package-private",
-        "parameters": [
-          {
-            "type": "y)\n     */\n    @Override\n    public String",
-            "name": "toString("
-          }
-        ],
-        "signature": "package-private PointEntity(y)\n     */\n    @Override\n    public String toString()"
       }
     ],
     "methods": [
