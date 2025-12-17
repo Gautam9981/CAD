@@ -376,10 +376,12 @@ Help shape this project! [Feedback Form](https://forms.gle/6JeLGzmrWwT5CRcj8) (o
   - Horizontal constraint
   - Vertical constraint
   - Fixed (lock) constraint
-  - Coincident constraint
+  - Coincident constraint (General: Point-Point, Point-Line, Point-Circle, Line-Line, Circle-Circle)
 - **Dimensions:**
   - Linear dimensions
   - Radial dimensions
+- **Advanced Sketching:**
+  - Circumscribed/Inscribed Polygons
 - Extrusion functionality
 - OpenGL rendering (JOGL)
 - Mouse/keyboard view controls

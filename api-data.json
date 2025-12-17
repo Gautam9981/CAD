@@ -573,15 +573,30 @@
         "visibility": "public",
         "parameters": [
           {
-            "type": "Point",
+            "type": "cad.core.Point",
             "name": "p1"
           },
           {
-            "type": "Point",
+            "type": "cad.core.Point",
             "name": "p2"
           }
         ],
-        "signature": "public CoincidentConstraint(Point p1, Point p2)"
+        "signature": "public CoincidentConstraint(cad.core.Point p1, cad.core.Point p2)"
+      },
+      {
+        "name": "CoincidentConstraint",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "cad.core.Sketch.Entity",
+            "name": "e1"
+          },
+          {
+            "type": "cad.core.Sketch.Entity",
+            "name": "e2"
+          }
+        ],
+        "signature": "public CoincidentConstraint(cad.core.Sketch.Entity e1, cad.core.Sketch.Entity e2)"
       }
     ],
     "methods": [
@@ -596,12 +611,96 @@
         "returns": ""
       },
       {
+        "name": "getPointLineError",
+        "visibility": "private",
+        "static": "",
+        "returnType": "double",
+        "parameters": [
+          {
+            "type": "cad.core.Point",
+            "name": "p",
+            "description": ""
+          },
+          {
+            "type": "cad.core.Sketch.Line",
+            "name": "line",
+            "description": ""
+          }
+        ],
+        "signature": "private double getPointLineError(cad.core.Point p, cad.core.Sketch.Line line)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getPointCircleError",
+        "visibility": "private",
+        "static": "",
+        "returnType": "double",
+        "parameters": [
+          {
+            "type": "cad.core.Point",
+            "name": "p",
+            "description": ""
+          },
+          {
+            "type": "cad.core.Sketch.Circle",
+            "name": "c",
+            "description": ""
+          }
+        ],
+        "signature": "private double getPointCircleError(cad.core.Point p, cad.core.Sketch.Circle c)",
+        "description": "",
+        "returns": ""
+      },
+      {
         "name": "solve",
         "visibility": "public",
         "static": "",
         "returnType": "void",
         "parameters": [],
         "signature": "public void solve()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "solvePointLine",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "cad.core.Point",
+            "name": "p",
+            "description": ""
+          },
+          {
+            "type": "cad.core.Sketch.Line",
+            "name": "line",
+            "description": ""
+          }
+        ],
+        "signature": "private void solvePointLine(cad.core.Point p, cad.core.Sketch.Line line)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "solvePointCircle",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "cad.core.Point",
+            "name": "p",
+            "description": ""
+          },
+          {
+            "type": "cad.core.Sketch.Circle",
+            "name": "c",
+            "description": ""
+          }
+        ],
+        "signature": "private void solvePointCircle(cad.core.Point p, cad.core.Sketch.Circle c)",
         "description": "",
         "returns": ""
       }
@@ -2902,7 +3001,38 @@
           {
             "type": "float",
             "name": "centerX",
-            "description": "X-coordinate of the polygon's center."
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "centerY",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "radius",
+            "description": ""
+          },
+          {
+            "type": "int",
+            "name": "sides",
+            "description": ""
+          }
+        ],
+        "signature": "public int addNSidedPolygon(float centerX, float centerY, float radius, int sides)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "addNSidedPolygon",
+        "visibility": "public",
+        "static": "",
+        "returnType": "int",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "centerX",
+            "description": ""
           },
           {
             "type": "float",
@@ -2912,16 +3042,21 @@
           {
             "type": "float",
             "name": "radius",
-            "description": "Radius of the circumcircle."
+            "description": "Radius (inscribed or circumscribed depending on flag)."
           },
           {
             "type": "int",
             "name": "sides",
             "description": "Number of sides (3-25)."
+          },
+          {
+            "type": "boolean",
+            "name": "circumscribed",
+            "description": "If true, the polygon is circumscribed about the circle"
           }
         ],
-        "signature": "public int addNSidedPolygon(float centerX, float centerY, float radius, int sides)",
-        "description": "Adds an N-sided regular polygon to the sketch.",
+        "signature": "public int addNSidedPolygon(float centerX, float centerY, float radius, int sides, boolean circumscribed)",
+        "description": "of given radius. If false, it is inscribed in the circle.",
         "returns": "0 on success, 1 on error."
       },
       {
