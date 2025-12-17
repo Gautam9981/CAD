@@ -21,9 +21,11 @@ class JavaMethodExtractor:
         
     def extract_class_name(self, content):
         """Extract class name from Java file"""
-        # Match class, interface, enum, or abstract class
-        match = re.search(r'(public\s+)?(abstract\s+)?(class|interface|enum)\s+(\w+)', content)
-        return match.group(4) if match else "Unknown"
+        # Match class, interface, enum, record definition at the start of a line
+        # Supports modifiers: public, abstract, final, static (for nested), and 'record' (modern Java)
+        pattern = r'^\s*(?:public\s+|protected\s+|private\s+)?(?:abstract\s+|static\s+|final\s+)*(?:class|interface|enum|record)\s+(\w+)'
+        match = re.search(pattern, content, re.MULTILINE)
+        return match.group(1) if match else "Unknown"
     
     def extract_javadoc(self, content, method_start_pos):
         """Extract Javadoc comment immediately before a method"""

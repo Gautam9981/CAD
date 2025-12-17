@@ -272,11 +272,9 @@ function createMethodCard(method, isConstructor) {
             ${method.static ? '<span class="static-badge">STATIC</span>' : ''}
         </div>
         
-        ${method.description ? `
-            <div class="method-description">
-                ${escapeHtml(method.description)}
-            </div>
-        ` : ''}
+        <div class="method-description">
+            ${escapeHtml(inferDescription(method, isConstructor))}
+        </div>
         
         <div class="method-details">
             ${!isConstructor ? `
@@ -284,12 +282,6 @@ function createMethodCard(method, isConstructor) {
                     <div class="detail-label">Return Type:</div>
                     <div class="detail-value return-type">${escapeHtml(method.returnType)}</div>
                 </div>
-                ${method.returns ? `
-                    <div class="detail-row">
-                        <div class="detail-label">Returns:</div>
-                        <div class="detail-value return-description">${escapeHtml(method.returns)}</div>
-                    </div>
-                ` : ''}
             ` : ''}
             
             <div class="detail-row">
@@ -303,9 +295,6 @@ function createMethodCard(method, isConstructor) {
                                         <span class="param-type">${escapeHtml(p.type)}</span>
                                         <span class="param-name">${escapeHtml(p.name)}</span>
                                     </div>
-                                    ${p.description ? `
-                                        <div class="param-description">${escapeHtml(p.description)}</div>
-                                    ` : ''}
                                 </div>
                             `).join('')}
                         </div>
@@ -321,6 +310,61 @@ function createMethodCard(method, isConstructor) {
 
     return card;
 }
+
+// Infer description from method name
+function inferDescription(method, isConstructor) {
+    if (isConstructor) {
+        return `Creates a new instance of ${method.name}.`;
+    }
+
+    const name = method.name;
+
+    // Split camelCase
+    const words = name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().split(' ');
+
+    // Helper to capitalize first letter
+    const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+
+    // Handle specific verbs
+    if (words[0] === 'get') {
+        const noun = words.slice(1).join(' ');
+        return `Retrieves the ${noun || 'value'}.`;
+    }
+    if (words[0] === 'set') {
+        const noun = words.slice(1).join(' ');
+        return `Sets the ${noun || 'value'}.`;
+    }
+    if (words[0] === 'is' || words[0] === 'has') {
+        const noun = words.slice(1).join(' ');
+        return `Checks if ${noun ? 'it ' + name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase() : 'condition is true'}.`;
+    }
+    if (words[0] === 'add') {
+        const noun = words.slice(1).join(' ');
+        return `Adds a new ${noun || 'item'}.`;
+    }
+    if (words[0] === 'remove') {
+        const noun = words.slice(1).join(' ');
+        return `Removes the specified ${noun || 'item'}.`;
+    }
+    if (words[0] === 'create') {
+        const noun = words.slice(1).join(' ');
+        return `Creates a new ${noun || 'object'}.`;
+    }
+    if (words[0] === 'compute' || words[0] === 'calculate') {
+        const noun = words.slice(1).join(' ');
+        return `Calculates the ${noun || 'result'}.`;
+    }
+    if (words[0] === 'solve') {
+        return `Solves the constraints or equations.`;
+    }
+    if (words[0] === 'update') {
+        return `Updates the state of the ${words.slice(1).join(' ') || 'object'}.`;
+    }
+
+    // Default: "Do Something" -> "Do something."
+    return capitalize(words.join(' ')) + ".";
+}
+
 
 // Highlight syntax in signature
 function highlightSignature(signature) {
