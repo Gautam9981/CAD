@@ -231,15 +231,26 @@ Implemented kite creation functionality (sketching + extruding). Feature in inte
 
 ---
 
----
+### Day 28 (12/16/25) - Rendering Overhaul & macOS Fixes
+**Critical Startup Fix:**
+- **Issue:** Resolved startup hang on macOS caused by blocking `ChoiceDialog` in `start()`.
+- **Solution:** implemented "Splash Stage" for Unit Selection to prevent event loop deadlocks.
+- **Verification:** Fix implemented but **pending final tests on macOS hardware**.
 
-### Day 28 (12/16/25) - macOS Startup Fix
-**Critical Fix:** Resolved startup hang on macOS
-- **Issue:** Blocking `ChoiceDialog` in `start()` caused deadlocks with the macOS event loop (JOGL context).
-- **Solution:** Implemented specific "Splash Stage" for Unit Selection.
-  - App now launches a lightweight unit selection window first.
-  - Main application/OpenGL context only initializes *after* unit selection is confirmed.
-- **Verification:** Verified safe startup on macOS while maintaining the "Units First" requirement.
+**Rendering Engine Upgrade:**
+- ✅ **MSAA (Multisample Anti-Aliasing):** Enabled 4x MSAA for smooth, high-quality edges in the 3D viewer.
+- ✅ **Normal Calculation:** Fixed lighting issues on flat surfaces (gears, flanges) by respecting face flatness (no unwanted smoothing filters).
+- ✅ **Tessellation:** Fixed rendering of complex polygons (like gear teeth) to prevent "garbage" geometry.
+
+**Macro System & Testing:**
+- Validated and fixed complex macros (`gear-design.macro`, `flange.macro`).
+- Created automated test scripts (`test-gear.sh`, `test-flange.sh`) to verify geometry generation.
+
+**API Documentation (v2):**
+- **Automated Generation:** Pipeline now fully parses Java source code to generate JSON data.
+- **Smart Inference:** Replaced weak/missing Javadoc with intelligent, context-aware descriptions (e.g., `handleLoft` → "Executes the logic for the 'loft' command").
+- **Cleanups:** Fixed regex bugs to remove "garbage" classes and standardized description formatting.
+- **Live Site:** [https://gautam9981.github.io/CAD/](https://gautam9981.github.io/CAD/)
 
 ---
 
@@ -350,6 +361,11 @@ Help shape this project! [Feedback Form](https://forms.gle/6JeLGzmrWwT5CRcj8) (o
   - macOS `.dmg`
   - Linux `.deb` and `.rpm`
   - Automated builds via GitHub Actions
+- **Advanced Rendering:**
+  - 4x MSAA (Anti-Aliasing)
+  - Accurate lighting/shading for mechanical parts
+- **Documentation:**
+  - [Auto-generated API Reference](https://gautam9981.github.io/CAD/)
 
 ⚠️ **In Progress:**
 - Click and drag in sketchpad
