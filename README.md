@@ -335,22 +335,6 @@ The generic `.tar.gz` can be easily repackaged for other distributions:
 > [!NOTE]
 > The macOS builds are generated on macOS 15 (Sequoia). They may not run on older versions of macOS (e.g., older Intel Macs).
 
----
-
-## Troubleshooting
-
-### Application Won't Start
-- Ensure Java is installed: `java -version`
-- Must have Java 21 or higher
-- Check execution permissions on run script (macOS/Linux/FreeBSD)
-
-### JOGL/OpenGL Issues
-- Verify JOGL libraries are in `lib/` folder
-- Windows: Use `.bat` file instead of `.exe`
-- Linux/macOS: Run script handles library paths automatically
-
----
-
 ## Feedback
 
 Help shape this project! [Feedback Form](https://forms.gle/6JeLGzmrWwT5CRcj8) (optional)
@@ -400,7 +384,6 @@ Help shape this project! [Feedback Form](https://forms.gle/6JeLGzmrWwT5CRcj8) (o
 
 ⚠️ **In Progress:**
 - Feature implementation behind modern UI
-- File editing capabilities
 
 ---
 
