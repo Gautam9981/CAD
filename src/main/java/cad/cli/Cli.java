@@ -508,7 +508,7 @@ public class Cli {
                 }
 
                 if (sides < 3 || sides > 25) {
-                    System.out.println("Polygon sides must be between 3 and 25.");
+                    System.out.println("Polygon sides must be between 3 and 200.");
                     return;
                 }
 
@@ -524,7 +524,7 @@ public class Cli {
             try {
                 int pointCount = (args.length - 1) / 2;
                 if (pointCount < 3 || pointCount > 25) {
-                    System.out.println("Polygon must have between 3 and 25 points.");
+                    System.out.println("Polygon must have between 3 and 200 points.");
                     return;
                 }
 

@@ -94,6 +94,7 @@ import cad.core.Sketch.Line;
 import cad.core.Sketch.PointEntity;
 import cad.core.Sketch.Entity;
 import cad.gui.MacroManager;
+import cad.core.ViewChangeCommand;
 
 /**
  * GuiFX - Main JavaFX Application Class for CAD System
@@ -895,6 +896,34 @@ public class GuiFX extends Application {
     }
 
     /**
+     * Directly sets the view mode (Sketch or 3D).
+     * Used by ViewChangeCommand for undo/redo operations.
+     */
+    public void setViewMode(boolean showSketch) {
+        if (glRenderer != null) {
+            glRenderer.setShowSketch(showSketch);
+            glCanvas.repaint();
+        }
+    }
+
+    /**
+     * Requests a change in view mode, recording it on the Undo stack.
+     * 
+     * @param showSketch true for 2D Sketch, false for 3D View
+     */
+    private void requestViewChange(boolean showSketch) {
+        if (glRenderer != null) {
+            boolean currentMode = glRenderer.isShowSketch();
+            if (currentMode != showSketch) {
+                // Only create command if state actually changes
+                ViewChangeCommand cmd = new ViewChangeCommand(this, showSketch, currentMode);
+                commandManager.executeCommand(cmd);
+                appendOutput("View changed to " + (showSketch ? "2D Sketch" : "3D View"));
+            }
+        }
+    }
+
+    /**
      * Creates and populates the commands pane, which contains various buttons
      * categorized into General, File Operations, 3D Model, and 2D Sketching
      * commands.
@@ -1688,6 +1717,10 @@ public class GuiFX extends Application {
             glCanvas.repaint(); // Request a repaint of the canvas
         }
 
+        public boolean isShowSketch() {
+            return showSketch;
+        }
+
         /**
          * Calculates the geometric centroid of an STL model.
          * 
@@ -2223,7 +2256,7 @@ public class GuiFX extends Application {
 
         // Auto-switch to sketch view if not already active
         if (glRenderer != null) {
-            glRenderer.setShowSketch(true); // Ensure sketch view
+            requestViewChange(true); // Record in undo stack
             appendOutput("Switched to 2D sketch mode");
             if (statusLabel != null)
                 statusLabel.setText(message);
@@ -2742,15 +2775,15 @@ public class GuiFX extends Application {
             try {
                 if (filePath.toLowerCase().endsWith(".stl")) {
                     Geometry.loadStl(filePath); // Load STL data
-                    // Set STL triangles for rendering and hide sketch
+                    // Set STL triangles for rendering and switch to 3D view
                     glRenderer.setStlTriangles(Geometry.getLoadedStlTriangles());
-                    glRenderer.setShowSketch(false);
+                    requestViewChange(false); // Record view switch
                     // Reset view to default for newly loaded model
                     resetView();
                     appendOutput("STL file loaded successfully from: " + filePath);
                 } else if (filePath.toLowerCase().endsWith(".dxf")) {
                     sketch.loadDXF(filePath); // Load DXF sketch data
-                    glRenderer.setShowSketch(true); // Show sketch view
+                    requestViewChange(true); // Switch to sketch view
                     // Reset view to default for newly loaded sketch
                     resetView();
                     appendOutput("DXF file loaded successfully from: " + filePath);
@@ -2835,7 +2868,7 @@ public class GuiFX extends Application {
     private void sketchClear() {
         sketch.clearSketch(); // Clear the sketch
         appendOutput("Sketch cleared.");
-        glRenderer.setShowSketch(true); // Ensure sketch view is active
+        requestViewChange(true); // Switch to sketch view
         glCanvas.repaint(); // Repaint canvas to show changes
         glCanvas.requestFocusInWindow(); // Request focus for interaction
     }
@@ -2864,7 +2897,7 @@ public class GuiFX extends Application {
             appendOutput("Sketch contains:");
             items.forEach(this::appendOutput); // Print each item to console
         }
-        glRenderer.setShowSketch(true); // Ensure sketch view is active
+        requestViewChange(true); // Switch to sketch view
         glCanvas.repaint(); // Repaint canvas to ensure display is correct
         glCanvas.requestFocusInWindow(); // Request focus for interaction
     }
@@ -2997,7 +3030,7 @@ public class GuiFX extends Application {
                     appendOutput("Switching to 3D view to show extruded geometry.");
 
                     // Switch to 3D view to show the result
-                    glRenderer.setShowSketch(false);
+                    requestViewChange(false); // Record view switch
                     resetView(); // Reset view to fit the new geometry
                     glCanvas.repaint();
                     glCanvas.requestFocusInWindow();
@@ -3111,6 +3144,10 @@ public class GuiFX extends Application {
                                 cubeDivisions = divs;
                                 Geometry.createCube(size, divs);
                                 appendOutput("Cube created: size=" + size + ", divs=" + divs);
+
+                                // Update Renderer
+                                glRenderer.setStlTriangles(Geometry.getLoadedStlTriangles());
+                                requestViewChange(false); // Record view switch
                                 glCanvas.repaint();
                                 dialog.close();
                             } catch (Exception ex) {
@@ -3150,7 +3187,11 @@ public class GuiFX extends Application {
                                 sphereLatDiv = lat;
                                 sphereLonDiv = lon;
                                 Geometry.createSphere(r, lat, lon);
-                                appendOutput("Sphere created: r=" + r);
+                                appendOutput("Sphere created: r=" + r + ", lat=" + lat + ", lon=" + lon);
+
+                                // Update Renderer
+                                glRenderer.setStlTriangles(Geometry.getLoadedStlTriangles());
+                                requestViewChange(false); // Record view switch
                                 glCanvas.repaint();
                                 dialog.close();
                             } catch (Exception ex) {
@@ -3397,7 +3438,8 @@ public class GuiFX extends Application {
                                 int res = sketch.generateNaca4(code, chord, 50);
                                 if (res == 0) {
                                     appendOutput("Generated NACA " + code);
-                                    glRenderer.setShowSketch(true);
+                                    requestViewChange(true); // Switch to sketch view
+                                    resetView(); // Fit the airfoil in viewport
                                     glCanvas.repaint();
                                     dialog.close();
                                 } else {

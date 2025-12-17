@@ -31,10 +31,10 @@ public class SketchInteractionManager {
         SKETCH_CIRCLE,
         SKETCH_POLYGON,
         SKETCH_RECTANGLE, // Potential future addition
-        SKETCH_POINT,    // Click to create point
-        SKETCH_KITE,     // Click and drag for kite (if implemented that way, or just dialog)
+        SKETCH_POINT, // Click to create point
+        SKETCH_KITE, // Click and drag for kite (if implemented that way, or just dialog)
         DIMENSION_TOOL, // Dimensioning mode
-        SELECT         // Select entities for constraints/properties
+        SELECT // Select entities for constraints/properties
     }
 
     private InteractionMode currentMode = InteractionMode.VIEW_ROTATE;
@@ -45,13 +45,13 @@ public class SketchInteractionManager {
     private boolean isDrawing = false;
     private float startX, startY;
     private float currentX, currentY;
-    
+
     // Shape parameters
     private int polygonSides = 6; // Default hexagon
-    
+
     // Selection state
     private List<Sketch.Entity> selectedEntities = new ArrayList<>();
-    
+
     // Dimensioning state
     private Entity dimFirstEntity = null;
 
@@ -93,7 +93,7 @@ public class SketchInteractionManager {
         currentY = worldY;
         isDrawing = true;
         System.out.println("Sketch Action Started at: " + startX + ", " + startY);
-        
+
         if (currentMode == InteractionMode.SELECT) {
             handleSelectionClick(worldX, worldY);
         } else if (currentMode == InteractionMode.DIMENSION_TOOL) {
@@ -129,7 +129,14 @@ public class SketchInteractionManager {
             }
         } else if (currentMode == InteractionMode.SKETCH_POLYGON) {
             float radius = (float) Math.sqrt(Math.pow(worldX - startX, 2) + Math.pow(worldY - startY, 2));
-            
+
+            // Require minimum radius to avoid degenerate polygons
+            if (radius < 0.1f) {
+                System.out.println("Polygon radius too small. Drag further from center.");
+                isDrawing = false;
+                return;
+            }
+
             List<PointEntity> points = new ArrayList<>();
             for (int i = 0; i < polygonSides; i++) {
                 double angle = 2 * Math.PI * i / polygonSides;
@@ -137,9 +144,9 @@ public class SketchInteractionManager {
                 float py = startY + (float) (radius * Math.sin(angle));
                 points.add(new PointEntity(px, py));
             }
-            
+
             cad.core.Sketch.Polygon poly = new cad.core.Sketch.Polygon(points);
-            
+
             if (commandManager != null) {
                 commandManager.executeCommand(new cad.core.AddEntityCommand(sketch, poly, "Polygon"));
             } else {
@@ -200,9 +207,10 @@ public class SketchInteractionManager {
     public float getCurrentY() {
         return currentY;
     }
-    
+
     /**
      * Sets the number of sides for polygon creation.
+     * 
      * @param sides Number of sides (must be >= 3)
      */
     public void setPolygonSides(int sides) {
@@ -210,15 +218,16 @@ public class SketchInteractionManager {
             this.polygonSides = sides;
         }
     }
-    
+
     /**
      * Gets the current number of sides for polygon creation.
+     * 
      * @return Number of sides
      */
     public int getPolygonSides() {
         return polygonSides;
     }
-    
+
     /**
      * Handles clicks for the smart dimension tool.
      */
@@ -226,7 +235,7 @@ public class SketchInteractionManager {
         float tolerance = 0.5f;
         Entity clicked = sketch.getClosestEntity(x, y, tolerance);
         String unit = sketch.getUnitSystem().getAbbreviation();
-        
+
         if (clicked == null) {
             // Clicked empty space - if we had a first point selected, clear it
             if (dimFirstEntity != null) {
@@ -235,7 +244,7 @@ public class SketchInteractionManager {
             }
             return;
         }
-        
+
         if (clicked instanceof Line) {
             // Create linear dimension aligned with the line
 
@@ -258,11 +267,11 @@ public class SketchInteractionManager {
             } else {
                 sketch.addDimension(d);
             }
-             System.out.println("Added Radial Dimension to Circle.");
-             dimFirstEntity = null; // Reset
+            System.out.println("Added Radial Dimension to Circle.");
+            dimFirstEntity = null; // Reset
         } else if (clicked instanceof PointEntity) {
             PointEntity p = (PointEntity) clicked;
-            
+
             if (dimFirstEntity == null) {
                 // First point selected
                 dimFirstEntity = p;
@@ -271,13 +280,13 @@ public class SketchInteractionManager {
                 // Second point selected
                 PointEntity p1 = (PointEntity) dimFirstEntity;
                 if (p1 != p) {
-                     Dimension d = new LinearDimension(p1.getX(), p1.getY(), p.getX(), p.getY(), unit);
-                     if (commandManager != null) {
+                    Dimension d = new LinearDimension(p1.getX(), p1.getY(), p.getX(), p.getY(), unit);
+                    if (commandManager != null) {
                         commandManager.executeCommand(new AddDimensionCommand(sketch, d));
-                     } else {
+                    } else {
                         sketch.addDimension(d);
-                     }
-                     System.out.println("Added Linear Dimension betweeen Points.");
+                    }
+                    System.out.println("Added Linear Dimension betweeen Points.");
                 } else {
                     System.out.println("Same point clicked twice.");
                 }
@@ -295,7 +304,7 @@ public class SketchInteractionManager {
     private void handleSelectionClick(float x, float y) {
         float tolerance = 0.5f; // Selection tolerance
         Entity entity = sketch.getClosestEntity(x, y, tolerance);
-        
+
         if (entity != null) {
             if (selectedEntities.contains(entity)) {
                 selectedEntities.remove(entity);

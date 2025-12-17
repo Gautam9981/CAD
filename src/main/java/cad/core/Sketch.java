@@ -186,8 +186,8 @@ public class Sketch {
         List<PointEntity> points;
 
         public Polygon(List<PointEntity> points) {
-            if (points == null || points.size() < 3 || points.size() > 25) {
-                throw new IllegalArgumentException("Polygon must have between 3 and 25 points.");
+            if (points == null || points.size() < 3 || points.size() > 200) {
+                throw new IllegalArgumentException("Polygon must have between 3 and 200 points.");
             }
             this.type = TypeSketch.POLYGON;
             this.points = new ArrayList<>(points);
@@ -532,8 +532,8 @@ public class Sketch {
      * @return 0 on success, 1 on error.
      */
     public int addNSidedPolygon(float centerX, float centerY, float radius, int sides, boolean circumscribed) {
-        if (sides < 3 || sides > 25) {
-            System.out.println("Polygon must have between 3 and 25 sides.");
+        if (sides < 3 || sides > 200) {
+            System.out.println("Polygon must have between 3 and 200 sides.");
             return 1;
         }
         if (radius <= 0) {
@@ -929,8 +929,8 @@ public class Sketch {
      * @return 0 on success, 1 on error.
      */
     public int sketchPolygon(float x, float y, float radius, int sides) {
-        if (sides < 3 || sides > 25) {
-            System.out.println("Polygon must have between 3 and 25 sides.");
+        if (sides < 3 || sides > 200) {
+            System.out.println("Polygon must have between 3 and 200 sides.");
             return 1;
         }
         if (radius <= 0) {
