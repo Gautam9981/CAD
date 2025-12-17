@@ -11,6 +11,18 @@ APP_NAME="SketchApp"
 APP_VERSION="4.0.0"
 MAIN_CLASS="cad.Main"
 JAR_FILE="../target/SketchApp.jar"
+
+# Architecture argument (default to system arch if not provided)
+INPUT_ARCH="$1"
+if [ -z "$INPUT_ARCH" ]; then
+    INPUT_ARCH=$(uname -m)
+    if [ "$INPUT_ARCH" == "x86_64" ]; then
+        INPUT_ARCH="x64"
+    elif [ "$INPUT_ARCH" == "aarch64" ]; then
+        INPUT_ARCH="arm64"
+    fi
+fi
+
 OUTPUT_DIR="installer"
 
 # Ensure output directory exists
@@ -87,11 +99,13 @@ jpackage \
   --arguments "--gui"
 
 # Compress to .tar.gz
+# Compress to .tar.gz
 echo "Compressing to .tar.gz..."
 cd "$OUTPUT_DIR/generic"
-tar -czf "../${APP_NAME}-Linux-${APP_VERSION}.tar.gz" "SketchApp"
+TAR_NAME="${APP_NAME}-Linux-${INPUT_ARCH}-${APP_VERSION}.tar.gz"
+tar -czf "../${TAR_NAME}" "SketchApp"
 cd - > /dev/null
-echo "✓ Generic .tar.gz package created in $OUTPUT_DIR"
+echo "✓ Generic .tar.gz package created: $OUTPUT_DIR/$TAR_NAME"
 echo ""
 
 # Build .deb package

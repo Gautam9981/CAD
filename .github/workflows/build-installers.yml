@@ -137,7 +137,7 @@ jobs:
       - name: Build Linux Installers (.deb and .rpm)
         run: |
           cd Binaries
-          bash build-linux.sh
+          bash build-linux.sh "${{ matrix.architecture }}"
       
       - name: Upload Linux .deb Package
         uses: actions/upload-artifact@v4
@@ -151,6 +151,13 @@ jobs:
         with:
           name: SketchApp-Linux-${{ matrix.architecture }}-rpm
           path: Binaries/installer/*.rpm
+          retention-days: 30
+
+      - name: Upload Linux .tar.gz Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: SketchApp-Linux-${{ matrix.architecture }}-tar
+          path: Binaries/installer/*.tar.gz
           retention-days: 30
 
   create-release:
@@ -172,8 +179,10 @@ jobs:
             ./installers/SketchApp-macOS-arm64/*.dmg
             ./installers/SketchApp-Linux-x64-deb/*.deb
             ./installers/SketchApp-Linux-x64-rpm/*.rpm
+            ./installers/SketchApp-Linux-x64-tar/*.tar.gz
             ./installers/SketchApp-Linux-arm64-deb/*.deb
             ./installers/SketchApp-Linux-arm64-rpm/*.rpm
+            ./installers/SketchApp-Linux-arm64-tar/*.tar.gz
           draft: false
           prerelease: false
         env:
