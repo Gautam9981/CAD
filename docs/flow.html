@@ -16,6 +16,22 @@
         });
         window.mermaid = mermaid;
     </script>
+    <style>
+        /* Embedded mode overrides */
+        body.embedded .sidebar {
+            display: none;
+        }
+
+        body.embedded .app-container {
+            grid-template-columns: 1fr;
+        }
+
+        body.embedded .card {
+            border: none;
+            border-radius: 0;
+            background: transparent;
+        }
+    </style>
 </head>
 
 <body>

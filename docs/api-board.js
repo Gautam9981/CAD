@@ -4,9 +4,36 @@
 let apiData = {};
 let filteredData = {};
 
-// Initialize when DOM is ready
+// Main initialization
 document.addEventListener('DOMContentLoaded', () => {
     loadAPIData();
+
+    // Tab Switching Logic
+    const tabs = document.querySelectorAll('.tab-btn');
+    const views = {
+        'api': document.getElementById('view-api'),
+        'flow': document.getElementById('view-flow')
+    };
+
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const target = tab.dataset.tab;
+
+            // Update Tabs
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            // Update Views
+            Object.values(views).forEach(v => v.classList.add('view-hidden'));
+            views[target].classList.remove('view-hidden');
+
+            // If API view, ensure sidebar is calculated correctly (optional re-check)
+            if (target === 'api') {
+                // Resize trigger if needed
+            }
+        });
+    });
+
     initializeEventListeners();
 });
 

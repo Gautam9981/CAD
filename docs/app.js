@@ -2,6 +2,12 @@
 let codex = {};
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // Check for embed mode
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('embed') === 'true') {
+        document.body.classList.add('embedded');
+    }
+
     try {
         const response = await fetch('codex.json');
         codex = await response.json();
