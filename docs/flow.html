@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Flow | CAD Codex</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({
+            startOnLoad: false,
+            theme: 'dark',
+            securityLevel: 'loose',
+            flowchart: { curve: 'basis' }
+        });
+        window.mermaid = mermaid;
+    </script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="brand">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                    <polyline points="2 17 12 22 22 17"></polyline>
+                    <polyline points="2 12 12 17 22 12"></polyline>
+                </svg>
+                CAD Codex
+            </div>
+
+            <a href="index.html" class="nav-link">
+                <span>📚</span> API Reference
+            </a>
+            <a href="flow.html" class="nav-link active">
+                <span>🕸️</span> System Flow
+            </a>
+
+            <div class="stats-panel">
+                <div id="statClasses">-</div>
+                <div id="statConnections">-</div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="card" style="height: calc(100vh - 4rem); display: flex; flex-direction: column;">
+                <div class="card-header">
+                    <div>
+                        <div class="class-title">System Architecture</div>
+                        <div class="class-package">Visualization of component dependencies</div>
+                    </div>
+                </div>
+                <div id="flowChart"
+                    style="flex: 1; overflow: auto; display: flex; align-items: center; justify-content: center;">
+                    Loading Diagram...
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

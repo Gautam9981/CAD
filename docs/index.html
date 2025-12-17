@@ -1,88 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CAD Application - API Documentation</title>
-    <link rel="stylesheet" href="api-board.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <title>CAD System Codex</title>
+    <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-    <!-- Header -->
-    <header class="header">
-        <div class="header-content">
-            <h1 class="logo">
-                <span class="logo-icon">⚙️</span>
-                CAD API Documentation
-            </h1>
-            <div class="header-stats">
-                <span class="stat" id="classCount">0 Classes</span>
-                <span class="stat-divider">|</span>
-                <span class="stat" id="methodCount">0 Methods</span>
-            </div>
-        </div>
-    </header>
-
-    <!-- Search & Filter Bar -->
-    <div class="controls">
-        <div class="search-container">
-            <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <input type="text" id="searchInput" class="search-input" placeholder="Search methods, classes, parameters, return types...">
-        </div>
-        
-        <div class="filters">
-            <div class="filter-group">
-                <label class="filter-label">Package:</label>
-                <select id="packageFilter" class="filter-select">
-                    <option value="">All Packages</option>
-                </select>
-            </div>
-            
-            <div class="filter-group">
-                <label class="filter-label">Visibility:</label>
-                <select id="visibilityFilter" class="filter-select">
-                    <option value="">All</option>
-                    <option value="public">Public</option>
-                    <option value="private">Private</option>
-                    <option value="protected">Protected</option>
-                    <option value="package-private">Package-Private</option>
-                </select>
-            </div>
-            
-            <button id="clearFilters" class="btn-clear">Clear Filters</button>
-        </div>
-    </div>
-
-    <!-- Main Layout -->
-    <div class="main-layout">
-        <!-- Navigation Sidebar -->
+    <div class="app-container">
+        <!-- Sidebar -->
         <nav class="sidebar">
-            <div class="sidebar-header">
-                <h2>Classes</h2>
-                <span id="visibleClassCount" class="badge">0</span>
+            <div class="brand">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                    <polyline points="2 17 12 22 22 17"></polyline>
+                    <polyline points="2 12 12 17 22 12"></polyline>
+                </svg>
+                CAD Codex
             </div>
-            <div id="classNav" class="class-nav"></div>
+
+            <a href="index.html" class="nav-link active">
+                <span>📚</span> API Reference
+            </a>
+            <a href="flow.html" class="nav-link">
+                <span>🕸️</span> System Flow
+            </a>
+
+            <div class="stats-panel">
+                <div id="statClasses">0 Classes</div>
+                <div id="statMethods">0 Methods</div>
+            </div>
         </nav>
 
-        <!-- Content Area -->
-        <main class="content">
-            <div id="apiContent" class="api-content">
-                <div class="welcome-message">
-                    <div class="welcome-icon">📚</div>
-                    <h2>Welcome to the CAD API Documentation</h2>
-                    <p>Select a class from the sidebar or use the search to explore the API</p>
-                </div>
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="toolbar">
+                <input type="text" id="search" class="search-bar" placeholder="Search classes, methods, or logic...">
+            </div>
+
+            <div id="apiGrid" class="grid">
+                <!-- Cards injected here -->
             </div>
         </main>
     </div>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <p>CAD Application API Reference | Generated from source files</p>
-    </footer>
-
-    <script src="api-board.js"></script>
+    <script src="app.js"></script>
 </body>
+
 </html>
