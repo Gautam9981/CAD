@@ -292,12 +292,7 @@ tar -xzf SketchApp-Linux-4.0.0.tar.gz
 ./SketchApp/bin/SketchApp
 ```
 
-**For Other Distros (Void, Solus, Slackware, etc.):**
-Download the `.tar.gz` package, extract it, and run the binary:
-```bash
-tar -xzf SketchApp-Linux-4.0.0.tar.gz
-./SketchApp/bin/SketchApp
-```
+
 
 **Running the Application:**
 ```bash
@@ -307,6 +302,25 @@ tar -xzf SketchApp-Linux-4.0.0.tar.gz
 The installer creates:
 - Desktop launcher in application menu (under Graphics)
 - Installation in `/opt/sketchapp`
+
+### Creating Native Packages (Community)
+
+The generic `.tar.gz` can be easily repackaged for other distributions:
+
+**Slackware (.txz) - [SlackBuilds.org Info](https://slackbuilds.org/howto/)**
+- Use `makepkg` to create a package from the directory structure.
+- Example: `makepkg -l y -c n ../sketchapp-4.0.0-x86_64-1.txz` inside the extracted root.
+- Resource: [Slackware Package Management](https://docs.slackware.com/slackware:sysadmin_guide_package_management)
+
+**Void Linux (xbps) - [Manual](https://github.com/void-linux/void-packages/blob/master/Manual.md)**
+- Create a `template` file in `xbps-src/srcpkgs/sketchapp/template`.
+- Set `build_style=install` and use `vinstall` to copy files to `/opt`.
+- Resource: [Void Linux Handbook - Packages](https://docs.voidlinux.org/xbps/index.html)
+
+**Arch Linux (AUR) - [ArchWiki](https://wiki.archlinux.org/title/Creating_packages)**
+- Create a `PKGBUILD` file.
+- Define `package()`: `cp -r "$srcdir/SketchApp" "$pkgdir/opt/sketchapp"`.
+- Resource: [Java Packaging Guidelines](https://wiki.archlinux.org/title/Java_packaging_guidelines)
 
 ---
 
