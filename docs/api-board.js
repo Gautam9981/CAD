@@ -334,6 +334,11 @@ function getDescription(method, isConstructor) {
         return inferred;
     }
 
+    // Strip trailing period if it exists
+    if (existing.endsWith('.')) {
+        return existing.substring(0, existing.length - 1);
+    }
+
     return existing;
 }
 
@@ -356,55 +361,55 @@ function inferDescription(method, isConstructor) {
 
     // Handle specific verbs
     if (verb === 'get') {
-        return `Retrieves the ${noun || 'value'}.`;
+        return `Retrieves the ${noun || 'value'}`;
     }
     if (verb === 'set') {
-        return `Sets the ${noun || 'value'}.`;
+        return `Sets the ${noun || 'value'}`;
     }
     if (verb === 'is' || verb === 'has' || verb === 'can') {
-        return `Checks if ${noun ? 'it ' + name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase() : 'condition is true'}.`;
+        return `Checks if ${noun ? 'it ' + name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase() : 'condition is true'}`;
     }
     if (verb === 'add') {
-        return `Adds a new ${noun || 'item'} to the collection.`;
+        return `Adds a new ${noun || 'item'} to the collection`;
     }
     if (verb === 'remove' || verb === 'delete') {
-        return `Removes the specified ${noun || 'item'}.`;
+        return `Removes the specified ${noun || 'item'}`;
     }
     if (verb === 'create' || verb === 'make' || verb === 'build') {
-        return `Constructs and returns a new ${noun || 'object'}.`;
+        return `Constructs and returns a new ${noun || 'object'}`;
     }
     if (verb === 'compute' || verb === 'calculate') {
-        return `Calculates the ${noun || 'value'} based on current state.`;
+        return `Calculates the ${noun || 'value'} based on current state`;
     }
     if (verb === 'solve') {
-        return `Solves the active limits or equations.`;
+        return `Solves the active limits or equations`;
     }
     if (verb === 'update') {
-        return `Updates the ${noun || 'internal state'}.`;
+        return `Updates the ${noun || 'internal state'}`;
     }
     if (verb === 'handle') {
-        return `Executes the logic for the '${noun}' command or event.`;
+        return `Executes the logic for the '${noun}' command or event`;
     }
     if (verb === 'render' || verb === 'draw') {
-        return `Renders the ${noun || 'component'} to the graphics context.`;
+        return `Renders the ${noun || 'component'} to the graphics context`;
     }
     if (verb === 'export') {
-        return `Exports the ${noun || 'data'} to an external file format.`;
+        return `Exports the ${noun || 'data'} to an external file format`;
     }
     if (verb === 'load' || verb === 'import') {
-        return `Loads ${noun || 'data'} from an external source.`;
+        return `Loads ${noun || 'data'} from an external source`;
     }
 
     // exact method name checks
-    if (name === 'execute') return "Executes the command operation.";
-    if (name === 'undo') return "Reverses the effects of this command.";
-    if (name === 'redo') return "Re-applies the effects of this command.";
-    if (name === 'toString') return "Returns a string representation of this object.";
-    if (name === 'hashCode') return "Returns a hash code value for the object.";
-    if (name === 'equals') return "Indicates whether some other object is equal to this one.";
+    if (name === 'execute') return "Executes the command operation";
+    if (name === 'undo') return "Reverses the effects of this command";
+    if (name === 'redo') return "Re-applies the effects of this command";
+    if (name === 'toString') return "Returns a string representation of this object";
+    if (name === 'hashCode') return "Returns a hash code value for the object";
+    if (name === 'equals') return "Indicates whether some other object is equal to this one";
 
-    // Default: "Do Something" -> "Do something."
-    return capitalize(words.join(' ')) + ".";
+    // Default: "Do Something" -> "Do something"
+    return capitalize(words.join(' '));
 }
 
 
