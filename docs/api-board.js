@@ -8,32 +8,6 @@ let filteredData = {};
 document.addEventListener('DOMContentLoaded', () => {
     loadAPIData();
 
-    // Tab Switching Logic
-    const tabs = document.querySelectorAll('.tab-btn');
-    const views = {
-        'api': document.getElementById('view-api'),
-        'flow': document.getElementById('view-flow')
-    };
-
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const target = tab.dataset.tab;
-
-            // Update Tabs
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-
-            // Update Views
-            Object.values(views).forEach(v => v.classList.add('view-hidden'));
-            views[target].classList.remove('view-hidden');
-
-            // If API view, ensure sidebar is calculated correctly (optional re-check)
-            if (target === 'api') {
-                // Resize trigger if needed
-            }
-        });
-    });
-
     initializeEventListeners();
 });
 
@@ -89,27 +63,6 @@ function initializeEventListeners() {
         const className = window.location.hash.substring(1);
         if (className) {
             scrollToClass(className);
-        }
-    });
-
-    // Cross-frame navigation (from Flow/Dependency view)
-    window.addEventListener('message', (event) => {
-        if (event.data.type === 'NAVIGATE_API' && event.data.target) {
-            // Switch to API tab programmatically
-            const tabs = document.querySelectorAll('.tab-btn');
-            const activeTab = document.querySelector('[data-tab="api"]');
-
-            if (activeTab) {
-                tabs.forEach(t => t.classList.remove('active'));
-                activeTab.classList.add('active');
-
-                document.getElementById('view-api').classList.remove('view-hidden');
-                document.getElementById('view-flow').classList.add('view-hidden');
-
-                // Navigate
-                scrollToClass(event.data.target);
-                window.location.hash = event.data.target;
-            }
         }
     });
 }
