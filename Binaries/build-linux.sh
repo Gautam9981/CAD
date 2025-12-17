@@ -54,8 +54,7 @@ else
 fi
 
 if [ "$DEB_AVAILABLE" = false ] && [ "$RPM_AVAILABLE" = false ]; then
-    echo "Error: Neither .deb nor .rpm tools are available. Cannot build Linux packages."
-    exit 1
+    echo "Info: Neither .deb nor .rpm tools are available. Will only build generic .tar.gz."
 fi
 
 echo ""
@@ -68,6 +67,32 @@ cp "$JAR_FILE" "$STAGING_DIR/"
 cp "../src/main/resources/sketchapp-icon.png" "$STAGING_DIR/" || true
 
 echo "✓ Prepared staging directory with JAR and dependencies"
+
+# Build Generic App Image & .tar.gz
+echo "=== Building Generic Linux Package (.tar.gz) ==="
+# Create App Image first
+jpackage \
+  --type app-image \
+  --input "$STAGING_DIR" \
+  --name "SketchApp" \
+  --main-jar SketchApp.jar \
+  --main-class "$MAIN_CLASS" \
+  --app-version "$APP_VERSION" \
+  --vendor "SketchApp Team" \
+  --description "Professional CAD Sketching Application" \
+  --icon "$STAGING_DIR/sketchapp-icon.png" \
+  --dest "$OUTPUT_DIR/generic" \
+  --java-options "-Xmx2048m" \
+  --java-options "-Dsun.java2d.opengl=true" \
+  --arguments "--gui"
+
+# Compress to .tar.gz
+echo "Compressing to .tar.gz..."
+cd "$OUTPUT_DIR/generic"
+tar -czf "../${APP_NAME}-Linux-${APP_VERSION}.tar.gz" "SketchApp"
+cd - > /dev/null
+echo "✓ Generic .tar.gz package created in $OUTPUT_DIR"
+echo ""
 
 # Build .deb package
 if [ "$DEB_AVAILABLE" = true ]; then

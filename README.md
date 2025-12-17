@@ -285,6 +285,20 @@ sudo dnf install sketchapp-4.0.0-1.x86_64.rpm
 # Or: sudo rpm -i sketchapp-4.0.0-1.x86_64.rpm
 ```
 
+**For Other Distros (Void, Solus, Slackware, etc.):**
+Download the `.tar.gz` package, extract it, and run the binary:
+```bash
+tar -xzf SketchApp-Linux-4.0.0.tar.gz
+./SketchApp/bin/SketchApp
+```
+
+**For Other Distros (Void, Solus, Slackware, etc.):**
+Download the `.tar.gz` package, extract it, and run the binary:
+```bash
+tar -xzf SketchApp-Linux-4.0.0.tar.gz
+./SketchApp/bin/SketchApp
+```
+
 **Running the Application:**
 ```bash
 /opt/sketchapp/bin/sketchapp
