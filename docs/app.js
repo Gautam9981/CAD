@@ -30,6 +30,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const divTable = document.getElementById('dependencyTable');
 
     if (btnGraph && btnTable) {
+        // Default to Table View
+        btnTable.classList.add('active');
+        btnGraph.classList.remove('active');
+        divTable.style.display = 'block';
+        divGraph.style.display = 'none';
+
         btnGraph.addEventListener('click', () => {
             btnGraph.classList.add('active');
             btnTable.classList.remove('active');
