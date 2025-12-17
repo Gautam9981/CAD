@@ -71,7 +71,6 @@ jpackage \
   --mac-package-name "SketchApp" \
   --java-options "-Xmx2048m" \
   --java-options "-Dsun.java2d.opengl=true" \
-
   --arguments "--gui"
 
 
