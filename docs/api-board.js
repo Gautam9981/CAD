@@ -337,8 +337,9 @@ function getDescription(method, isConstructor) {
     }
 
     // Common cleanup: Strip trailing period
-    if (desc && desc.endsWith('.')) {
-        return desc.substring(0, desc.length - 1);
+    // Common cleanup: Strip trailing period and whitespace
+    if (desc) {
+        return desc.replace(/\.+\s*$/, '');
     }
 
     return desc;
