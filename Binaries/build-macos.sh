@@ -71,7 +71,7 @@ jpackage \
   --mac-package-name "SketchApp" \
   --java-options "-Xmx2048m" \
   --java-options "-Dsun.java2d.opengl=true" \
-  --java-options "-XstartOnFirstThread" \
+
   --arguments "--gui"
 
 # Step 2: Modify Info.plist to support older macOS versions (11.0+)
