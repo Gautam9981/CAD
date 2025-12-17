@@ -8,6 +8,13 @@
     <link rel="stylesheet" href="style.css">
     <!-- Mermaid removed as we use custom tables now -->
     <style>
+        :root {
+            /* Map style.css variables to what app.js expects */
+            --text-primary: var(--text-main);
+            --text-secondary: var(--text-muted);
+            --text-tertiary: #6e7681;
+        }
+
         /* Embedded mode overrides */
         body.embedded .sidebar {
             display: none;
@@ -88,6 +95,22 @@
             font-size: 0.85rem;
             margin-right: 6px;
             margin-bottom: 6px;
+        }
+
+        .dep-link {
+            color: var(--accent);
+            text-decoration: none;
+            transition: color 0.2s;
+            border-bottom: 1px dotted rgba(88, 166, 255, 0.4);
+        }
+
+        .dep-link:hover {
+            color: #79c0ff;
+            border-bottom-color: var(--accent);
+        }
+
+        .dep-static {
+            color: var(--text-primary);
         }
     </style>
 </head>
