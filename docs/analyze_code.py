@@ -230,7 +230,7 @@ class JavaParser:
     def save_codex(self):
         with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
             json.dump(self.classes, f, indent=2)
-        print(f"Generated Codex with {len(self.classes)} classes.")
+        print(f"Generated Documentation with {len(self.classes)} classes.")
 
 if __name__ == "__main__":
     parser = JavaParser()

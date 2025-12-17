@@ -1,4 +1,4 @@
-// App logic for CAD Codex
+// App logic for CAD Documentation
 let codex = {};
 
 document.addEventListener('DOMContentLoaded', async () => {
