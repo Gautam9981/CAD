@@ -3575,11 +3575,12 @@ public class GuiFX extends Application {
         // Check if entities are already selected from a previous selection
         List<Entity> selected = interactionManager.getSelectedEntities();
 
-        if (selected.size() == 2 && selected.get(0) instanceof PointEntity && selected.get(1) instanceof PointEntity) {
-            // Apply constraint to selected points
-            PointEntity p1 = (PointEntity) selected.get(0);
-            PointEntity p2 = (PointEntity) selected.get(1);
-            Constraint c = new CoincidentConstraint(p1.getPoint(), p2.getPoint());
+        if (selected.size() == 2) {
+            // Apply constraint to selected entities (Point, Line, Circle handled by
+            // Constraint)
+            Entity e1 = selected.get(0);
+            Entity e2 = selected.get(1);
+            Constraint c = new CoincidentConstraint(e1, e2);
             commandManager.executeCommand(new AddConstraintCommand(sketch, c));
             appendOutput("Applied Coincident Constraint.");
             interactionManager.clearSelection();
@@ -3595,9 +3596,10 @@ public class GuiFX extends Application {
                 appendOutput("Switched to 2D sketch mode");
             }
 
-            appendOutput("Coincident Constraint: Click to select 2 Points, then click this button again.");
+            appendOutput(
+                    "Coincident Constraint: Click to select 2 entities (Points, Lines, Circles), then click this button again.");
             if (statusLabel != null)
-                statusLabel.setText("Select 2 Points for Coincident Constraint");
+                statusLabel.setText("Select 2 Entities for Coincident Constraint");
 
             // Request focus on canvas for interaction
             Platform.runLater(() -> {

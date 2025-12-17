@@ -285,8 +285,11 @@ class JavaMethodExtractor:
         print(f"API data saved to {output_file}")
 
 if __name__ == "__main__":
-    src_dir = "src/main/java"
-    output_file = "api-data.json"
+    # Resolve paths relative to this script file
+    script_dir = Path(__file__).resolve().parent
+    # Assuming script is in docs/, so src is in ../src/main/java
+    src_dir = script_dir.parent / "src" / "main" / "java"
+    output_file = script_dir / "api-data.json"
     
     extractor = JavaMethodExtractor(src_dir)
     extractor.extract_all()
