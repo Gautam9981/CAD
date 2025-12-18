@@ -354,11 +354,6 @@ The generic `.tar.gz` can be easily repackaged for other distributions:
 > [!NOTE]
 > The macOS builds are generated on macOS 15 (Sequoia). They may not run on older versions of macOS (e.g., older Intel Macs).
 
-## Feedback
-
-Help shape this project! [Feedback Form](https://forms.gle/6JeLGzmrWwT5CRcj8) (optional)
-
----
 
 ## Contributors
 
@@ -406,6 +401,12 @@ Help shape this project! [Feedback Form](https://forms.gle/6JeLGzmrWwT5CRcj8) (o
 
 ---
 
-## License
+## API Documentation
 
-This repository is public and open for collaboration.
+Explore the full API reference: [https://gautam9981.github.io/CAD/](https://gautam9981.github.io/CAD/)
+
+---
+
+## Feedback
+
+Help shape this project! [Feedback Form](https://forms.gle/6JeLGzmrWwT5CRcj8) (optional)
