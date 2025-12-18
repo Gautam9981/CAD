@@ -14,13 +14,7 @@ public class LinearDimension extends Dimension {
     private boolean is3D = false;
     private Alignment alignment = Alignment.ALIGNED;
 
-    /**
-     * Updates the dimension type and position based on mouse cursor text position.
-     * Logic mimics SolidWorks Smart Dimension:
-     * - Drag off to side -> Vertical
-     * - Drag off to top/bottom -> Horizontal
-     * - Drag diagonally/perp -> Aligned
-     */
+    
     public void updateSmartDimension(float mx, float my) {
         // Calculate bounding box center
         float cx = (x1 + x2) / 2.0f;

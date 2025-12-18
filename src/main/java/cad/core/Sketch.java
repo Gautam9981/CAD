@@ -1848,9 +1848,7 @@ public class Sketch {
         return (float) Math.sqrt((px - projX) * (px - projX) + (py - projY) * (py - projY));
     }
 
-    /**
-     * Finds the closest vertex (start/end point of line, or vertex of polygon)
-     */
+    
     public PointEntity getClosestVertex(float x, float y, float tolerance) {
         PointEntity closest = null;
         float minDst = tolerance;
@@ -1891,10 +1889,7 @@ public class Sketch {
         return closest;
     }
 
-    /**
-     * Finds the closest line segment (Line entity or Polygon edge)
-     * Returns a Line object representing the segment.
-     */
+    
     public Line getClosestLineSegment(float x, float y, float tolerance) {
         Line closest = null;
         float minDst = tolerance;
@@ -1925,10 +1920,7 @@ public class Sketch {
         return closest;
     }
 
-    /**
-     * Helper class to return a polygon edge with context (the polygon itself +
-     * indices)
-     */
+    
     public static class PolygonEdgeContext {
         public Polygon polygon;
         public int index1;
@@ -1943,10 +1935,7 @@ public class Sketch {
         }
     }
 
-    /**
-     * Finds the closest polygon edge and returns full context (for curvature
-     * calculation)
-     */
+    
     public PolygonEdgeContext getClosestPolygonEdge(float x, float y, float tolerance) {
         PolygonEdgeContext closestInfo = null;
         float minDst = tolerance;
