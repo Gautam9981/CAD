@@ -1078,20 +1078,9 @@ public class Geometry {
             return;
         }
 
-        try {
-            // Use JCSG for revolve operation
-            eu.mihosoft.jcsg.CSG csg = CSGAdapter.revolveSketch(sketch, angleDegrees, steps);
-
-            // Convert CSG back to triangle list for rendering
-            List<float[]> triangles = CSGAdapter.csgToTriangles(csg);
-            extrudedTriangles.addAll(triangles);
-
-            currShape = Shape.EXTRUDED; // Reuse EXTRUDED for revolve results
-            System.out.println("Revolved sketch using JCSG. Generated " + extrudedTriangles.size() + " triangles.");
-        } catch (Exception e) {
-            System.err.println("Error during revolve operation: " + e.getMessage());
-            e.printStackTrace();
-        }
+        // System.out.println("Revolve operation is currently disabled (JCSG dependency
+        // removed).");
+        // implementation removed
     }
 
     private static float[] rotateY(Sketch.PointEntity p, float theta) {

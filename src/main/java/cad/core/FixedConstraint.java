@@ -1,14 +1,10 @@
 package cad.core;
 
-import java.util.UUID;
-
-
 public class FixedConstraint extends Constraint {
     private final Point point;
     private final float targetX;
     private final float targetY;
 
-    
     public FixedConstraint(Point point) {
         super(ConstraintType.FIXED);
         this.point = point;
@@ -16,7 +12,6 @@ public class FixedConstraint extends Constraint {
         this.targetY = point.y;
     }
 
-    
     public FixedConstraint(Point point, float x, float y) {
         super(ConstraintType.FIXED);
         this.point = point;
