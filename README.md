@@ -136,8 +136,8 @@ Updated GUI dimensions to match 1080p monitors and screens for better display qu
 - Sketches now display in GUI after loading
 - Created `.exe` file using launch4j (.jar → .exe conversion)
 - Created `.tar.gz` file for macOS/Linux with run script (`.sh`)
-
-**Note:** Unless you're a developer, ignore `Compilation.txt` instructions
+- **macOS .dmg note:** The provided `.dmg` is not signed, so macOS Gatekeeper will block it. To run the app, open **System Settings → Privacy & Security**, scroll down to the **Security** section, locate the message about the blocked app, click **Open Anyway**, and enter your password to allow it.
+- **Note:** Unless you're a developer, ignore `Compilation.txt` instructions
 
 ---
 
@@ -269,19 +269,20 @@ Implemented kite creation functionality (sketching + extruding). Feature in inte
 ### Windows
 
 1. **Download** the `.exe` installer
-3. **Run** the `.exe` file
-   - If Windows SmartScreen warning appears:
-     - Click "More info"
-     - Click "Run anyway"
-4. **Follow** the installation wizard
-5. **Launch** from Start Menu or Desktop shortcut
+2. **Run** the `.exe` file
+   - **Note:** The installer is not code-signed, so Windows SmartScreen may show a warning. This is expected and not a cause for concern.
+   - If the warning appears:
+     - Click **"More info"**
+     - Click **"Run anyway"**
+3. **Follow** the installation wizard
+4. **Launch** from Start Menu or Desktop shortcut
 
 
 ---
 
 ### Linux
 
-**No Java installation required.** The installer includes the necessary runtime.
+**Note:** The packages are not signed, so your package manager may warn you. This is expected and not a cause for concern.
 
 **For Debian/Ubuntu (.deb):**
 ```bash
@@ -337,9 +338,16 @@ The generic `.tar.gz` can be easily repackaged for other distributions:
 ### macOS
 
 1. **Download** the `.dmg` installer
-3. **Double-click** the `.dmg` file
-4. **Drag** SketchApp.app to the Applications folder
-5. **Launch** from Launchpad or Applications folder
+2. **Double-click** the `.dmg` file
+3. **Drag** SketchApp.app to the Applications folder
+4. **Launch** from Launchpad or Applications folder
+   - **Note:** The app is not code-signed, so macOS Gatekeeper will block it on first launch. This is expected and not a cause for concern.
+   - To allow the app:
+     - Open **System Settings → Privacy & Security**
+     - Scroll down to the **Security** section
+     - Locate the message about the blocked app
+     - Click **"Open Anyway"**
+     - Enter your password when prompted
 
 
 
