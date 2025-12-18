@@ -13,16 +13,8 @@ import java.io.FileReader;
 import java.io.BufferedReader;
 // import java.awt.Graphics; // No longer directly used for OpenGL drawing
 
-/**
- * 2D sketching system for creating and managing geometric entities.
- * Supports points, lines, circles, polygons with DXF import/export
- * capabilities.
- */
 public class Sketch {
 
-    /**
-     * Enum for different types of sketch entities.
-     */
     public enum TypeSketch {
         POINT,
         LINE,
@@ -30,17 +22,10 @@ public class Sketch {
         POLYGON
     }
 
-    /**
-     * Abstract base class for all sketch entities.
-     */
     public static abstract class Entity {
         TypeSketch type;
     }
 
-    /**
-     * Represents a point in the 2D sketch.
-     * Wrapper around the core Point object.
-     */
     public static class PointEntity extends Entity {
         private final Point point;
 
@@ -76,10 +61,6 @@ public class Sketch {
         }
     }
 
-    /**
-     * Represents a line segment in the 2D sketch.
-     * Uses two Point objects for endpoints.
-     */
     public static class Line extends Entity {
         private final Point start;
         private final Point end;
@@ -133,9 +114,6 @@ public class Sketch {
         }
     }
 
-    /**
-     * Represents a circle in the 2D sketch.
-     */
     public static class Circle extends Entity {
         private final Point center;
         private float r; // Radius is scalar, not a Point
@@ -179,9 +157,6 @@ public class Sketch {
         }
     }
 
-    /**
-     * Represents a closed polygon in the 2D sketch, defined by a list of points.
-     */
     public static class Polygon extends Entity {
         List<PointEntity> points;
 
@@ -217,10 +192,6 @@ public class Sketch {
 
     // New class definitions to resolve errors
 
-    /**
-     * Simple class to represent a 2D point for geometric operations.
-     * This is distinct from PointEntity which is a Sketch entity.
-     */
     public static class Point2D {
         private float x, y;
 
@@ -238,9 +209,6 @@ public class Sketch {
         }
     }
 
-    /**
-     * Simple class to represent a 3D point.
-     */
     public static class Point3D {
         private float x, y, z;
 
@@ -263,11 +231,6 @@ public class Sketch {
         }
     }
 
-    /**
-     * Represents a 3D face, defined by a list of 3D points.
-     * Assumes points are ordered to define the face (e.g., clockwise or
-     * counter-clockwise).
-     */
     public static class Face3D {
         private List<Point3D> vertices;
         // List of normals, one per vertex (for smooth shading)
@@ -305,16 +268,6 @@ public class Sketch {
         }
     }
 
-    /**
-     * Computes per-vertex normals for all extruded faces (for smooth shading).
-     * This method should be called after extrusion and before uploading to
-     * VBOManager.
-     * It averages the normals of all faces sharing a vertex.
-     */
-    /**
-     * Computes per-vertex normals for all extruded faces (for smooth shading)
-     * utilizing a crease angle threshold to preserve sharp edges.
-     */
     public void computePerVertexNormals() {
         // Map from Point3D to list of faces sharing that vertex
         java.util.Map<Point3D, List<Face3D>> vertexToFaces = new java.util.HashMap<>();
@@ -410,6 +363,11 @@ public class Sketch {
     // Constraint support
     private final List<Constraint> constraints = new CopyOnWriteArrayList<>();
 
+    // Material and mass properties support
+    private Material material = null;
+    private double thickness = 5.0; // Default 5mm thickness
+    private MassProperties cachedMassProperties = null;
+
     public void addConstraint(Constraint c) {
         constraints.add(c);
         solveConstraints();
@@ -441,13 +399,6 @@ public class Sketch {
 
     // End of new fields
 
-    /**
-     * Adds a point entity to the sketch.
-     * 
-     * @param x X-coordinate of the point.
-     * @param y Y-coordinate of the point.
-     * @return 0 on success, 1 if sketch buffer is full.
-     */
     public int addPoint(float x, float y) {
         if (sketchEntities.size() >= MAX_SKETCH_ENTITIES) {
             System.out.println("Sketch buffer full");
@@ -457,15 +408,6 @@ public class Sketch {
         return 0;
     }
 
-    /**
-     * Adds a line entity to the sketch.
-     * 
-     * @param x1 X-coordinate of the start point.
-     * @param y1 Y-coordinate of the start point.
-     * @param x2 X-coordinate of the end point.
-     * @param y2 Y-coordinate of the end point.
-     * @return 0 on success, 1 if sketch buffer is full.
-     */
     public int addLine(float x1, float y1, float x2, float y2) {
         if (sketchEntities.size() >= MAX_SKETCH_ENTITIES) {
             System.out.println("Sketch buffer full");
@@ -475,14 +417,6 @@ public class Sketch {
         return 0;
     }
 
-    /**
-     * Adds a circle entity to the sketch.
-     * 
-     * @param x X-coordinate of the center.
-     * @param y Y-coordinate of the center.
-     * @param r Radius of the circle.
-     * @return 0 on success, 1 if sketch buffer is full.
-     */
     public int addCircle(float x, float y, float r) {
         if (sketchEntities.size() >= MAX_SKETCH_ENTITIES) {
             System.out.println("Sketch buffer full");
@@ -492,12 +426,6 @@ public class Sketch {
         return 0;
     }
 
-    /**
-     * Adds a polygon entity to the sketch from a list of points.
-     * 
-     * @param points List of PointEntity forming the polygon.
-     * @return 0 on success, 1 if sketch buffer is full or invalid points.
-     */
     public int addPolygon(List<PointEntity> points) {
         if (sketchEntities.size() >= MAX_SKETCH_ENTITIES) {
             System.out.println("Sketch buffer full");
@@ -518,19 +446,6 @@ public class Sketch {
         return addNSidedPolygon(centerX, centerY, radius, sides, false);
     }
 
-    /**
-     * Adds an N-sided regular polygon to the sketch.
-     * 
-     * @param centerX       X-coordinate of the polygon's center.
-     * @param centerY       Y-coordinate of the polygon's center.
-     * @param radius        Radius (inscribed or circumscribed depending on flag).
-     * @param sides         Number of sides (3-25).
-     * @param circumscribed If true, the polygon is circumscribed about the circle
-     *                      of
-     *                      given radius.
-     *                      If false, it is inscribed in the circle.
-     * @return 0 on success, 1 on error.
-     */
     public int addNSidedPolygon(float centerX, float centerY, float radius, int sides, boolean circumscribed) {
         if (sides < 3 || sides > 200) {
             System.out.println("Polygon must have between 3 and 200 sides.");
@@ -558,17 +473,6 @@ public class Sketch {
         return addPolygon(points);
     }
 
-    /**
-     * Adds a kite-shaped quadrilateral to the sketch.
-     * 
-     * @param centerX       X-coordinate of the kite's center.
-     * @param centerY       Y-coordinate of the kite's center.
-     * @param mainDiagonal  Length of the main (vertical) diagonal.
-     * @param crossDiagonal Length of the cross (horizontal) diagonal.
-     * @param angleDegrees  Angle (in degrees) of the main diagonal with respect to
-     *                      the X-axis.
-     * @return 0 on success, 1 on error.
-     */
     public int addKite(float centerX, float centerY, float mainDiagonal, float crossDiagonal, float angleDegrees) {
         if (mainDiagonal <= 0 || crossDiagonal <= 0) {
             System.out.println("Diagonals must be positive.");
@@ -620,14 +524,6 @@ public class Sketch {
         return result;
     }
 
-    /**
-     * Clears all entities from the sketch.
-     */
-    /**
-     * Clears 2D entities from the sketch but PRESERVES extruded 3D geometry.
-     * This allows for multi-step macros where we sketch, extrude, clear sketch, and
-     * sketch again.
-     */
     public void clearSketch() {
         sketchEntities.clear();
         polygons.clear(); // Clear polygons list as well
@@ -635,19 +531,11 @@ public class Sketch {
         // extrudedFaces.clear(); // DO NOT CLEAR 3D FACES here
     }
 
-    /**
-     * Clears EVERYTHING including 3D geometry.
-     */
     public void clearAll() {
         clearSketch();
         extrudedFaces.clear();
     }
 
-    /**
-     * Returns a list of string representations of all entities in the sketch.
-     * 
-     * @return List of strings describing each sketch entity.
-     */
     public List<String> listSketch() {
         List<String> output = new ArrayList<>();
 
@@ -663,29 +551,10 @@ public class Sketch {
         return output;
     }
 
-    /**
-     * Gets all entities in the sketch.
-     * 
-     * @return List of all sketch entities.
-     */
     public List<Entity> getEntities() {
         return new ArrayList<>(sketchEntities);
     }
 
-    /**
-     * Removes an entity from the sketch.
-     * Used for undo operations.
-     * 
-     * @param entity The entity to remove
-     * @return true if removed, false if not found
-     */
-    /**
-     * Removes an entity from the sketch.
-     * Used for undo operations.
-     * 
-     * @param entity The entity to remove
-     * @return true if removed, false if not found
-     */
     public boolean removeEntity(Entity entity) {
         boolean removed = sketchEntities.remove(entity);
         if (removed && entity instanceof Polygon) {
@@ -694,13 +563,6 @@ public class Sketch {
         return removed;
     }
 
-    /**
-     * Checks if the sketch contains extrudable shapes.
-     * Extrudable shapes include polygons and circles.
-     * 
-     * @return true if sketch contains extrudable shapes (polygons or circles),
-     *         false otherwise.
-     */
     public boolean isClosedLoop() {
         for (Entity entity : sketchEntities) {
             if (entity instanceof Polygon || entity instanceof Circle) {
@@ -712,35 +574,14 @@ public class Sketch {
 
     private UnitSystem unitSystem = UnitSystem.MMGS; // Default to MMGS
 
-    /**
-     * Sets the units for the sketch.
-     * 
-     * @param units String representing the units (e.g., "mm", "in").
-     */
-    /**
-     * Sets the unit system for the sketch.
-     * 
-     * @param unitSystem The new unit system.
-     */
     public void setUnitSystem(UnitSystem unitSystem) {
         this.unitSystem = unitSystem;
     }
 
-    /**
-     * Gets the current unit system.
-     * 
-     * @return Current UnitSystem.
-     */
     public UnitSystem getUnitSystem() {
         return this.unitSystem;
     }
 
-    /**
-     * Converts a DXF unit code to its corresponding unit string.
-     * 
-     * @param code The DXF unit code.
-     * @return The unit string.
-     */
     private static String getUnitsFromDXFCode(int code) {
         return switch (code) {
             case 1 -> "in";
@@ -752,12 +593,6 @@ public class Sketch {
         };
     }
 
-    /**
-     * Exports the current sketch to a DXF file.
-     * It writes HEADER and ENTITIES sections, including unit information.
-     *
-     * @param filename Path to the output DXF file.
-     */
     public void exportSketchToDXF(String filename) {
         try (PrintWriter out = new PrintWriter(new FileWriter(filename))) {
             out.println("0");
@@ -852,12 +687,6 @@ public class Sketch {
         }
     }
 
-    /**
-     * Parses parameters for adding a point from command-line like input.
-     * 
-     * @param params String array of parameters (x, y).
-     * @return 0 on success, 1 on error.
-     */
     public int sketchPoint(String[] params) {
         if (params.length < 2) {
             System.out.println("Usage: point x y");
@@ -873,12 +702,6 @@ public class Sketch {
         }
     }
 
-    /**
-     * Parses parameters for adding a line from command-line like input.
-     * 
-     * @param params String array of parameters (x1, y1, x2, y2).
-     * @return 0 on success, 1 on error.
-     */
     public int sketchLine(String[] params) {
         if (params.length < 4) {
             System.out.println("Usage: line x1 y1 x2 y2");
@@ -896,12 +719,6 @@ public class Sketch {
         }
     }
 
-    /**
-     * Parses parameters for adding a circle from command-line like input.
-     * 
-     * @param params String array of parameters (x, y, r).
-     * @return 0 on success, 1 on error.
-     */
     public int sketchCircle(String[] params) {
         if (params.length < 3) {
             System.out.println("Usage: circle x y r");
@@ -918,16 +735,6 @@ public class Sketch {
         }
     }
 
-    /**
-     * Adds an N-sided polygon to the sketch based on provided parameters.
-     * This method directly accepts float coordinates and int sides.
-     * 
-     * @param x      X-coordinate of the center.
-     * @param y      Y-coordinate of the center.
-     * @param radius Radius of the circumcircle.
-     * @param sides  Number of sides (3-25).
-     * @return 0 on success, 1 on error.
-     */
     public int sketchPolygon(float x, float y, float radius, int sides) {
         if (sides < 3 || sides > 200) {
             System.out.println("Polygon must have between 3 and 200 sides.");
@@ -951,14 +758,6 @@ public class Sketch {
         return addPolygon(points);
     }
 
-    /**
-     * Loads a DXF file, parses its header for units, and then its ENTITIES section
-     * to populate the sketch with points, lines, circles, and polylines.
-     * Includes robust error handling and unit scaling.
-     *
-     * @param filename Path to the DXF file to load.
-     * @throws IOException if file reading fails.
-     */
     public void loadDXF(String filename) throws IOException {
         System.out.println("Attempting to load DXF file: " + filename);
         java.io.File file = new java.io.File(filename);
@@ -1250,21 +1049,6 @@ public class Sketch {
         System.out.println("Finished loading DXF. Entities loaded: " + sketchEntities.size());
     }
 
-    /**
-     * Helper method to add parsed entities to the sketchEntities list.
-     * Used by `loadDXF` to centralize entity creation.
-     * 
-     * @param type       The type of entity as a string ("POINT", "LINE", "CIRCLE",
-     *                   "POLYLINE").
-     * @param x1         Start X-coordinate or Point X.
-     * @param y1         Start Y-coordinate or Point Y.
-     * @param x2         End X-coordinate (for Line).
-     * @param y2         End Y-coordinate (for Line).
-     * @param cx         Center X-coordinate (for Circle).
-     * @param cy         Center Y-coordinate (for Circle).
-     * @param radius     Radius (for Circle).
-     * @param polyPoints List of points for a Polygon (null for other types).
-     */
     private void addEntity(String type, float x1, float y1, float x2, float y2, float cx, float cy, float radius,
             List<PointEntity> polyPoints) {
         switch (type) {
@@ -1290,13 +1074,6 @@ public class Sketch {
         }
     }
 
-    /**
-     * Provides a scaling factor to convert DXF units to an internal standard unit
-     * (e.g., millimeters).
-     * 
-     * @param unitStr The unit string from DXF header.
-     * @return The conversion factor.
-     */
     private float unitScaleFactor(String unitStr) {
         // Define your internal base unit, e.g., millimeters.
         // Convert all DXF units to your internal unit.
@@ -1310,14 +1087,6 @@ public class Sketch {
         };
     }
 
-    /**
-     * Renders extruded 3D faces using OpenGL.
-     * This method renders the 3D geometry created by the extrude operation.
-     * It converts Face3D objects to triangles and renders them with proper
-     * lighting.
-     *
-     * @param gl The GL2 object (OpenGL context) used for drawing.
-     */
     public void draw3D(GL2 gl) {
         if (extrudedFaces.isEmpty()) {
             return; // Nothing to render
@@ -1338,13 +1107,6 @@ public class Sketch {
         }
     }
 
-    /**
-     * Renders a single Face3D object as triangles.
-     * Uses triangle fan tessellation for faces with more than 3 vertices.
-     *
-     * @param gl   The GL2 object for OpenGL rendering.
-     * @param face The Face3D object to render.
-     */
     private void renderFace3D(GL2 gl, Face3D face) {
         List<Point3D> vertices = face.getVertices();
         int numVertices = vertices.size();
@@ -1418,16 +1180,6 @@ public class Sketch {
         }
     }
 
-    /**
-     * Calculates the normal vector for a triangular face defined by three 3D
-     * points.
-     * Uses the cross product of two edge vectors.
-     *
-     * @param p1 First vertex of the triangle.
-     * @param p2 Second vertex of the triangle.
-     * @param p3 Third vertex of the triangle.
-     * @return Normal vector as a float array [nx, ny, nz].
-     */
     private float[] calculateFaceNormal(Point3D p1, Point3D p2, Point3D p3) {
         // Calculate two edge vectors
         float ex1 = p2.getX() - p1.getX();
@@ -1459,14 +1211,6 @@ public class Sketch {
         return new float[] { nx, ny, nz };
     }
 
-    /**
-     * Renders all entities in the sketch using OpenGL.
-     * This method is designed to be called by JOGLCadCanvas's `display` method
-     * when the 2D sketch view is active. It iterates through the `sketchEntities`
-     * list and uses OpenGL primitives to draw each type of entity.
-     *
-     * @param gl The GL2 object (OpenGL context) used for drawing.
-     */
     public void draw(GL2 gl) {
         // Iterate through all sketch entities and draw them
         for (Entity e : sketchEntities) {
@@ -1532,15 +1276,6 @@ public class Sketch {
         }
     }
 
-    /**
-     * Finds the closest sketch entity to a given point within a threshold.
-     * Used for entity selection when dimensioning.
-     * 
-     * @param x         Target X coordinate
-     * @param y         Target Y coordinate
-     * @param threshold Maximum distance to consider
-     * @return The closest entity, or null if none within threshold
-     */
     public Entity findClosestEntity(float x, float y, float threshold) {
         Entity closest = null;
         float minDistance = threshold;
@@ -1556,9 +1291,6 @@ public class Sketch {
         return closest;
     }
 
-    /**
-     * Calculates the distance from a point to an entity.
-     */
     private float calculateDistanceToEntity(Entity entity, float x, float y) {
         if (entity instanceof Line) {
             Line line = (Line) entity;
@@ -1590,9 +1322,6 @@ public class Sketch {
         return Float.MAX_VALUE;
     }
 
-    /**
-     * Calculates distance from a point to a line segment.
-     */
     private float distanceToLineSegment(float px, float py, float x1, float y1, float x2, float y2) {
         float dx = x2 - x1;
         float dy = y2 - y1;
@@ -1612,12 +1341,6 @@ public class Sketch {
         return (float) Math.sqrt((px - closestX) * (px - closestX) + (py - closestY) * (py - closestY));
     }
 
-    /**
-     * Creates an appropriate dimension for the given entity.
-     * 
-     * @param entity The entity to dimension
-     * @return A dimension object, or null if entity type not supported
-     */
     public Dimension createDimensionFor(Entity entity) {
         String unit = unitSystem.getAbbreviation();
 
@@ -1640,43 +1363,61 @@ public class Sketch {
         return null;
     }
 
-    /**
-     * Adds a dimension to the sketch.
-     */
     public void addDimension(Dimension dim) {
         if (dim != null) {
             dimensions.add(dim);
         }
     }
 
-    /**
-     * Removes a dimension from the sketch.
-     */
     public void removeDimension(Dimension dim) {
         dimensions.remove(dim);
     }
 
-    /**
-     * Gets all dimensions in the sketch.
-     */
     public List<Dimension> getDimensions() {
         return new ArrayList<>(dimensions);
     }
 
-    /**
-     * Clears all dimensions from the sketch.
-     */
     public void clearDimensions() {
         dimensions.clear();
     }
 
-    /**
-     * Extrudes all closed shapes in the sketch to create 3D faces.
-     * Handles polygons, circles, and potentially connected line loops.
-     * Creates side faces, top faces, and bottom faces for each extrudable shape.
-     * 
-     * @param height The height of the extrusion in the Z direction.
-     */
+    // ========== MATERIAL AND MASS PROPERTIES ==========
+
+    public void setMaterial(Material material) {
+        this.material = material;
+        cachedMassProperties = null; // Invalidate cache
+    }
+
+    public Material getMaterial() {
+        return material;
+    }
+
+    public void setThickness(double thickness) {
+        this.thickness = thickness;
+        cachedMassProperties = null; // Invalidate cache
+    }
+
+    public double getThickness() {
+        return thickness;
+    }
+
+    public MassProperties calculateMassProperties() {
+        if (material == null) {
+            return null;
+        }
+
+        // Return cached if available
+        if (cachedMassProperties != null) {
+            return cachedMassProperties;
+        }
+
+        // Calculate new
+        cachedMassProperties = MassProperties.calculate(this, material, thickness, unitSystem);
+        return cachedMassProperties;
+    }
+
+    // ========== END MATERIAL AND MASS PROPERTIES ==========
+
     public void extrude(double height) {
         // Clear previous extruded faces
         // this.extrudedFaces.clear(); // REMOVED: Do not clear faces to allow
@@ -1757,12 +1498,6 @@ public class Sketch {
         }
     }
 
-    /**
-     * Extrudes a single polygon to create 3D faces.
-     * 
-     * @param polygon The polygon to extrude
-     * @param height  The extrusion height
-     */
     private void extrudePolygon(Polygon polygon, double height) {
         List<Point2D> points = polygon.getPoints();
         int n = points.size();
@@ -1793,12 +1528,6 @@ public class Sketch {
         extrudedFaces.add(new Face3D(reversedBottom));
     }
 
-    /**
-     * Extrudes a circle to create a cylindrical shape.
-     * 
-     * @param circle The circle to extrude
-     * @param height The extrusion height
-     */
     private void extrudeCircle(Circle circle, double height) {
         int segments = 32; // Number of segments to approximate the circle
         List<Point2D> circlePoints = new ArrayList<>();
@@ -1838,13 +1567,6 @@ public class Sketch {
         extrudedFaces.add(new Face3D(reversedBottom));
     }
 
-    /**
-     * Finds closed loops formed by connected lines in the sketch.
-     * This method analyzes all Line entities and attempts to find sequences
-     * of connected lines that form closed polygonal shapes.
-     * 
-     * @return A list of closed loops, where each loop is a list of points
-     */
     private List<List<Point2D>> findClosedLoopsFromLines() {
         List<List<Point2D>> closedLoops = new ArrayList<>();
         List<Line> lines = new ArrayList<>();
@@ -1922,27 +1644,12 @@ public class Sketch {
         return closedLoops;
     }
 
-    /**
-     * Helper method to check if two points are equal within a small tolerance.
-     * 
-     * @param p1 First point
-     * @param p2 Second point
-     * @return true if points are equal within tolerance
-     */
     private boolean isPointsEqual(Point2D p1, Point2D p2) {
         float tolerance = 1e-6f;
         return Math.abs(p1.getX() - p2.getX()) < tolerance &&
                 Math.abs(p1.getY() - p2.getY()) < tolerance;
     }
 
-    /**
-     * Extrudes a closed loop of points to create 3D faces.
-     * This method treats the loop as a polygon and creates the corresponding
-     * 3D geometry including side faces, top face, and bottom face.
-     * 
-     * @param loop   The closed loop of points to extrude
-     * @param height The extrusion height
-     */
     private void extrudeClosedLoop(List<Point2D> loop, double height) {
         if (loop.size() < 3) {
             return; // Need at least 3 points for a valid polygon
@@ -1977,13 +1684,6 @@ public class Sketch {
         extrudedFaces.add(new Face3D(reversedBottom));
     }
 
-    /**
-     * Converts extruded 3D faces to triangles for OpenGL rendering.
-     * Each face is triangulated and returned as an array of float values
-     * compatible with STL triangle format (normal + 3 vertices).
-     * 
-     * @return List of triangle arrays for OpenGL rendering
-     */
     public List<float[]> getExtrudedTriangles() {
         List<float[]> triangles = new ArrayList<>();
 
@@ -1996,13 +1696,6 @@ public class Sketch {
         return triangles;
     }
 
-    /**
-     * Triangulates a 3D face into triangles for rendering.
-     * Uses fan triangulation for faces with more than 3 vertices.
-     * 
-     * @param face The face to triangulate
-     * @return List of triangles representing the face
-     */
     private List<float[]> triangulateFace(Face3D face) {
         List<float[]> triangles = new ArrayList<>();
         List<Point3D> vertices = face.vertices;
@@ -2025,15 +1718,6 @@ public class Sketch {
         return triangles;
     }
 
-    /**
-     * Creates a triangle array from three 3D points.
-     * Calculates the normal vector and formats as STL triangle.
-     * 
-     * @param p1 First vertex
-     * @param p2 Second vertex
-     * @param p3 Third vertex
-     * @return Triangle array [nx, ny, nz, x1, y1, z1, x2, y2, z2, x3, y3, z3]
-     */
     private float[] createTriangle(Point3D p1, Point3D p2, Point3D p3) {
         // Calculate normal vector using cross product
         float[] v1 = { p2.x - p1.x, p2.y - p1.y, p2.z - p1.z };
@@ -2065,14 +1749,6 @@ public class Sketch {
         return polygons;
     }
 
-    /**
-     * Generates a 4-digit NACA airfoil profile.
-     * 
-     * @param digit4        4-digit NACA code string (e.g., "2412").
-     * @param chord         Chord length.
-     * @param pointsPerSide Number of points for upper/lower surface.
-     * @return 0 on success, -1 on failure.
-     */
     public int generateNaca4(String digit4, float chord, int pointsPerSide) {
         if (digit4.length() != 4)
             return -1;
@@ -2131,14 +1807,6 @@ public class Sketch {
         }
     }
 
-    /**
-     * Finds the closest entity to the given coordinates within a tolerance.
-     * 
-     * @param x         X coordinate
-     * @param y         Y coordinate
-     * @param tolerance Maximum distance to consider
-     * @return The closest Entity or null if none found within tolerance
-     */
     public Entity getClosestEntity(float x, float y, float tolerance) {
         Entity closest = null;
         float minDst = tolerance;
@@ -2178,5 +1846,127 @@ public class Sketch {
         float projX = x1 + t * (x2 - x1);
         float projY = y1 + t * (y2 - y1);
         return (float) Math.sqrt((px - projX) * (px - projX) + (py - projY) * (py - projY));
+    }
+
+    /**
+     * Finds the closest vertex (start/end point of line, or vertex of polygon)
+     */
+    public PointEntity getClosestVertex(float x, float y, float tolerance) {
+        PointEntity closest = null;
+        float minDst = tolerance;
+
+        for (Entity e : sketchEntities) {
+            if (e instanceof PointEntity) {
+                PointEntity p = (PointEntity) e;
+                float dist = (float) Math.sqrt(Math.pow(p.getX() - x, 2) + Math.pow(p.getY() - y, 2));
+                if (dist < minDst) {
+                    minDst = dist;
+                    closest = p;
+                }
+            } else if (e instanceof Line) {
+                Line l = (Line) e;
+                // Check start point
+                float dist1 = (float) Math.sqrt(Math.pow(l.getX1() - x, 2) + Math.pow(l.getY1() - y, 2));
+                if (dist1 < minDst) {
+                    minDst = dist1;
+                    closest = new PointEntity(l.getStartPoint());
+                }
+                // Check end point
+                float dist2 = (float) Math.sqrt(Math.pow(l.getX2() - x, 2) + Math.pow(l.getY2() - y, 2));
+                if (dist2 < minDst) {
+                    minDst = dist2;
+                    closest = new PointEntity(l.getEndPoint());
+                }
+            } else if (e instanceof Polygon) {
+                Polygon poly = (Polygon) e;
+                for (PointEntity p : poly.points) {
+                    float dist = (float) Math.sqrt(Math.pow(p.getX() - x, 2) + Math.pow(p.getY() - y, 2));
+                    if (dist < minDst) {
+                        minDst = dist;
+                        closest = p;
+                    }
+                }
+            }
+        }
+        return closest;
+    }
+
+    /**
+     * Finds the closest line segment (Line entity or Polygon edge)
+     * Returns a Line object representing the segment.
+     */
+    public Line getClosestLineSegment(float x, float y, float tolerance) {
+        Line closest = null;
+        float minDst = tolerance;
+
+        for (Entity e : sketchEntities) {
+            if (e instanceof Line) {
+                Line l = (Line) e;
+                float dist = distancePointToSegment(x, y, l.getX1(), l.getY1(), l.getX2(), l.getY2());
+                if (dist < minDst) {
+                    minDst = dist;
+                    closest = l;
+                }
+            } else if (e instanceof Polygon) {
+                Polygon poly = (Polygon) e;
+                List<PointEntity> pts = poly.points;
+                for (int i = 0; i < pts.size(); i++) {
+                    PointEntity p1 = pts.get(i);
+                    PointEntity p2 = pts.get((i + 1) % pts.size());
+                    float dist = distancePointToSegment(x, y, p1.getX(), p1.getY(), p2.getX(), p2.getY());
+                    if (dist < minDst) {
+                        minDst = dist;
+                        // Return this specific edge as a new temporary Line
+                        closest = new Line(p1.getPoint(), p2.getPoint());
+                    }
+                }
+            }
+        }
+        return closest;
+    }
+
+    /**
+     * Helper class to return a polygon edge with context (the polygon itself +
+     * indices)
+     */
+    public static class PolygonEdgeContext {
+        public Polygon polygon;
+        public int index1;
+        public int index2;
+        public Line segment;
+
+        public PolygonEdgeContext(Polygon p, int i1, int i2, Line s) {
+            this.polygon = p;
+            this.index1 = i1;
+            this.index2 = i2;
+            this.segment = s;
+        }
+    }
+
+    /**
+     * Finds the closest polygon edge and returns full context (for curvature
+     * calculation)
+     */
+    public PolygonEdgeContext getClosestPolygonEdge(float x, float y, float tolerance) {
+        PolygonEdgeContext closestInfo = null;
+        float minDst = tolerance;
+
+        for (Entity e : sketchEntities) {
+            if (e instanceof Polygon) {
+                Polygon poly = (Polygon) e;
+                List<PointEntity> pts = poly.points;
+                for (int i = 0; i < pts.size(); i++) {
+                    PointEntity p1 = pts.get(i);
+                    PointEntity p2 = pts.get((i + 1) % pts.size());
+                    float dist = distancePointToSegment(x, y, p1.getX(), p1.getY(), p2.getX(), p2.getY());
+                    if (dist < minDst) {
+                        minDst = dist;
+                        closestInfo = new PolygonEdgeContext(poly, i, (i + 1) % pts.size(),
+                                new Line(p1.getPoint(), p2.getPoint()));
+                    }
+                }
+            }
+        }
+        return closestInfo;
     }
 }

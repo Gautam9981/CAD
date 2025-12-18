@@ -2,10 +2,7 @@ package cad.core;
 
 import cad.core.Sketch.Entity;
 
-/**
- * Command for adding an entity to a sketch.
- * Supports undo by removing the entity.
- */
+
 public class AddEntityCommand implements Command {
     
     private Sketch sketch;

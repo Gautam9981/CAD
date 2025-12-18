@@ -96,33 +96,6 @@ import cad.core.Sketch.Entity;
 import cad.gui.MacroManager;
 import cad.core.ViewChangeCommand;
 
-/**
- * GuiFX - Main JavaFX Application Class for CAD System
- * 
- * This class represents the primary GUI application for a Computer-Aided Design
- * (CAD) system
- * built using JavaFX with an embedded JOGL (Java OpenGL) canvas for 3D
- * rendering.
- * 
- * Key Features:
- * - Interactive 3D model viewing and manipulation using OpenGL
- * - Support for STL file import/export and DXF file operations
- * - Real-time 3D model generation (cubes, spheres with customizable
- * subdivisions)
- * - 2D sketching capabilities with various geometric primitives
- * - Dual-mode view switching between 3D models and 2D sketches
- * - Optimized layout with resizable panels and space-efficient design
- * 
- * 
- * Navigation Controls:
- * - Mouse: Drag to rotate, wheel to zoom, click to focus
- * - Keyboard: Arrow keys for rotation, Q/E for zoom, R for reset
- * - Space: Toggle between 3D and 2D views
- * - ESC: Restore canvas focus if needed
- * 
- * 
- */
-
 public class GuiFX extends Application {
 
     // === UI Components ===
@@ -160,21 +133,6 @@ public class GuiFX extends Application {
     // private boolean showSketch = false; // This field is now managed directly by
     // OpenGLRenderer via setter
 
-    /**
-     * The main entry point for the JavaFX application.
-     * This method is called after the launch() method is invoked.
-     * It initializes the UI, sets up the scene, and displays the primary stage.
-     *
-     * 
-     */
-    /**
-     * The main entry point for the JavaFX application.
-     * Initializes the SolidWorks-style layout.
-     */
-    /**
-     * The main entry point for the JavaFX application.
-     * Initializes the Unit Selection Splash Screen.
-     */
     @Override
     public void start(Stage primaryStage) {
         sketch = new Sketch(); // Initialize the Sketch object
@@ -184,10 +142,6 @@ public class GuiFX extends Application {
         showUnitSelectionWindow(primaryStage);
     }
 
-    /**
-     * Displays a lightweight startup window for unit selection.
-     * This avoids blocking the event dispatch thread on macOS.
-     */
     private void showUnitSelectionWindow(Stage primaryStage) {
         Stage splashStage = new Stage();
         splashStage.setTitle("Select Units");
@@ -235,10 +189,6 @@ public class GuiFX extends Application {
         splashStage.show();
     }
 
-    /**
-     * Initializes and displays the main application window.
-     * Called only after unit selection is complete.
-     */
     private void initializeMainUI(Stage primaryStage) {
         // Initialize managers
         commandManager = new CommandManager();
@@ -426,7 +376,10 @@ public class GuiFX extends Application {
         ToolBar evaluateToolbar = new ToolBar();
         evaluateToolbar.getItems().addAll(
                 createRibbonButton("Dimension", "Measure Distance/Radius", e -> activateDimensionTool()),
-                createRibbonButton("Mass Properties", "Calculate Mass/CG", e -> calculateMassProperties()));
+                createRibbonButton("Mass Props", "Calculate Mass Properties", e -> showMassPropertiesDialog()),
+                createRibbonButton("Centroid", "Toggle Centroid Display", e -> toggleCentroid()),
+                new Separator(),
+                createRibbonButton("Materials", "Manage Material Database", e -> showMaterialDatabaseDialog()));
         evaluateTab.setContent(evaluateToolbar);
 
         // --- CONSTRAINTS TAB ---
@@ -621,12 +574,6 @@ public class GuiFX extends Application {
         canvasThread.start();
     }
 
-    /**
-     * Properly cleans up resources and exits the application.
-     * This method should be called whenever the application needs to terminate,
-     * whether through window close, exit button, or programmatic exit.
-     * It ensures all resources are properly released before termination.
-     */
     private void cleanupAndExit() {
         try {
             // Stop the OpenGL animator immediately
@@ -673,10 +620,6 @@ public class GuiFX extends Application {
         }).start();
     }
 
-    /**
-     * Initializes all the UI components (TextAreas, TextFields, ComboBoxes).
-     * This method is called once during the application's startup.
-     */
     private void initializeComponents() {
         // Initialize TextArea for console output
         outputArea = new TextArea();
@@ -688,15 +631,6 @@ public class GuiFX extends Application {
         initializeGLCanvas();
     }
 
-    /**
-     * Initializes the JOGL GLCanvas component. This involves setting up OpenGL
-     * capabilities,
-     * adding event listeners for mouse and keyboard interaction, and wrapping it in
-     * a SwingNode
-     * for integration into the JavaFX scene.
-     * This method uses SwingUtilities.invokeLater to ensure GLCanvas creation on
-     * the correct thread.
-     */
     private void initializeGLCanvas() {
         SwingUtilities.invokeLater(() -> {
             // Get the GL2 profile for OpenGL
@@ -738,13 +672,6 @@ public class GuiFX extends Application {
         });
     }
 
-    /**
-     * Creates and configures the main SplitPane for the application layout.
-     * It divides the window horizontally into a control panel on the left and
-     * the 3D canvas panel on the right.
-     *
-     * @return A SplitPane containing the control panel and the 3D canvas panel.
-     */
     private javafx.scene.control.SplitPane createMainSplitPane() {
         javafx.scene.control.SplitPane splitPane = new javafx.scene.control.SplitPane();
         splitPane.setOrientation(Orientation.HORIZONTAL);
@@ -820,18 +747,6 @@ public class GuiFX extends Application {
         return splitPane;
     }
 
-    /**
-     * Creates and configures the control panel (left side of the main split pane).
-     * This panel contains TitledPanes for commands and parameters.
-     *
-     * @return A VBox representing the control panel.
-     */
-    /**
-     * Creates and configures the control panel (left side of the main split pane).
-     * This panel contains TitledPanes for commands and parameters.
-     *
-     * @return A VBox representing the control panel.
-     */
     private TabPane createControlPanel() {
         TabPane controlTabs = new TabPane();
         controlTabs.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
@@ -895,10 +810,6 @@ public class GuiFX extends Application {
         return container;
     }
 
-    /**
-     * Directly sets the view mode (Sketch or 3D).
-     * Used by ViewChangeCommand for undo/redo operations.
-     */
     public void setViewMode(boolean showSketch) {
         if (glRenderer != null) {
             glRenderer.setShowSketch(showSketch);
@@ -906,11 +817,6 @@ public class GuiFX extends Application {
         }
     }
 
-    /**
-     * Requests a change in view mode, recording it on the Undo stack.
-     * 
-     * @param showSketch true for 2D Sketch, false for 3D View
-     */
     private void requestViewChange(boolean showSketch) {
         if (glRenderer != null) {
             boolean currentMode = glRenderer.isShowSketch();
@@ -923,28 +829,10 @@ public class GuiFX extends Application {
         }
     }
 
-    /**
-     * Creates and populates the commands pane, which contains various buttons
-     * categorized into General, File Operations, 3D Model, and 2D Sketching
-     * commands.
-     *
-     * @return A ScrollPane containing the VBox of command buttons.
-     */
     // Old createCommandsPane removed (replaced by Ribbon)
 
-    /**
-     * Creates and populates the parameters pane, which contains input fields
-     * for 3D object parameters, file operations, and 2D sketching parameters.
-     *
-     * @return A ScrollPane containing the GridPane of parameter input fields.
-     */
     // Old property manager removed
 
-    /**
-     * Creates and configures the console output pane at the bottom of the window.
-     *
-     * @return A TitledPane containing the TextArea for console output.
-     */
     private Label statusLabel;
 
     private BorderPane createStatusBar() {
@@ -969,26 +857,12 @@ public class GuiFX extends Application {
         return consolePane;
     }
 
-    /**
-     * Helper method to create a bold section label for UI organization.
-     *
-     * @param text The text content for the label.
-     * @return A Label with bold font and increased font size.
-     */
     private Label createSectionLabel(String text) {
         Label label = new Label(text);
         label.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
         return label;
     }
 
-    /**
-     * Helper method to create a button with specified text and action handler.
-     * The button is set to fill the maximum available width.
-     *
-     * @param text    The text to display on the button.
-     * @param handler The EventHandler for the button's action.
-     * @return A configured Button object.
-     */
     private Button createButton(String text, javafx.event.EventHandler<javafx.event.ActionEvent> handler) {
         Button button = new Button(text);
         button.setOnAction(handler);
@@ -996,10 +870,6 @@ public class GuiFX extends Application {
         return button;
     }
 
-    /**
-     * OpenGLRenderer is an inner class that implements GLEventListener for handling
-     * OpenGL rendering events (initialization, display, reshape, dispose).
-     */
     private class OpenGLRenderer implements GLEventListener {
         private GLU glu = new GLU(); // GLU utility object for perspective projection
 
@@ -1012,6 +882,7 @@ public class GuiFX extends Application {
         private float[] firstPoint3D = null; // For distance measurement
 
         private boolean showSketch = false; // Flag to switch between rendering 3D models (STL/default cube) and 2D
+        private boolean showCentroid = false; // Flag to render centroid visualization
         private float[] modelCentroid = null; // Centroid of the currently loaded STL model (null if no model)
         private SketchInteractionManager interactionManager;
         private TextRenderer textRenderer; // For rendering axis labels
@@ -1020,12 +891,6 @@ public class GuiFX extends Application {
             this.interactionManager = interactionManager;
         }
 
-        /**
-         * Called once when the OpenGL context is initialized.
-         * Sets up basic OpenGL states like clear color, depth testing, and lighting.
-         *
-         * @param drawable The GLAutoDrawable object that triggered the event.
-         */
         @Override
         public void init(GLAutoDrawable drawable) {
             GL2 gl = drawable.getGL().getGL2();
@@ -1034,25 +899,26 @@ public class GuiFX extends Application {
             gl.glEnable(GL2.GL_DEPTH_TEST); // Enable depth testing for 3D objects
             gl.glEnable(GL2.GL_LIGHTING); // Enable lighting
             gl.glEnable(GL2.GL_LIGHT0); // Enable light source 0
-            gl.glEnable(GL2.GL_COLOR_MATERIAL); // Enable material color tracking GL_FRONT_AND_BACK
+            // NOTE: GL_COLOR_MATERIAL disabled so glMaterial() calls work properly
+            // gl.glEnable(GL2.GL_COLOR_MATERIAL); // REMOVED - this overrides material
+            // properties
 
-            // Set up lighting properties (position and diffuse color)
+            // Set up ambient light (global illumination)
+            float[] globalAmbient = { 0.3f, 0.3f, 0.3f, 1.0f }; // Soft ambient light
+            gl.glLightModelfv(GL2.GL_LIGHT_MODEL_AMBIENT, globalAmbient, 0);
+
+            // Set up main light source (position and color)
             float[] lightPos = { 1.0f, 1.0f, 1.0f, 0.0f }; // Directional light from top-right-front
-            float[] lightColor = { 1.0f, 1.0f, 1.0f, 1.0f }; // White light
+            float[] lightDiffuse = { 1.0f, 1.0f, 1.0f, 1.0f }; // White diffuse light
+            float[] lightSpecular = { 1.0f, 1.0f, 1.0f, 1.0f }; // White specular highlights
             gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_POSITION, lightPos, 0);
-            gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, lightColor, 0);
+            gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_DIFFUSE, lightDiffuse, 0);
+            gl.glLightfv(GL2.GL_LIGHT0, GL2.GL_SPECULAR, lightSpecular, 0);
 
             // Initialize text renderer for axis labels
             textRenderer = new TextRenderer(new java.awt.Font("SansSerif", java.awt.Font.BOLD, 24));
         }
 
-        /**
-         * Called by the animator to display the OpenGL scene.
-         * Clears the buffers, applies transformations, and renders either the
-         * 2D sketch, loaded STL model, or a default cube based on flags.
-         *
-         * @param drawable The GLAutoDrawable object that triggered the event.
-         */
         @Override
         public void display(GLAutoDrawable drawable) {
             GL2 gl = drawable.getGL().getGL2();
@@ -1092,14 +958,6 @@ public class GuiFX extends Application {
             gl.glGetIntegerv(GL2.GL_VIEWPORT, viewport, 0);
         }
 
-        /**
-         * Updates the projection matrix with adaptive clipping planes based on current
-         * zoom and model size.
-         * This prevents clipping artifacts when rotating large models or when zoomed
-         * far out.
-         *
-         * @param drawable The GLAutoDrawable object to get dimensions from.
-         */
         private void updateProjectionMatrix(GLAutoDrawable drawable) {
             GL2 gl = drawable.getGL().getGL2();
             int width = drawable.getSurfaceWidth();
@@ -1121,16 +979,6 @@ public class GuiFX extends Application {
             gl.glMatrixMode(GL2.GL_MODELVIEW);
         }
 
-        /**
-         * Called when the drawable is reshaped (e.g., window resized).
-         * Sets up the viewport and the projection matrix with adaptive clipping planes.
-         *
-         * @param drawable The GLAutoDrawable object that triggered the event.
-         * @param x        The x-coordinate of the viewport.
-         * @param y        The y-coordinate of the viewport.
-         * @param width    The width of the viewport.
-         * @param height   The height of the viewport.
-         */
         @Override
         public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
             GL2 gl = drawable.getGL().getGL2();
@@ -1154,58 +1002,56 @@ public class GuiFX extends Application {
             gl.glMatrixMode(GL2.GL_MODELVIEW); // Switch back to model-view matrix mode
         }
 
-        /**
-         * Called when the GLAutoDrawable is being disposed of.
-         * Used for releasing OpenGL resources, though none are explicitly managed here.
-         *
-         * @param drawable The GLAutoDrawable object that triggered the event.
-         */
         @Override
         public void dispose(GLAutoDrawable drawable) {
             // Cleanup resources if any (e.g., VBOs, textures)
         }
 
-        /**
-         * Renders XYZ coordinate axes for orientation reference with labels.
-         * X = Red, Y = Green, Z = Blue
-         */
         private void renderAxes(GLAutoDrawable drawable) {
             GL2 gl = drawable.getGL().getGL2();
-            float axisLength = 15.0f;
+
+            // Only render origin axes in 2D sketch mode, not in 3D extrusion view
+            if (!showSketch) {
+                return;
+            }
+
             gl.glDisable(GL2.GL_LIGHTING);
             gl.glLineWidth(2.0f);
 
             gl.glBegin(GL2.GL_LINES);
+
             // X-axis (Red)
             gl.glColor3f(1.0f, 0.0f, 0.0f);
-            gl.glVertex3f(0, 0, 0);
-            gl.glVertex3f(axisLength, 0, 0);
+            gl.glVertex3f(0.0f, 0.0f, 0.0f);
+            gl.glVertex3f(100.0f, 0.0f, 0.0f);
 
             // Y-axis (Green)
             gl.glColor3f(0.0f, 1.0f, 0.0f);
-            gl.glVertex3f(0, 0, 0);
-            gl.glVertex3f(0, axisLength, 0);
+            gl.glVertex3f(0.0f, 0.0f, 0.0f);
+            gl.glVertex3f(0.0f, 100.0f, 0.0f);
 
             // Z-axis (Blue)
             gl.glColor3f(0.0f, 0.0f, 1.0f);
-            gl.glVertex3f(0, 0, 0);
-            gl.glVertex3f(0, 0, axisLength);
+            gl.glVertex3f(0.0f, 0.0f, 0.0f);
+            gl.glVertex3f(0.0f, 0.0f, 100.0f);
+
             gl.glEnd();
 
-            gl.glLineWidth(1.0f);
-
-            // Render text labels if textRenderer is initialized
+            // Optional: Render axis labels
             if (textRenderer != null) {
-                renderAxisLabels(drawable, axisLength, 0, 0, 0);
+                textRenderer.beginRendering(drawable.getSurfaceWidth(), drawable.getSurfaceHeight());
+                textRenderer.setColor(1.0f, 0.0f, 0.0f, 1.0f);
+                textRenderer.draw("X", 0, 0);
+                textRenderer.setColor(0.0f, 1.0f, 0.0f, 1.0f);
+                textRenderer.draw("Y", 0, 20);
+                textRenderer.setColor(0.0f, 0.0f, 1.0f, 1.0f);
+                textRenderer.draw("Z", 0, 40);
+                textRenderer.endRendering();
             }
 
             gl.glEnable(GL2.GL_LIGHTING);
         }
 
-        /**
-         * Renders axis labels (X, Y, Z) at the end of each coordinate axis.
-         * Optionally accepts an origin point to offset the labels.
-         */
         private void renderAxisLabels(GLAutoDrawable drawable, float axisLength, float originX, float originY,
                 float originZ) {
             GL2 gl = drawable.getGL().getGL2();
@@ -1267,10 +1113,6 @@ public class GuiFX extends Application {
             textRenderer.endRendering();
         }
 
-        /**
-         * Renders small coordinate axes at the model's centroid.
-         * X = Red, Y = Green, Z = Blue
-         */
         private void renderModelAxes(GL2 gl, GLAutoDrawable drawable) {
             if (modelCentroid == null) {
                 return; // No model loaded
@@ -1389,14 +1231,29 @@ public class GuiFX extends Application {
             }
         }
 
-        /**
-         * Renders the triangles loaded from an STL file. Each triangle consists
-         * of a normal vector and three vertices.
-         *
-         * @param gl The GL2 object for OpenGL drawing commands.
-         */
         private void renderStlTriangles(GL2 gl) {
-            gl.glColor3f(0.8f, 0.6f, 0.4f); // Set color (e.g., rusty orange)
+            // Get material from sketch if available
+            cad.core.Material material = sketch != null ? sketch.getMaterial() : null;
+
+            if (material != null) {
+                // Apply material properties for realistic rendering
+                gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT, material.getAmbientColor(), 0);
+                gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_DIFFUSE, material.getDiffuseColor(), 0);
+                gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SPECULAR, material.getSpecularColor(), 0);
+                gl.glMaterialf(GL2.GL_FRONT_AND_BACK, GL2.GL_SHININESS, material.getShininess());
+            } else {
+                // Default material (rusty orange)
+                float[] defaultAmbient = { 0.25f, 0.15f, 0.1f, 1.0f };
+                float[] defaultDiffuse = { 0.8f, 0.6f, 0.4f, 1.0f };
+                float[] defaultSpecular = { 0.3f, 0.3f, 0.3f, 1.0f };
+                float defaultShininess = 30.0f;
+
+                gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_AMBIENT, defaultAmbient, 0);
+                gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_DIFFUSE, defaultDiffuse, 0);
+                gl.glMaterialfv(GL2.GL_FRONT_AND_BACK, GL2.GL_SPECULAR, defaultSpecular, 0);
+                gl.glMaterialf(GL2.GL_FRONT_AND_BACK, GL2.GL_SHININESS, defaultShininess);
+            }
+
             gl.glBegin(GL2.GL_TRIANGLES); // Begin drawing triangles
 
             if (stlTriangles != null) {
@@ -1414,15 +1271,6 @@ public class GuiFX extends Application {
             gl.glEnd(); // End drawing
         }
 
-        /**
-         * Renders the 2D sketch elements using the Sketch class's built-in draw method.
-         * This is much more efficient than parsing string representations.
-         * Uses proper aspect ratio to ensure circles appear round, not oval.
-         * Completely independent of 3D view transformations.
-         * Supports 2D view manipulation (pan and zoom).
-         *
-         * @param gl The GL2 object for OpenGL drawing commands.
-         */
         public void renderSketch(GL2 gl, GLAutoDrawable drawable) {
             gl.glDisable(GL2.GL_LIGHTING); // Disable lighting for 2D elements
             gl.glColor3f(0.0f, 0.0f, 0.0f); // Set color to black for sketch elements
@@ -1483,9 +1331,6 @@ public class GuiFX extends Application {
             gl.glEnable(GL2.GL_LIGHTING); // Re-enable lighting
         }
 
-        /**
-         * Renders dimension text labels in 2D sketch view.
-         */
         private void renderDimensionText(GL2 gl, GLAutoDrawable drawable) {
             List<cad.core.Dimension> dims = sketch.getDimensions();
             if (dims.isEmpty())
@@ -1605,9 +1450,6 @@ public class GuiFX extends Application {
             }
         }
 
-        /**
-         * Renders highlights for selected entities.
-         */
         private void renderSelectionHighlights(GL2 gl) {
             List<Entity> selected = interactionManager.getSelectedEntities();
             if (selected.isEmpty())
@@ -1647,9 +1489,6 @@ public class GuiFX extends Application {
             gl.glLineWidth(1.0f); // Reset
         }
 
-        /**
-         * Draw a small point (circle) at the given coordinates.
-         */
         private void drawPoint(GL2 gl, float x, float y, float size) {
             gl.glPointSize(size);
             gl.glBegin(GL2.GL_POINTS);
@@ -1658,9 +1497,6 @@ public class GuiFX extends Application {
             gl.glPointSize(1.0f);
         }
 
-        /**
-         * Handles mouse clicks in 3D mode for dimensioning.
-         */
         public void handle3DDimensionClick(int mouseX, int mouseY) {
             // Convert mouse Y to OpenGL Y (invert)
             int glY = viewport[3] - mouseY;
@@ -1702,14 +1538,6 @@ public class GuiFX extends Application {
             }
         }
 
-        /**
-         * Sets the list of triangles to be rendered as an STL model.
-         * Automatically switches the view to hide the sketch and shows the STL model.
-         * Also calculates the centroid of the model for display.
-         *
-         * @param triangles The list of float arrays, where each array represents an STL
-         *                  triangle (normal + 3 vertices).
-         */
         public void setStlTriangles(List<float[]> triangles) {
             stlTriangles = triangles;
             modelCentroid = calculateStlCentroid(triangles);
@@ -1721,13 +1549,6 @@ public class GuiFX extends Application {
             return showSketch;
         }
 
-        /**
-         * Calculates the geometric centroid of an STL model.
-         * 
-         * @param triangles List of STL triangles
-         * @return Array of [x, y, z] coordinates of the centroid, or null if no
-         *         triangles
-         */
         private float[] calculateStlCentroid(List<float[]> triangles) {
             if (triangles == null || triangles.isEmpty()) {
                 return null;
@@ -1760,50 +1581,26 @@ public class GuiFX extends Application {
             return null;
         }
 
-        /**
-         * Sets the flag to show or hide the 2D sketch elements.
-         *
-         * @param show A boolean value, true to show the sketch, false to hide it.
-         */
         public void setShowSketch(boolean show) {
             this.showSketch = show;
             glCanvas.repaint(); // Request a repaint of the canvas
         }
 
-        /**
-         * Gets the current state of sketch visibility.
-         *
-         * @return true if sketch is being shown, false if 3D model is being shown.
-         */
         public boolean isShowingSketch() {
             return this.showSketch;
+        }
+
+        public boolean isShowingCentroid() {
+            return this.showCentroid;
+        }
+
+        public void setShowCentroid(boolean show) {
+            this.showCentroid = show;
         }
     }
 
     // === Mouse and Keyboard Listeners for GLCanvas ===
 
-    /**
-     * MouseListener implementation for the GLCanvas to handle mouse click events
-     * and focus management.
-     * 
-     * This class serves as the primary interface for mouse-based interaction with
-     * the 3D canvas,
-     * managing the critical focus system that enables keyboard controls to work
-     * properly.
-     * Due to the JavaFX-Swing integration complexity, this class implements a dual
-     * focus
-     * strategy to ensure arrow keys are captured by the canvas instead of UI
-     * components.
-     * 
-     * Focus Strategy:
-     * The dual focus approach is necessary because:
-     * 1. JOGL canvas needs Swing focus for mouse events
-     * 2. SwingNode needs JavaFX focus to prevent arrow key capture by UI traversal
-     * 3. Both must be coordinated to prevent focus conflicts
-     * 
-     * @see CanvasMouseMotionListener for drag rotation handling
-     * @see CanvasKeyListener for keyboard input processing
-     */
     private class CanvasMouseListener implements MouseListener {
         @Override
         public void mouseClicked(MouseEvent e) {
@@ -1902,10 +1699,6 @@ public class GuiFX extends Application {
         } // Not used
     }
 
-    /**
-     * MouseMotionListener implementation for the GLCanvas to handle mouse dragging.
-     * Supports both 3D rotation (for models) and 2D panning (for sketches).
-     */
     private class CanvasMouseMotionListener implements MouseMotionListener {
         @Override
         public void mouseDragged(MouseEvent e) {
@@ -1949,10 +1742,6 @@ public class GuiFX extends Application {
         }
     }
 
-    /**
-     * MouseWheelListener implementation for the GLCanvas to handle zooming.
-     * Supports both 3D zoom (for models) and 2D zoom (for sketches).
-     */
     private class CanvasMouseWheelListener implements MouseWheelListener {
         @Override
         public void mouseWheelMoved(MouseWheelEvent e) {
@@ -2034,68 +1823,8 @@ public class GuiFX extends Application {
         appendOutput("View: Isometric (3D)");
     }
 
-    /**
-     * KeyListener implementation for comprehensive keyboard-based 3D navigation and
-     * control.
-     * 
-     * This class provides the primary keyboard interface for 3D model manipulation,
-     * offering intuitive controls for rotation, zoom, view management, and mode
-     * switching.
-     * It implements a performance-optimized approach by only triggering repaints
-     * when
-     * the view actually changes, reducing unnecessary GPU overhead.
-     * 
-     * Control Categories:
-     * 
-     * 1. ROTATION CONTROLS (Arrow Keys):
-     * - Up/Down: Rotate around X-axis (pitch) in 3° increments
-     * - Left/Right: Rotate around Y-axis (yaw) in 3° increments
-     * - Smooth, predictable rotation for precise model positioning
-     * 
-     * 2. ZOOM CONTROLS (Multiple key options):
-     * - Q/+ : Zoom in (move closer to model)
-     * - E/- : Zoom out (move away from model)
-     * - Clamped between -1.0f (very close) and -50.0f (very far)
-     * 
-     * 3. VIEW MANAGEMENT:
-     * - R: Reset view to default position with auto-scaling zoom
-     * - ESC: Restore canvas focus if keyboard controls stop working
-     * 
-     * 4. MODE SWITCHING:
-     * - SPACE: Toggle between 3D model view and 2D sketch view
-     * - Automatic mode feedback in console
-     * 
-     * 5. HELP SYSTEM:
-     * - Ctrl+H: Display detailed keyboard controls help
-     * 
-     * 
-     */
     private class CanvasKeyListener implements KeyListener {
-        /**
-         * Handles key press events for navigation and application control.
-         * Supports both 3D model manipulation and 2D sketch view manipulation.
-         * 
-         * This method implements the core keyboard interface for the CAD application,
-         * processing key combinations and translating them into appropriate view
-         * transformations or application commands. It dynamically switches behavior
-         * based on whether the user is in 2D sketch mode or 3D model mode.
-         * 
-         * 2D Sketch Mode Controls:
-         * - Arrow Keys: Pan view (move sketch content)
-         * - Q/E or +/-: Zoom in/out
-         * - R: Reset 2D view to default
-         * 
-         * 3D Model Mode Controls:
-         * - Arrow Keys: Rotate model
-         * - Q/E or +/-: Zoom in/out
-         * - R: Reset 3D view with auto-scaling
-         * 
-         * Universal Controls:
-         * - SPACE: Toggle between 2D/3D view modes
-         * - ESC: Force canvas focus restoration
-         * - Ctrl+H: Display keyboard help
-         * 
-         */
+
         @Override
         public void keyPressed(KeyEvent e) {
             boolean viewChanged = false;
@@ -2240,14 +1969,6 @@ public class GuiFX extends Application {
 
     // === Helper methods ===
 
-    /**
-     * Activates a sketch tool and automatically switches to sketch view if needed.
-     * Provides user feedback about the selected tool.
-     * 
-     * @param mode    The interaction mode to activate (SKETCH_LINE, SKETCH_CIRCLE,
-     *                etc.)
-     * @param message The message to display to the user about how to use the tool
-     */
     private void activateSketchTool(SketchInteractionManager.InteractionMode mode, String message) {
         // Set the interaction mode
         if (interactionManager != null) {
@@ -2279,9 +2000,6 @@ public class GuiFX extends Application {
         }
     }
 
-    /**
-     * Performs undo operation.
-     */
     private void performUndo() {
         if (commandManager != null && commandManager.canUndo()) {
             commandManager.undo();
@@ -2294,9 +2012,6 @@ public class GuiFX extends Application {
         }
     }
 
-    /**
-     * Performs redo operation.
-     */
     private void performRedo() {
         if (commandManager != null && commandManager.canRedo()) {
             commandManager.redo();
@@ -2308,11 +2023,6 @@ public class GuiFX extends Application {
             appendOutput("Nothing to redo");
         }
     }
-
-    /**
-     * Activates the dimension tool for measuring entities.
-     * User can click entities to create dimensions.
-     */
 
     private void activateDimensionTool() {
         // Set the interaction mode
@@ -2350,10 +2060,6 @@ public class GuiFX extends Application {
         }
     }
 
-    /**
-     * Handles a click when dimension tool is active.
-     * Finds the closest entity and creates a dimension for it.
-     */
     private void handleDimensionClick(float worldX, float worldY) {
         if (sketch == null) {
             appendOutput("No sketch to dimension");
@@ -2378,13 +2084,6 @@ public class GuiFX extends Application {
         }
     }
 
-    /**
-     * Orients the 3D view to align with the selected plane.
-     * Double-clicking a plane in the feature tree calls this method.
-     * 
-     * @param planeName The name of the plane (e.g., "Front Plane", "Top Plane",
-     *                  "Right Plane")
-     */
     private void orientViewToPlane(String planeName) {
         if (glRenderer == null)
             return;
@@ -2426,9 +2125,6 @@ public class GuiFX extends Application {
         }
     }
 
-    /**
-     * Toggles between 2D sketch view and 3D model view.
-     */
     public void toggleSketchView() {
         if (glRenderer != null) {
             boolean currentSketchMode = glRenderer.isShowingSketch();
@@ -2450,10 +2146,6 @@ public class GuiFX extends Application {
         }
     }
 
-    /**
-     * Resets the 3D view to default position with auto-scaling zoom.
-     * Clears rotation and sets zoom based on model size for optimal viewing.
-     */
     private void resetView() {
         rotationX = 0.0f;
         rotationY = 0.0f;
@@ -2494,15 +2186,6 @@ public class GuiFX extends Application {
         }
     }
 
-    /**
-     * Displays comprehensive keyboard controls help in the console output.
-     * 
-     * This method provides users with a quick reference guide for all available
-     * keyboard shortcuts and controls. It's triggered by pressing Ctrl+H and
-     * outputs a formatted help message to the console area. Updated to include
-     * both 2D sketch manipulation and 3D model controls.
-     *
-     */
     private void showKeyboardHelp() {
         appendOutput("=== Keyboard Controls ===");
         appendOutput("3D Model View Controls:");
@@ -2529,10 +2212,6 @@ public class GuiFX extends Application {
 
     // === Output related methods ===
 
-    /**
-     * Appends text to console output with thread-safe execution.
-     * Uses Platform.runLater() for JavaFX thread safety and auto-scrolls to bottom.
-     */
     private void appendOutput(String text) {
         Platform.runLater(() -> {
             outputArea.appendText(text + "\n");
@@ -2540,10 +2219,6 @@ public class GuiFX extends Application {
         });
     }
 
-    /**
-     * Converts screen coordinates to sketch world coordinates.
-     * Assumes standard 2D orthographic projection matches current pan/zoom.
-     */
     private float[] getSketchWorldCoordinates(int screenX, int screenY) {
         if (glCanvas == null)
             return new float[] { 0, 0 };
@@ -2617,10 +2292,6 @@ public class GuiFX extends Application {
                         "Tip: Switch to 'Sketch' tab to start drawing!");
     }
 
-    /**
-     * Shows available commands and basic keyboard controls in console.
-     * Lists all GUI commands and directs users to Ctrl+H for detailed help.
-     */
     private void help() {
         appendOutput("Available commands:");
         appendOutput("   Create Cube");
@@ -2645,36 +2316,10 @@ public class GuiFX extends Application {
 
     // Old creation methods removed
 
-    /**
-     * Sets the number of subdivisions for future cube creations.
-     * The value is read from `cubeSizeField` (repurposed for this input).
-     * Validates that the input is an integer between 1 and 200.
-     */
     // Legacy setCubeDivisions removed
 
-    /**
-     * Sets the latitude and longitude subdivisions for future sphere creations.
-     * Values are read from `latField` and `lonField`.
-     * Validates that inputs are integers between 1 and 200.
-     */
     // Legacy division setters removed
 
-    /**
-     * Opens a file chooser dialog to allow the user to select a location
-     * and filename to save the current 3D model (STL format).
-     * Calls `Geometry.saveStl()` to perform the actual saving.
-     */
-    /**
-     * Initiates the file save process with user-selected location and format.
-     * 
-     * This method provides a comprehensive file saving interface that supports
-     * multiple formats and includes robust error handling. It presents a file
-     * chooser dialog for user selection and delegates to format-specific save
-     * methods based on the chosen file extension.
-     * 
-     * 
-     * @see #saveDXF(String) for DXF format saving
-     */
     private void showSaveDialog() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save File");
@@ -2737,25 +2382,6 @@ public class GuiFX extends Application {
         }
     }
 
-    /**
-     * Opens a file chooser dialog to allow the user to select an STL or DXF file to
-     * load.
-     * Determines file type based on extension and calls appropriate loading methods
-     * (`Geometry.loadStl()` or `sketch.loadDXF()`). Updates the GLCanvas display
-     * accordingly.
-     */
-    /**
-     * Initiates the file loading process with user-selected file and format
-     * detection.
-     * 
-     * This method provides a comprehensive file loading interface that
-     * automatically
-     * detects supported formats and delegates to appropriate parsing methods.
-     * 
-     * @see #loadDXF(String) for DXF format loading
-     * @see #loadOBJ(String) for OBJ format loading
-     * @see #loadSketch(String) for custom sketch format loading
-     */
     private void loadFile() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Load 3D Model or 2D Sketch File");
@@ -2799,23 +2425,6 @@ public class GuiFX extends Application {
         }
     }
 
-    /**
-     * Opens a file chooser dialog to allow the user to select a location
-     * and filename to export the current 2D sketch to a DXF file.
-     * Calls `sketch.exportSketchToDXF()` to perform the actual saving.
-     */
-    /**
-     * Exports current 3D model to AutoCAD DXF format with user-selected filename.
-     * 
-     * This method provides a specialized export interface specifically for DXF
-     * format,
-     * which is widely supported by CAD applications. It handles the complete export
-     * process including file selection, format conversion, and error management.
-     * 
-     * 
-     * @see Geometry class for internal model representation
-     * @see #saveDXF(String) for the actual DXF writing implementation
-     */
     private void exportDXF() {
         String filename = "sketch.dxf"; // Default filename
         if (filename.isEmpty()) {
@@ -2844,27 +2453,6 @@ public class GuiFX extends Application {
         }
     }
 
-    /**
-     * Clears all elements from the current 2D sketch.
-     * Updates the GLCanvas to reflect the empty sketch.
-     */
-    /**
-     * Clears all entities from the current sketch with user confirmation.
-     * 
-     * This method provides a safe way to reset the sketch workspace, ensuring
-     * users don't accidentally lose work by requiring explicit confirmation.
-     * It completely removes all sketch entities and updates the display.
-     *
-     *
-     * Post-Clear State:
-     * - Empty sketch ready for new geometry
-     * - Clean coordinate system
-     * - Reset entity counters
-     * - Canvas automatically refreshed
-     * 
-     * @see Sketch class for sketch data management
-     * @see #sketchList() for viewing current sketch contents
-     */
     private void sketchClear() {
         sketch.clearSketch(); // Clear the sketch
         appendOutput("Sketch cleared.");
@@ -2873,22 +2461,6 @@ public class GuiFX extends Application {
         glCanvas.requestFocusInWindow(); // Request focus for interaction
     }
 
-    /**
-     * Lists all elements currently present in the 2D sketch to the console output.
-     * Updates the GLCanvas to ensure the sketch view is active.
-     */
-    /**
-     * Displays a comprehensive list of all entities in the current sketch.
-     * 
-     * This method provides detailed inspection capabilities for the sketch
-     * contents, outputting a formatted inventory of all geometric entities
-     * with their properties and relationships. Essential for debugging
-     * complex sketches and verifying geometry accuracy.
-     * 
-     * 
-     * @see Sketch class for entity storage and management
-     * @see #sketchClear() for clearing all listed entities
-     */
     private void sketchList() {
         List<String> items = sketch.listSketch(); // Get list of sketch items
         if (items.isEmpty()) {
@@ -2939,27 +2511,6 @@ public class GuiFX extends Application {
         }
     }
 
-    /**
-     * Shows a dialog to revolve the current sketch. based on X and Y coordinates
-     * entered in `sketchPointX` and `sketchPointY` text fields.
-     * This method now passes String arguments to the Sketch object.
-     */
-    /**
-     * Creates a new 2D point entity in the sketch from user input coordinates.
-     * 
-     * This method handles the creation of point entities, which serve as
-     * fundamental
-     * building blocks for more complex geometry. Points can be used as reference
-     * locations, endpoints for lines, centers for circles, or vertices for
-     * polygons.
-     * 
-     * // Legacy sketch methods (sketchPoint, sketchLine, sketchCircle,
-     * sketchPolygon) removed
-     * 
-     * /**
-     * Extrudes the current 2D sketch into a 3D shape.
-     * Opens a custom dialog window to get the extrusion height from the user.
-     */
     private void extrudeSketch() {
         // Check if sketch has any geometry to extrude
         if (sketch.listSketch().isEmpty()) {
@@ -3068,9 +2619,6 @@ public class GuiFX extends Application {
 
     // === New Dialog methods for Features ===
 
-    /**
-     * Shows a dialog to collect polygon parameters before drawing.
-     */
     private void showKiteDialog() {
         Stage dialog = new Stage();
         dialog.setTitle("Create Kite");
@@ -3258,10 +2806,6 @@ public class GuiFX extends Application {
         dialog.showAndWait();
     }
 
-    /**
-     * Shows dialog for creating a custom reference plane.
-     * User can define name and orientation angles.
-     */
     private void showCreatePlaneDialog(TreeItem<String> rootItem) {
         Stage dialog = new Stage();
         dialog.setTitle("Create Custom Plane");
@@ -3335,10 +2879,6 @@ public class GuiFX extends Application {
         dialog.showAndWait();
     }
 
-    /**
-     * Shows the unit selection dialog at application startup.
-     * Allows user to choose their preferred unit system.
-     */
     private void showUnitSelectionDialog() {
         Stage dialog = new Stage();
         dialog.setTitle("Select Units - SketchApp 4.0");
@@ -3403,10 +2943,6 @@ public class GuiFX extends Application {
         dialog.showAndWait();
     }
 
-    /**
-     * Sets the application-wide unit system.
-     * Updates sketch and current units field.
-     */
     private void setApplicationUnits(UnitSystem units) {
         this.currentUnits = units;
         if (sketch != null) {
@@ -3545,6 +3081,30 @@ public class GuiFX extends Application {
 
         appendOutput(String.format("Volume: %.4f cubic units", volume));
         appendOutput(String.format("Surface Area: %.4f square units", area));
+    }
+
+    private void showMassPropertiesDialog() {
+        MassPropertiesDialog dialog = new MassPropertiesDialog(sketch);
+        dialog.showAndWait();
+    }
+
+    private void toggleCentroid() {
+        if (glRenderer != null) {
+            boolean newState = !glRenderer.isShowingCentroid();
+            glRenderer.setShowCentroid(newState);
+            glCanvas.repaint();
+            appendOutput(newState ? "Centroid display enabled" : "Centroid display disabled");
+        }
+    }
+
+    private void showMaterialDatabaseDialog() {
+        MaterialDatabaseDialog dialog = new MaterialDatabaseDialog(sketch, () -> {
+            // Repaint the OpenGL canvas immediately when material changes
+            if (glCanvas != null) {
+                glCanvas.repaint();
+            }
+        }, this::appendOutput); // Pass console logger for in-app feedback
+        dialog.showAndWait();
     }
 
     private void activateSelectionTool() {
@@ -3749,18 +3309,10 @@ public class GuiFX extends Application {
         }
     }
 
-    /**
-     * Main method to launch the JavaFX application.
-     *
-     * @param args Command line arguments passed to the application.
-     */
     public static void main(String[] args) {
         launch(args);
     }
 
-    /**
-     * Show macro run menu with options to upload or select from library.
-     */
     private void showRunMacroMenu() {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
         alert.setTitle("Run Macro");
@@ -3784,10 +3336,6 @@ public class GuiFX extends Application {
         }
     }
 
-    /**
-     * Fits the 2D sketch view to show all entities.
-     * Calculates bounding box and adjusts zoom/pan.
-     */
     public void fitSketchView() {
         if (sketch == null)
             return;

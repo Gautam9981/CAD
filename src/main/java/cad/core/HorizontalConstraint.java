@@ -1,8 +1,6 @@
 package cad.core;
 
-/**
- * A constraint that forces two points (usually forming a line) to share the same Y coordinate.
- */
+
 public class HorizontalConstraint extends Constraint {
     private Point p1;
     private Point p2;

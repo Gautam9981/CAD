@@ -253,6 +253,17 @@ Implemented kite creation functionality (sketching + extruding). Feature in inte
 
 ---
 
+### Day 29 (12/18/25) - Dimension Rendering Improvements
+**Visual Fixes:**
+- **Linear Dimensions:** Implemented "smart arrows" for small dimensions. Arrows now point inwards from the outside to prevent overlap.
+- **Text Placement:** Added logic to laterally shift dimension text for small values to avoid overlapping with extension lines.
+- **Radial Dimensions:** Investigated duplicate text issues (likely user workflow related).
+
+**Features:**
+- **Materials Database:** Implemented initial material system. Selected materials are now reflected in the application (currently rudimentary, development continuing).
+
+---
+
 ## Installation & Running
 
 ### Windows
@@ -381,7 +392,8 @@ Help shape this project! [Feedback Form](https://forms.gle/6JeLGzmrWwT5CRcj8) (o
   - Accurate lighting/shading for mechanical parts
 
 
-⚠️ **In Progress:**
+⚠️ **In Progress / To Be Fixed:**
+- **CRITICAL:** Dimensioning rendering MUST be fixed (ensure zero overlap for all scale factors).
 - Feature implementation behind modern UI
 
 ---

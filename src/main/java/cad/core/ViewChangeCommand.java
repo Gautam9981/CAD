@@ -2,10 +2,7 @@ package cad.core;
 
 import cad.gui.GuiFX;
 
-/**
- * Command to handle switching between 2D Sketch processing and 3D View mode.
- * This allows the user to undo/redo changes to the view mode.
- */
+
 public class ViewChangeCommand implements Command {
     private final GuiFX gui;
     private final boolean newState; // true for Sketch, false for 3D

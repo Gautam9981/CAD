@@ -4,11 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.text.SimpleDateFormat;
 
-/**
- * Macro recording and playback system for GUI automation and testing.
- * Allows recording user actions and replaying them for testing or batch
- * operations.
- */
+
 public class MacroRecorder {
 
     private boolean isRecording = false;
@@ -73,9 +69,7 @@ public class MacroRecorder {
         }
     }
 
-    /**
-     * Start recording a new macro.
-     */
+    
     public void startRecording(String macroName) {
         this.isRecording = true;
         this.currentMacroName = macroName;
@@ -83,9 +77,7 @@ public class MacroRecorder {
         System.out.println("Macro recording started: " + macroName);
     }
 
-    /**
-     * Stop recording and save the macro.
-     */
+    
     public void stopRecording() {
         if (!isRecording) {
             System.out.println("No recording in progress");
@@ -102,9 +94,7 @@ public class MacroRecorder {
         }
     }
 
-    /**
-     * Record a command during macro recording.
-     */
+    
     public void recordCommand(ActionType action, Map<String, Object> parameters) {
         if (!isRecording) {
             return;
@@ -115,9 +105,7 @@ public class MacroRecorder {
         System.out.println("Recorded: " + cmd.toScriptLine());
     }
 
-    /**
-     * Save macro to file.
-     */
+    
     private void saveMacro(String name) throws IOException {
         File dir = new File(MACRO_DIR);
         if (!dir.exists()) {
@@ -140,9 +128,7 @@ public class MacroRecorder {
         }
     }
 
-    /**
-     * Load and execute a macro file.
-     */
+    
     public List<MacroCommand> loadMacro(String name) throws IOException {
         String filename = MACRO_DIR + name + ".macro";
         List<MacroCommand> loadedCommands = new ArrayList<>();
@@ -168,9 +154,7 @@ public class MacroRecorder {
         return loadedCommands;
     }
 
-    /**
-     * List all available macros.
-     */
+    
     public List<String> listMacros() {
         List<String> macros = new ArrayList<>();
         File dir = new File(MACRO_DIR);
@@ -188,23 +172,17 @@ public class MacroRecorder {
         return macros;
     }
 
-    /**
-     * Check if currently recording.
-     */
+    
     public boolean isRecording() {
         return isRecording;
     }
 
-    /**
-     * Get current macro name.
-     */
+    
     public String getCurrentMacroName() {
         return currentMacroName;
     }
 
-    /**
-     * Get recorded commands count.
-     */
+    
     public int getCommandCount() {
         return commands.size();
     }

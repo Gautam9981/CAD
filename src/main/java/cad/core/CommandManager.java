@@ -4,10 +4,7 @@ import java.util.Stack;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * CommandManager - Manages command history for undo/redo operations.
- * Implements the Command Pattern for full history tracking.
- */
+
 public class CommandManager {
     
     private static final int MAX_HISTORY_SIZE = 100;
@@ -16,9 +13,7 @@ public class CommandManager {
     private Stack<Command> redoStack;
     private List<CommandListener> listeners;
     
-    /**
-     * Listener interface for command state changes.
-     */
+    
     public interface CommandListener {
         void onCommandExecuted(Command cmd);
         void onUndo(Command cmd);
@@ -32,10 +27,7 @@ public class CommandManager {
         listeners = new ArrayList<>();
     }
     
-    /**
-     * Execute a command and add it to the undo history.
-     * @param cmd The command to execute
-     */
+    
     public void executeCommand(Command cmd) {
         cmd.execute();
         undoStack.push(cmd);
@@ -52,10 +44,7 @@ public class CommandManager {
         notifyHistoryChanged();
     }
     
-    /**
-     * Undo the last command.
-     * @return true if undo was successful, false if nothing to undo
-     */
+    
     public boolean undo() {
         if (undoStack.isEmpty()) {
             return false;
@@ -70,10 +59,7 @@ public class CommandManager {
         return true;
     }
     
-    /**
-     * Redo the last undone command.
-     * @return true if redo was successful, false if nothing to redo
-     */
+    
     public boolean redo() {
         if (redoStack.isEmpty()) {
             return false;
@@ -88,55 +74,41 @@ public class CommandManager {
         return true;
     }
     
-    /**
-     * Check if undo is available.
-     */
+    
     public boolean canUndo() {
         return !undoStack.isEmpty();
     }
     
-    /**
-     * Check if redo is available.
-     */
+    
     public boolean canRedo() {
         return !redoStack.isEmpty();
     }
     
-    /**
-     * Get the description of the next undo command.
-     */
+    
     public String getUndoDescription() {
         if (undoStack.isEmpty()) return "Undo";
         return "Undo " + undoStack.peek().getDescription();
     }
     
-    /**
-     * Get the description of the next redo command.
-     */
+    
     public String getRedoDescription() {
         if (redoStack.isEmpty()) return "Redo";
         return "Redo " + redoStack.peek().getDescription();
     }
     
-    /**
-     * Clear all history.
-     */
+    
     public void clearHistory() {
         undoStack.clear();
         redoStack.clear();
         notifyHistoryChanged();
     }
     
-    /**
-     * Get the number of commands in undo history.
-     */
+    
     public int getUndoCount() {
         return undoStack.size();
     }
     
-    /**
-     * Get the number of commands in redo history.
-     */
+    
     public int getRedoCount() {
         return redoStack.size();
     }

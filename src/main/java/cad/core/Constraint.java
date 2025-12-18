@@ -3,11 +3,7 @@ package cad.core;
 import java.util.UUID;
 import java.util.List;
 
-/**
- * Abstract base class for all geometric constraints.
- * A constraint defines a relationship between one or more sketch entities
- * (or their sub-elements like points) that must be satisfied by the solver.
- */
+
 public abstract class Constraint {
     protected String id;
     protected ConstraintType type;
@@ -35,16 +31,9 @@ public abstract class Constraint {
         this.active = active;
     }
 
-    /**
-     * Calculates the current error (deviation) from satisfying this constraint.
-     * The solver tries to minimize this error to 0.
-     * @return The error value (distance, angle difference, etc.)
-     */
+    
     public abstract double getError();
     
-    /**
-     * Solving method used by the iterative solver.
-     * Adjusts the involved entities to reduce the error.
-     */
+    
     public abstract void solve();
 }

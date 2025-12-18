@@ -1,8 +1,6 @@
 package cad.core;
 
-/**
- * Command to add a dimension to the sketch.
- */
+
 public class AddDimensionCommand implements Command {
     private Sketch sketch;
     private Dimension dimension;

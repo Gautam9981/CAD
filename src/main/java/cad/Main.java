@@ -4,18 +4,10 @@ import java.util.Scanner;
 import cad.cli.Cli;
 import cad.gui.GuiFX;
 
-/**
- * Main entry point for the CAD application.
- * Provides user choice between command-line interface (CLI) and graphical
- * interface (GUI).
- */
+
 public class Main {
 
-    /**
-     * Entry point of the application.
-     * Prompts the user to select between CLI or GUI mode.
-     * Launches the selected interface or shows an error for invalid input.
-     */
+    
     public static void main(String[] args) {
         // Add shutdown hook for graceful exit handling
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

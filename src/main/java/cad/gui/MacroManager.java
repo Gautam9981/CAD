@@ -14,9 +14,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * Macro manager for GUI - handles loading, executing, and managing macros.
- */
+
 public class MacroManager {
 
     private final MacroRecorder recorder;
@@ -39,44 +37,32 @@ public class MacroManager {
         this.stlUpdateCallback = null; // Will be set by GuiFX
     }
 
-    /**
-     * Set the canvas refresh callback (called after each macro command).
-     */
+    
     public void setCanvasRefresh(Runnable canvasRefresh) {
         this.canvasRefresh = canvasRefresh;
     }
 
-    /**
-     * Set the output callback for sending messages to GUI console.
-     */
+    
     public void setOutputCallback(java.util.function.Consumer<String> outputCallback) {
         this.outputCallback = outputCallback;
     }
 
-    /**
-     * Set the view mode callback to switch to sketch view.
-     */
+    
     public void setViewModeCallback(Runnable viewModeCallback) {
         this.viewModeCallback = viewModeCallback;
     }
 
-    /**
-     * Set the fit view callback to zoom to fit sketch.
-     */
+    
     public void setFitViewCallback(Runnable fitViewCallback) {
         this.fitViewCallback = fitViewCallback;
     }
 
-    /**
-     * Set the STL update callback to render 3D geometry.
-     */
+    
     public void setStlUpdateCallback(java.util.function.Consumer<List<float[]>> stlUpdateCallback) {
         this.stlUpdateCallback = stlUpdateCallback;
     }
 
-    /**
-     * Show file chooser to upload and run a macro file.
-     */
+    
     public void uploadAndRunMacro() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Upload Macro File");
@@ -123,9 +109,7 @@ public class MacroManager {
         }
     }
 
-    /**
-     * Show dialog to select and run an existing macro.
-     */
+    
     public void selectAndRunMacro() {
         List<String> macros = recorder.listMacros();
 
@@ -148,9 +132,7 @@ public class MacroManager {
         result.ifPresent(this::runMacro);
     }
 
-    /**
-     * Execute a macro by name.
-     */
+    
     public void runMacro(String macroName) {
         try {
             List<MacroRecorder.MacroCommand> commands = recorder.loadMacro(macroName);
@@ -177,9 +159,7 @@ public class MacroManager {
         }
     }
 
-    /**
-     * Execute macro commands.
-     */
+    
     private void executeMacro(List<MacroRecorder.MacroCommand> commands, String macroName) {
         int successCount = 0;
         int failCount = 0;
@@ -228,9 +208,7 @@ public class MacroManager {
         }
     }
 
-    /**
-     * Execute a single macro command.
-     */
+    
     private void executeCommand(MacroRecorder.MacroCommand cmd) throws Exception {
         switch (cmd.action) {
             case SET_UNITS:
@@ -419,9 +397,7 @@ public class MacroManager {
         }
     }
 
-    /**
-     * Start recording a new macro.
-     */
+    
     public void startRecording() {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Record Macro");
@@ -437,9 +413,7 @@ public class MacroManager {
         });
     }
 
-    /**
-     * Stop recording current macro.
-     */
+    
     public void stopRecording() {
         if (!recorder.isRecording()) {
             showWarning("Not Recording", "No macro recording is in progress.");
@@ -455,17 +429,13 @@ public class MacroManager {
                 "Macro '" + macroName + "' saved with " + commandCount + " command(s).");
     }
 
-    /**
-     * Record a command during macro recording.
-     */
+    
     public void recordCommand(MacroRecorder.ActionType action,
             java.util.Map<String, Object> params) {
         recorder.recordCommand(action, params);
     }
 
-    /**
-     * Check if currently recording.
-     */
+    
     public boolean isRecording() {
         return recorder.isRecording();
     }
@@ -496,9 +466,7 @@ public class MacroManager {
         alert.showAndWait();
     }
 
-    /**
-     * Log message to both System.out and GUI console (if callback is set).
-     */
+    
     private void log(String message) {
         System.out.println(message);
         if (outputCallback != null) {

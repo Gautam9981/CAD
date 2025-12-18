@@ -1,8 +1,6 @@
 package cad.core;
 
-/**
- * Enumeration of supported geometric constraint types.
- */
+
 public enum ConstraintType {
     // Unary constraints (1 entity)
     HORIZONTAL,

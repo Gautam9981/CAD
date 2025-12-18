@@ -1,9 +1,6 @@
 package cad.core;
 
-/**
- * Defines standard unit systems for the CAD application.
- * Mirrors common CAD standards like SolidWorks.
- */
+
 public enum UnitSystem {
     MKS("MKS (meter, kilogram, second)"),
     MGS("MGS (meter, gram, second)"),
@@ -23,10 +20,7 @@ public enum UnitSystem {
         return description;
     }
 
-    /**
-     * Returns the Length conversion factor to Meters (SI base).
-     * Useful for inter-unit calculations.
-     */
+    
     public double toMeters(double value) {
         switch (this) {
             case MKS:
@@ -46,9 +40,7 @@ public enum UnitSystem {
         }
     }
 
-    /**
-     * Returns the DXF unit code for this system.
-     */
+    
     public int getDXFCode() {
         switch (this) {
             case IPS:
@@ -64,9 +56,7 @@ public enum UnitSystem {
         }
     }
 
-    /**
-     * Resolves a UnitSystem from a DXF integer code.
-     */
+    
     public static UnitSystem fromDXFCode(int code) {
         switch (code) {
             case 1:
@@ -82,10 +72,7 @@ public enum UnitSystem {
         }
     }
     
-    /**
-     * Returns the abbreviated unit label for display in dimensions.
-     * @return Short unit string (e.g., "mm", "in", "ft")
-     */
+    
     public String getAbbreviation() {
         switch (this) {
             case MMGS:

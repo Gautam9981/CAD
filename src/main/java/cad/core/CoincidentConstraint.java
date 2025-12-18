@@ -1,14 +1,6 @@
 package cad.core;
 
-/**
- * A constraint that forces two geometric entities to be coincident.
- * Supports:
- * - Point-Point: Same location
- * - Point-Line: Point on infinite line
- * - Point-Circle: Point on circle circumfrence
- * - Line-Line: Collinear
- * - Circle-Circle: Concentric and Equal Radius
- */
+
 public class CoincidentConstraint extends Constraint {
     private Object o1;
     private Object o2;

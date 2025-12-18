@@ -16,19 +16,10 @@ import com.jogamp.opengl.glu.GLUquadric;
 // GUI import to access sketch data
 import cad.gui.GuiFX;
 
-/**
- * Core geometry engine for 3D shape creation, STL file operations, and model
- * management.
- * Provides procedural generation of cubes and spheres, STL import/export, and
- * rendering support.
- */
+
 public class Geometry {
 
-    /**
-     * Supported 3D shapes and model types.
-     * STL_LOADED represents externally loaded models.
-     * // EXTRUDED represents extruded 2D sketches.
-     */
+    
     public enum Shape {
         NONE,
         CUBE,
@@ -44,55 +35,30 @@ public class Geometry {
     public static int sphereLonDiv = 30; // Sphere longitude divisions
     private static List<float[]> extrudedTriangles = new ArrayList<>(); // Extruded geometry storage
 
-    /**
-     * Triangle data from loaded STL files. Each array contains:
-     * [normalX, normalY, normalZ, v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z]
-     */
+    
     private static List<float[]> loadedStlTriangles = new ArrayList<>();
 
-    /**
-     * Gets the currently active shape type for rendering decisions.
-     * 
-     * @return Current Shape enum value
-     */
+    
     public static Shape getCurrentShape() {
         return currShape;
     }
 
-    /**
-     * Gets the size parameter of current shape (cube size or sphere radius).
-     * 
-     * @return Size/radius parameter value
-     */
+    
     public static float getParam() {
         return param;
     }
 
-    /**
-     * Gets triangles from loaded STL file for rendering.
-     * 
-     * @return List of triangle arrays with format [nx, ny, nz, v1x, v1y, v1z, v2x,
-     *         v2y, v2z, v3x, v3y, v3z]
-     */
+    
     public static List<float[]> getLoadedStlTriangles() {
         return loadedStlTriangles;
     }
 
-    /**
-     * Gets triangles from extruded sketch for rendering.
-     * 
-     * @return List of triangle arrays with format [nx, ny, nz, v1x, v1y, v1z, v2x,
-     *         v2y, v2z, v3x, v3y, v3z]
-     */
+    
     public static List<float[]> getExtrudedTriangles() {
         return extrudedTriangles;
     }
 
-    /**
-     * Calculates maximum dimension of current model for auto-scaling views.
-     * 
-     * @return Maximum width, height, or depth of the model
-     */
+    
     public static float getModelMaxDimension() {
         List<float[]> trianglesToCheck = null;
 
@@ -154,13 +120,7 @@ public class Geometry {
         return Math.max(Math.max(sizeX, sizeY), sizeZ);
     }
 
-    /**
-     * Loads STL file and parses triangles into internal format.
-     * Sets current shape to STL_LOADED on success.
-     * 
-     * @param filename Path to STL file
-     * @throws IOException if file reading fails or format is invalid
-     */
+    
     public static List<float[]> loadStl(String filename) throws IOException {
         loadedStlTriangles.clear(); // Clear any previously loaded data
         currShape = Shape.NONE; // Reset shape type while loading
@@ -317,15 +277,7 @@ public class Geometry {
         }
     }
 
-    /**
-     * Centers the loaded STL model by translating all vertices so that the model's
-     * center becomes the origin (0, 0, 0). This ensures proper rotation around the
-     * center.
-     *
-     * @param centerX The X-coordinate of the model's current center
-     * @param centerY The Y-coordinate of the model's current center
-     * @param centerZ The Z-coordinate of the model's current center
-     */
+    
     private static void centerModel(float centerX, float centerY, float centerZ) {
         // Translate all vertices by subtracting the center coordinates
         for (float[] triData : loadedStlTriangles) {
@@ -338,12 +290,7 @@ public class Geometry {
         }
     }
 
-    /**
-     * Creates a procedural cube with specified size and subdivisions.
-     * 
-     * @param size      Edge length of the cube (0.1-100.0)
-     * @param divisions Number of subdivisions per edge (1-200)
-     */
+    
     public static void createCube(float size, int divisions) {
         if (size < 0.1f || size > 100.0f) {
             throw new IllegalArgumentException("Cube size must be between 0.1 and 100.0");
@@ -370,23 +317,12 @@ public class Geometry {
                 totalTriangles);
     }
 
-    /**
-     * Creates a procedural UV sphere with specified radius and subdivisions.
-     * 
-     * @param radius    Radius of the sphere (0.1-50.0)
-     * @param divisions Number of latitude/longitude subdivisions (3-100)
-     */
+    
     public static void createSphere(float radius, int divisions) {
         createSphere(radius, divisions, divisions);
     }
 
-    /**
-     * Creates a procedural UV sphere with specified radius and separate lat/lon subdivisions.
-     * 
-     * @param radius    Radius of the sphere (0.1-50.0)
-     * @param latDiv    Number of latitude subdivisions (3-100)
-     * @param lonDiv    Number of longitude subdivisions (3-100)
-     */
+    
     public static void createSphere(float radius, int latDiv, int lonDiv) {
         if (radius < 0.1f || radius > 80.0f) {
             throw new IllegalArgumentException("Sphere radius must be between 0.1 and 80.0");
@@ -405,14 +341,7 @@ public class Geometry {
         System.out.printf("Sphere created with radius %.2f and %dx%d subdivisions%n", radius, latDiv, lonDiv);
     }
 
-    /**
-     * Generates triangle data for a cube centered at the origin and stores it in
-     * loadedStlTriangles.
-     * The cube extends from -size/2 to +size/2 in all dimensions.
-     *
-     * @param size      The size of the cube's edge.
-     * @param divisions Number of subdivisions per edge.
-     */
+    
     private static void generateCubeTriangles(float size, int divisions) {
         loadedStlTriangles.clear(); // Clear any previous data
 
@@ -561,14 +490,7 @@ public class Geometry {
         }
     }
 
-    /**
-     * Generates triangle data for a sphere centered at the origin and stores it in
-     * loadedStlTriangles.
-     *
-     * @param radius Radius of the sphere.
-     * @param latDiv Number of latitude divisions.
-     * @param lonDiv Number of longitude divisions.
-     */
+    
     private static void generateSphereTriangles(float radius, int latDiv, int lonDiv) {
         loadedStlTriangles.clear(); // Clear any previous data
 
@@ -615,10 +537,7 @@ public class Geometry {
         }
     }
 
-    /**
-     * Calculates the normal vector for a triangle defined by three vertices.
-     * Uses cross product of two edge vectors.
-     */
+    
     private static float[] calculateNormal(float x1, float y1, float z1,
             float x2, float y2, float z2,
             float x3, float y3, float z3) {
@@ -642,13 +561,7 @@ public class Geometry {
         return new float[] { nx, ny, nz };
     }
 
-    /**
-     * Extrude a closed sketch to create a 3D shape.
-     * Converts closed polygons in the sketch into 3D geometry.
-     *
-     * @param sketch Sketch to extrude.
-     * @param height Extrusion height.
-     */
+    
     // public static void extrude(Sketch sketch, float height) {
     // if (!sketch.isClosedLoop()) {
     // System.out.println("Sketch must contain at least one closed loop (polygon) to
@@ -671,12 +584,7 @@ public class Geometry {
     // extrudedTriangles.size() + " triangles.");
     // }
 
-    /**
-     * Converts a Face3D object to triangles and adds them to extrudedTriangles.
-     * Uses triangle fan approach for faces with more than 3 vertices.
-     *
-     * @param face Face3D object to convert.
-     */
+    
     // private static void convertFaceToTriangles(Sketch.Face3D face) {
     // List<Sketch.Point3D> vertices = face.getVertices();
     // int numVertices = vertices.size();
@@ -698,14 +606,7 @@ public class Geometry {
     // }
     // }
 
-    /**
-     * Adds a triangle to the extruded triangles list in the correct format.
-     * Format: [nx, ny, nz, v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z]
-     *
-     * @param p1 First vertex
-     * @param p2 Second vertex
-     * @param p3 Third vertex
-     */
+    
     // private static void addTriangleToExtruded(Sketch.Point3D p1, Sketch.Point3D
     // p2, Sketch.Point3D p3) {
     // // Calculate normal vector using cross product
@@ -729,14 +630,7 @@ public class Geometry {
     // extrudedTriangles.add(triangle);
     // }
 
-    /**
-     * Calculates the normal vector for a triangle defined by three 3D points.
-     *
-     * @param p1 First vertex
-     * @param p2 Second vertex
-     * @param p3 Third vertex
-     * @return Normal vector as float array [nx, ny, nz]
-     */
+    
     private static float[] calculateTriangleNormal(Sketch.Point3D p1, Sketch.Point3D p2, Sketch.Point3D p3) {
         // Edge vectors
         float ex1 = p2.getX() - p1.getX(), ey1 = p2.getY() - p1.getY(), ez1 = p2.getZ() - p1.getZ();
@@ -758,13 +652,7 @@ public class Geometry {
         return new float[] { nx, ny, nz };
     }
 
-    /**
-     * Saves current geometry (cube, sphere, loaded STL, or extruded shapes) to STL
-     * file.
-     * 
-     * @param filename Output file path
-     * @throws IOException if file writing fails
-     */
+    
     public static void saveStl(String filename) throws IOException {
         // Check if we have extruded faces available from GuiFX.sketch
         boolean hasExtrudedGeometry = GuiFX.sketch != null && !GuiFX.sketch.extrudedFaces.isEmpty();
@@ -795,12 +683,7 @@ public class Geometry {
         System.out.println("Saved STL file: " + filename);
     }
 
-    /**
-     * Generates and writes STL facets for the current `loadedStlTriangles` data.
-     * This is used when saving a previously loaded STL file.
-     *
-     * @param out PrintWriter to write STL data.
-     */
+    
     private static void writeLoadedStlTriangles(PrintWriter out) {
         for (float[] triData : loadedStlTriangles) {
             // triData format: [nx, ny, nz, v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z]
@@ -812,19 +695,8 @@ public class Geometry {
         }
     }
 
-    /**
-     * Generates and writes STL facets for the current `extrudedTriangles` data.
-     * This is used when saving extruded geometry to STL format.
-     *
-     * @param out PrintWriter to write STL data.
-     */
-    /**
-     * Writes extruded sketch geometry directly to STL format.
-     * Takes the Face3D objects from the sketch and converts them to triangles.
-     *
-     * @param out    PrintWriter to write STL data.
-     * @param sketch The sketch containing extruded faces.
-     */
+    
+    
     private static void writeExtrudedSketchToStl(PrintWriter out, Sketch sketch) {
         int triangleCount = 0;
 
@@ -853,15 +725,7 @@ public class Geometry {
         System.out.println("Wrote " + triangleCount + " triangles from extruded sketch to STL.");
     }
 
-    /**
-     * Helper method to write a triangle to STL from three Point3D objects.
-     * Calculates the normal automatically.
-     *
-     * @param out PrintWriter to write STL data.
-     * @param p1  First vertex
-     * @param p2  Second vertex
-     * @param p3  Third vertex
-     */
+    
     private static void writeTriangleFromPoints(PrintWriter out, Sketch.Point3D p1, Sketch.Point3D p2,
             Sketch.Point3D p3) {
         // Calculate normal vector using cross product
@@ -875,13 +739,7 @@ public class Geometry {
                 p3.getX(), p3.getY(), p3.getZ());// V3
     }
 
-    /**
-     * Generate STL triangles for a cube and write to output.
-     *
-     * @param out       PrintWriter to write STL.
-     * @param size      Edge length of the cube.
-     * @param divisions Number of subdivisions per edge.
-     */
+    
     private static void generateCubeStl(PrintWriter out, float size, int divisions) {
         float half = size / 2.0f;
         float step = size / divisions;
@@ -955,14 +813,7 @@ public class Geometry {
         }
     }
 
-    /**
-     * Generate STL triangles for a sphere and write to output.
-     *
-     * @param out    PrintWriter to write STL.
-     * @param radius Sphere radius.
-     * @param latDiv Latitude subdivisions.
-     * @param lonDiv Longitude subdivisions.
-     */
+    
     private static void generateSphereStl(PrintWriter out, float radius, int latDiv, int lonDiv) {
         // This method generates sphere geometry. For robust results, it might be better
         // to pre-calculate normals based on the sphere's surface (normalized vertex
@@ -999,15 +850,7 @@ public class Geometry {
         }
     }
 
-    /**
-     * Calculate Cartesian coordinates for a point on a sphere given spherical
-     * angles.
-     *
-     * @param r     Radius of the sphere.
-     * @param theta Polar angle (latitude), from 0 (north pole) to PI (south pole).
-     * @param phi   Azimuthal angle (longitude), from 0 to 2*PI.
-     * @return Cartesian coordinates as float array [x, y, z].
-     */
+    
     private static float[] sph(float r, float theta, float phi) {
         return new float[] {
                 r * (float) Math.sin(theta) * (float) Math.cos(phi),
@@ -1016,39 +859,12 @@ public class Geometry {
         };
     }
 
-    /**
-     * Write a triangle facet to the STL file, computing its normal automatically.
-     * This method is used when generating new geometry (e.g., cube, sphere).
-     *
-     * @param out PrintWriter to write STL.
-     * @param a   Vertex A coordinates as float array [x, y, z].
-     * @param b   Vertex B coordinates as float array [x, y, z].
-     * @param c   Vertex C coordinates as float array [x, y, z].
-     */
+    
     private static void writeTriangle(PrintWriter out, float[] a, float[] b, float[] c) {
         writeTriangle(out, a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2]);
     }
 
-    /**
-     * Write a triangle facet to the STL file with an explicitly provided normal.
-     * This overload is useful when the normal is already known (e.g., from loaded
-     * STL data)
-     * or for specific surface normals (like flat faces of a cube).
-     *
-     * @param out PrintWriter to write STL.
-     * @param nx  Normal vector X component.
-     * @param ny  Normal vector Y component.
-     * @param nz  Normal vector Z component.
-     * @param ax  X of vertex A.
-     * @param ay  Y of vertex A.
-     * @param az  Z of vertex A.
-     * @param bx  X of vertex B.
-     * @param by  Y of vertex B.
-     * @param bz  Z of vertex B.
-     * @param cx  X of vertex C.
-     * @param cy  Y of vertex C.
-     * @param cz  Z of vertex C.
-     */
+    
     private static void writeTriangle(PrintWriter out,
             float nx, float ny, float nz,
             float ax, float ay, float az,
@@ -1064,22 +880,7 @@ public class Geometry {
         out.println("  endfacet");
     }
 
-    /**
-     * Write a triangle facet to the STL file, computing its normal based on vertex
-     * winding.
-     * This is useful for generated geometry where facet normals aren't pre-defined.
-     *
-     * @param out PrintWriter to write STL.
-     * @param ax  X of vertex A.
-     * @param ay  Y of vertex A.
-     * @param az  Z of vertex A.
-     * @param bx  X of vertex B.
-     * @param by  Y of vertex B.
-     * @param bz  Z of vertex B.
-     * @param cx  X of vertex C.
-     * @param cy  Y of vertex C.
-     * @param cz  Z of vertex C.
-     */
+    
     private static void writeTriangle(PrintWriter out,
             float ax, float ay, float az,
             float bx, float by, float bz,
@@ -1105,14 +906,7 @@ public class Geometry {
         writeTriangle(out, nx, ny, nz, ax, ay, az, bx, by, bz, cx, cy, cz);
     }
 
-    /**
-     * Draws the currently selected 3D shape using OpenGL. This method is called by
-     * JOGLCadCanvas's display method.
-     * It handles drawing of cubes, spheres, loaded STL models, and extruded
-     * sketches.
-     *
-     * @param gl The GL2 object (OpenGL context) used for drawing.
-     */
+    
     public static void drawCurrentShape(GL2 gl) { // Renamed from drawLoadedStl to reflect general purpose
         System.out.println("drawCurrentShape called with shape: " + currShape); // Debug
         switch (currShape) {
@@ -1142,16 +936,7 @@ public class Geometry {
         }
     }
 
-    /**
-     * Draws a cube using OpenGL. Vertices and normals are calculated on the fly.
-     * For high performance with many cubes, consider using VBOs.
-     *
-     * @param gl        The GL2 object.
-     * @param size      Edge length of the cube.
-     * @param divisions Number of subdivisions per edge (for finer detail, though
-     *                  simple cube just draws 6 faces).
-     * 
-     */
+    
 
     public static void drawCube(GL2 gl, float size, int divisions) {
         float half = size / 2.0f;
@@ -1203,14 +988,7 @@ public class Geometry {
         gl.glEnd();
     }
 
-    /**
-     * Draws a sphere using OpenGL's GLU library.
-     *
-     * @param gl     The GL2 object.
-     * @param radius Radius of the sphere.
-     * @param latDiv Number of latitude subdivisions.
-     * @param lonDiv Number of longitude subdivisions.
-     */
+    
     // CHANGE: Made private to public to allow JOGLCadCanvas to call it directly if
     // desired.
     // However, the preferred method is to call drawCurrentShape.
@@ -1224,16 +1002,7 @@ public class Geometry {
         glu.gluDeleteQuadric(quadric); // Clean up the quadric object
     }
 
-    /**
-     * Draws a loaded STL model using OpenGL. It iterates through the
-     * `loadedStlTriangles` list and renders each triangle with its associated
-     * normal.
-     * This uses immediate mode (`glBegin`/`glEnd`), which is simple but less
-     * performant
-     * for very large models compared to Vertex Buffer Objects (VBOs).
-     *
-     * @param gl The GL2 object.
-     */
+    
     // CHANGE: Made private to public to allow JOGLCadCanvas to call it directly if
     // desired.
     // However, the preferred method is to call drawCurrentShape.
@@ -1260,13 +1029,7 @@ public class Geometry {
         System.out.println("Finished drawing " + loadedStlTriangles.size() + " triangles"); // Debug
     }
 
-    /**
-     * Draws extruded geometry using OpenGL. Similar to drawLoadedStl but for
-     * extruded shapes.
-     * This method renders triangles from the extrudedTriangles list.
-     *
-     * @param gl The GL2 object (OpenGL context) used for drawing.
-     */
+    
     // public static void drawExtruded(GL2 gl) {
     // System.out.println("drawExtruded called. Triangle count: " +
     // extrudedTriangles.size()); // Debug
@@ -1292,13 +1055,7 @@ public class Geometry {
     // System.out.println("Finished drawing " + extrudedTriangles.size() + "
     // extruded triangles"); // Debug
     // }
-    /**
-     * Calculates the Center of Gravity (Volumetric Centroid) of the loaded 3D
-     * model.
-     * Uses the signed volume of tetrahedrons method.
-     * 
-     * @return float array [x, y, z] representing the CG coordinates.
-     */
+    
     public static float[] calculateCentroid() {
         double totalVolume = 0;
         double momentX = 0;
@@ -1345,13 +1102,7 @@ public class Geometry {
         };
     }
 
-    /**
-     * Revolves a 2D sketch around the Y-axis to create a 3D mesh.
-     * 
-     * @param sketch       The sketch containing the profile to revolve.
-     * @param angleDegrees Angle to revolve (e.g., 360).
-     * @param steps        Number of steps for the revolution.
-     */
+    
     public static void revolve(Sketch sketch, float angleDegrees, int steps) {
         extrudedTriangles.clear();
 
@@ -1422,12 +1173,7 @@ public class Geometry {
         extrudedTriangles.add(tri);
     }
 
-    /**
-     * Lofts between the first two polygons in the sketch over a specified height.
-     * 
-     * @param sketch The sketch containing profiles.
-     * @param height The height difference between the two profiles.
-     */
+    
     public static void loft(Sketch sketch, float height) {
         extrudedTriangles.clear();
 
@@ -1463,11 +1209,7 @@ public class Geometry {
         currShape = Shape.EXTRUDED; // Reuse EXTRUDED for loft results
         System.out.println("Loft created. Generated " + extrudedTriangles.size() + " triangles.");
     }
-    /**
-     * Calculates the total surface area of the current model.
-     * 
-     * @return Surface area in square units.
-     */
+    
     public static float calculateSurfaceArea() {
         List<float[]> trianglesToCheck = getActiveTriangles();
         if (trianglesToCheck == null || trianglesToCheck.isEmpty()) {
@@ -1495,12 +1237,7 @@ public class Geometry {
         return totalArea;
     }
 
-    /**
-     * Calculates the volume of the current model using the divergence theorem.
-     * Assumes a closed, watertight mesh.
-     * 
-     * @return Volume in cubic units.
-     */
+    
     public static float calculateVolume() {
         List<float[]> trianglesToCheck = getActiveTriangles();
         if (trianglesToCheck == null || trianglesToCheck.isEmpty()) {
@@ -1529,9 +1266,7 @@ public class Geometry {
         return Math.abs(totalVolume);
     }
 
-    /**
-     * Helper to get the currently active list of triangles.
-     */
+    
     private static List<float[]> getActiveTriangles() {
         if (currShape == Shape.STL_LOADED) {
             return loadedStlTriangles;
@@ -1545,12 +1280,7 @@ public class Geometry {
 
     // --- 3D Selection / Ray Picking ---
 
-    /**
-     * Casts a ray into the scene and finds the closest intersected triangle.
-     * @param rayOrigin Origin of the ray (camera position).
-     * @param rayDir Normalized direction of the ray.
-     * @return The data of the closest triangle, or null if no hit.
-     */
+    
     public static float[] pickFace(float[] rayOrigin, float[] rayDir) {
         List<float[]> triangles = getActiveTriangles();
         if (triangles == null || triangles.isEmpty()) return null;
@@ -1573,15 +1303,7 @@ public class Geometry {
         return closestTri;
     }
 
-    /**
-     * Möller–Trumbore ray-triangle intersection algorithm.
-     * @param rayOrigin Ray origin.
-     * @param rayVector Ray direction.
-     * @param v0 Triangle vertex 0.
-     * @param v1 Triangle vertex 1.
-     * @param v2 Triangle vertex 2.
-     * @return Distance to intersection (t), or null if no intersection.
-     */
+    
     private static Float intersectRayTriangle(float[] rayOrigin, float[] rayVector,
                                               float[] v0, float[] v1, float[] v2) {
         float EPSILON = 0.0000001f;
@@ -1642,9 +1364,7 @@ public class Geometry {
         }
     }
 
-    /**
-     * Calculates the area of a triangle in 3D.
-     */
+    
     public static float calculateTriangleArea(float[] tri) {
         // v1 = (tri[3], tri[4], tri[5])
         // v2 = (tri[6], tri[7], tri[8])

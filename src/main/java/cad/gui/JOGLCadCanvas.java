@@ -17,12 +17,7 @@ import java.awt.event.KeyAdapter;
 import javax.swing.SwingUtilities;
 import java.io.IOException;
 
-/**
- * OpenGL canvas for rendering 3D models and 2D sketches with interactive
- * controls.
- * Extends GLJPanel and provides mouse/keyboard interaction for rotation, zoom,
- * and view switching.
- */
+
 public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
 
     private GLU glu; // OpenGL Utility Library for perspective transformations and sphere rendering
@@ -44,11 +39,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
     private VBOManager vboManager = new VBOManager();
     private boolean vboDirty = true; // Track if VBO needs update
 
-    /**
-     * Creates OpenGL canvas with mouse and keyboard interaction support.
-     * 
-     * @param sketch 2D sketch object for rendering in sketch mode
-     */
+    
     public JOGLCadCanvas(Sketch sketch) {
         // Call the superclass constructor using static helper to configure capabilities
         super(createCapabilities());
@@ -60,10 +51,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
 
         // --- Setup Mouse Listeners for Interaction ---
         addMouseListener(new MouseAdapter() {
-            /**
-             * Captures the initial mouse position when a mouse button is pressed
-             * and sets the dragging flag.
-             */
+            
             @Override
             public void mousePressed(MouseEvent e) {
                 lastMouseX = e.getX();
@@ -71,9 +59,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
                 mouseDragging = true; // Start tracking drag
             }
 
-            /**
-             * Resets the dragging flag when the mouse button is released.
-             */
+            
             @Override
             public void mouseReleased(MouseEvent e) {
                 mouseDragging = false; // Stop tracking drag
@@ -81,10 +67,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         });
 
         addMouseMotionListener(new MouseMotionAdapter() {
-            /**
-             * Handles mouse dragging for rotation (left-click drag) and
-             * basic zoom/pan (right-click drag).
-             */
+            
             @Override
             public void mouseDragged(MouseEvent e) {
                 if (mouseDragging) {
@@ -109,10 +92,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
 
         // --- Setup Mouse Wheel Listener for Zooming ---
         addMouseWheelListener(e -> {
-            /**
-             * Adjusts the zoom level based on mouse wheel rotation.
-             * Scrolling up zooms in, scrolling down zooms out.
-             */
+            
             float notches = e.getWheelRotation(); // Get number of "notches" the wheel was rotated
             zoomZ += notches * 0.5f; // Adjust zoom based on wheel rotation (positive moves away, negative moves
                                      // closer)
@@ -121,9 +101,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
 
         // --- Setup Keyboard Listener for View Control ---
         addKeyListener(new KeyAdapter() {
-            /**
-             * Handles key presses for resetting view and switching between 2D/3D modes.
-             */
+            
             @Override
             public void keyPressed(KeyEvent e) {
                 switch (e.getKeyCode()) {
@@ -151,9 +129,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         requestFocusInWindow(); // Requests that this component gain the keyboard focus when it's visible.
     }
 
-    /**
-     * Helper to create GL capabilities with MSAA enabled.
-     */
+    
     private static GLCapabilities createCapabilities() {
         GLCapabilities caps = new GLCapabilities(GLProfile.get("GL2"));
         caps.setSampleBuffers(true);
@@ -161,17 +137,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         return caps;
     }
 
-    /**
-     * Sets the current active shape to a cube and updates its size and
-     * subdivisions.
-     * This method delegates the actual setting of parameters to the static
-     * `Geometry.createCube()` method, which manages the application's central
-     * 3D model state.
-     *
-     * @param size      The edge length of the cube.
-     * @param divisions The number of subdivisions per edge (affects geometry, not
-     *                  rendering directly here).
-     */
+    
     public void setCube(float size, int divisions) {
         // Calls the static method in Geometry to define a cube with the given size and
         // divisions.
@@ -182,13 +148,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         show3DModel();
     }
 
-    /**
-     * Creates a sphere with specified parameters and switches to 3D view.
-     * 
-     * @param radius Sphere radius
-     * @param latDiv Latitude subdivisions
-     * @param lonDiv Longitude subdivisions
-     */
+    
     public void setSphere(float radius, int latDiv, int lonDiv) {
         // Calls the static method in Geometry to define a sphere with the given radius
         // and divisions.
@@ -204,11 +164,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         show3DModel();
     }
 
-    /**
-     * Loads STL file and switches to 3D model view.
-     * 
-     * @param filePath Path to STL file to load
-     */
+    
     public void loadSTL(String filePath) {
         try {
             // Calls the static method in Geometry to load the STL file data.
@@ -233,35 +189,20 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         }
     }
 
-    /**
-     * Switches the canvas display mode to show the 2D sketch.
-     * Sets the internal flag `show3DModel` to `false` and requests a repaint.
-     */
+    
     public void showSketch() {
         show3DModel = false; // Set flag to render 2D sketch
         repaint(); // Request the canvas to redraw itself
     }
 
-    /**
-     * Switches the canvas display mode to show the 3D model (cube, sphere, or
-     * loaded STL).
-     * Sets the internal flag `show3DModel` to `true` and requests a repaint.
-     */
+    
     public void show3DModel() {
         show3DModel = true; // Set flag to render 3D model
         vboDirty = true; // Mark VBO as dirty (geometry may have changed)
         repaint(); // Request the canvas to redraw itself
     }
 
-    /**
-     * This method is called exactly once when the OpenGL context is first created.
-     * It's used to perform all necessary OpenGL initializations, such as setting
-     * background color, enabling depth testing, configuring lighting, and setting
-     * material properties.
-     *
-     * @param drawable The GLAutoDrawable object, providing access to the OpenGL
-     *                 context.
-     */
+    
     @Override
     public void init(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
@@ -295,18 +236,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         vboDirty = true;
     }
 
-    /**
-     * This method is called whenever the OpenGL canvas is resized.
-     * It adjusts the viewport (the area on the screen where OpenGL draws)
-     * and reconfigures the projection matrix to maintain correct aspect ratio
-     * and perspective for either 3D or 2D rendering.
-     *
-     * @param drawable The GLAutoDrawable object.
-     * @param x        The x-coordinate of the viewport origin.
-     * @param y        The y-coordinate of the viewport origin.
-     * @param width    The new width of the viewport.
-     * @param height   The new height of the viewport.
-     */
+    
     @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
         GL2 gl = drawable.getGL().getGL2();
@@ -343,14 +273,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         gl.glLoadIdentity(); // Reset the modelview matrix
     }
 
-    /**
-     * This method is called repeatedly by the animator to render the scene.
-     * It clears the buffers, applies camera transformations, and then draws
-     * either the 3D model (cube, sphere, or STL) or the 2D sketch based on
-     * the current display mode (`show3DModel` flag).
-     *
-     * @param drawable The GLAutoDrawable object.
-     */
+    
     @Override
     public void display(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
@@ -430,13 +353,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
                       // graphics hardware.
     }
 
-    /**
-     * Calculates the center point of the current geometry.
-     * For extruded shapes, calculates the centroid of all vertices.
-     * For default shapes (cube, sphere, STL), returns the origin.
-     * 
-     * @return Array containing [centerX, centerY, centerZ] coordinates
-     */
+    
     private float[] calculateGeometryCenter() {
         // If we have extruded geometry, calculate its center
         if (sketch != null && !sketch.extrudedFaces.isEmpty()) {
@@ -469,12 +386,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         return new float[] { 0.0f, 0.0f, 0.0f };
     }
 
-    /**
-     * Calculates the bounding box dimensions of extruded geometry to help with
-     * automatic zoom.
-     * 
-     * @return Maximum dimension (width, height, or depth) of the geometry
-     */
+    
     private float calculateGeometrySize() {
         if (sketch != null && !sketch.extrudedFaces.isEmpty()) {
             float minX = Float.MAX_VALUE, maxX = Float.MIN_VALUE;
@@ -507,13 +419,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         return 50.0f; // Default size for built-in shapes
     }
 
-    /**
-     * This method is called when the OpenGL context is destroyed (e.g., when the
-     * GLJPanel is removed from its parent container or the application exits).
-     * It's used to release any OpenGL-related resources.
-     *
-     * @param drawable The GLAutoDrawable object.
-     */
+    
     @Override
     public void dispose(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();

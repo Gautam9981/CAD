@@ -1,8 +1,6 @@
 package cad.core;
 
-/**
- * Command to add a constraint to the sketch.
- */
+
 public class AddConstraintCommand implements Command {
     private Sketch sketch;
     private Constraint constraint;

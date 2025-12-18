@@ -3,20 +3,12 @@ package cad.core;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Iterative constraint solver.
- * Uses a relaxation method to satisfy a list of geometric constraints.
- * Simple, robust, and sufficient for basic 2D CAD sketches.
- */
+
 public class ConstraintSolver {
     private static final int MAX_ITERATIONS = 100;
     private static final double ERROR_TOLERANCE = 1e-4; // 0.0001 units
     
-    /**
-     * Solves the system of constraints for the given sketch.
-     * @param constraints The list of active constraints to solve.
-     * @return true if solved (converged), false if max iterations reached.
-     */
+    
     public static boolean solve(List<Constraint> constraints) {
         if (constraints == null || constraints.isEmpty()) {
             return true;

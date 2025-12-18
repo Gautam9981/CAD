@@ -12,10 +12,6 @@ import java.util.*;
 import java.util.List;
 
 
-/**
- * OpenGL canvas supporting both 2D sketch rendering and smooth-shaded 3D STL display.
- * Provides mouse/keyboard controls for pan, zoom, and rotation with averaged normals for STL.
- */
 public class SketchCanvas extends GLJPanel implements GLEventListener {
     private final cad.core.Sketch sketch;
 
@@ -30,10 +26,7 @@ public class SketchCanvas extends GLJPanel implements GLEventListener {
     private double zoom = 1.0;
     private double rotateX = 0, rotateY = 0;
 
-    /**
-     * Creates sketch canvas with mouse/keyboard controls for 2D/3D interaction.
-     * @param sketch 2D sketch object for rendering
-     */
+    
     public SketchCanvas(cad.core.Sketch sketch) {
         super(new GLCapabilities(GLProfile.getDefault()));
         this.sketch = sketch;
@@ -79,9 +72,7 @@ public class SketchCanvas extends GLJPanel implements GLEventListener {
         });
     }
 
-    /**
-     * Accepts a list of STL triangles and computes averaged normals for smooth shading.
-     */
+    
     public void setStlTriangles(List<float[]> triangles) {
         stlTriangles.clear();
         vertexNormals.clear();
@@ -153,13 +144,13 @@ public class SketchCanvas extends GLJPanel implements GLEventListener {
         repaint();
     }
 
-    /** Switches back to 2D sketch mode */
+    
     public void showSketch() {
         this.showStl = false;
         repaint();
     }
 
-    /** Reset camera/transform */
+    
     private void resetView() {
         offsetX = getWidth() / 2.0;
         offsetY = getHeight() / 2.0;
@@ -170,7 +161,7 @@ public class SketchCanvas extends GLJPanel implements GLEventListener {
 
     // ========== JOGL RENDERING ==========
 
-    /** JOGL: Called once when GL context is initialized */
+    
     @Override
     public void init(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
@@ -186,7 +177,7 @@ public class SketchCanvas extends GLJPanel implements GLEventListener {
         gl.glShadeModel(GL2.GL_SMOOTH);
     }
 
-    /** JOGL: Called when window is resized */
+    
     @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
         GL2 gl = drawable.getGL().getGL2();
@@ -201,7 +192,7 @@ public class SketchCanvas extends GLJPanel implements GLEventListener {
         gl.glLoadIdentity();
     }
 
-    /** JOGL: Main draw function */
+    
     @Override
     public void display(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
@@ -222,11 +213,11 @@ public class SketchCanvas extends GLJPanel implements GLEventListener {
         gl.glFlush();
     }
 
-    /** JOGL: Cleanup */
+    
     @Override
     public void dispose(GLAutoDrawable drawable) {}
 
-    /** Draw STL triangles with smooth shading */
+    
     private void drawStl(GL2 gl) {
         gl.glColor3f(0.2f, 0.4f, 1.0f);
         for (float[] tri : stlTriangles) {
@@ -241,7 +232,7 @@ public class SketchCanvas extends GLJPanel implements GLEventListener {
         }
     }
 
-    /** Computes the normal vector of a triangle (right-hand rule) */
+    
     private float[] computeNormal(float[] v1, float[] v2, float[] v3) {
         float[] u = new float[]{v2[0] - v1[0], v2[1] - v1[1], v2[2] - v1[2]};
         float[] v = new float[]{v3[0] - v1[0], v3[1] - v1[1], v3[2] - v1[2]};
@@ -257,7 +248,7 @@ public class SketchCanvas extends GLJPanel implements GLEventListener {
         return normal;
     }
 
-    /** Forces a redraw */
+    
     public void refresh() {
         repaint();
     }
