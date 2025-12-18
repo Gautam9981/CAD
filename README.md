@@ -249,7 +249,6 @@ Implemented kite creation functionality (sketching + extruding). Feature in inte
 - **Automated Generation:** Pipeline now fully parses Java source code to generate JSON data.
 - **Smart Inference:** Replaced weak/missing Javadoc with intelligent, context-aware descriptions (e.g., `handleLoft` → "Executes the logic for the 'loft' command").
 - **Cleanups:** Fixed regex bugs to remove "garbage" classes and standardized description formatting.
-- **Live Site:** [https://gautam9981.github.io/CAD/](https://gautam9981.github.io/CAD/)
 
 ---
 
