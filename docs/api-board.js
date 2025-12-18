@@ -440,23 +440,24 @@ function inferDescription(method, isConstructor) {
     else if (noun === 'msg' || noun === 'message') enhancedNoun = 'message text';
 
     // Handle specific verbs
+    const appContext = 'In the CAD application, this method contributes to core functionality such as dimension rendering, material management, or UI interaction.';
     if (verb === 'get') {
-        return `Retrieves the ${enhancedNoun}`;
+        return `Retrieves the ${enhancedNoun}. ${appContext}`;
     }
     if (verb === 'set') {
-        return `Sets the ${enhancedNoun}`;
+        return `Sets the ${enhancedNoun}. ${appContext}`;
     }
     if (verb === 'is' || verb === 'has' || verb === 'can') {
-        return `Checks if ${noun ? 'it ' + name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase() : 'condition is true'}`;
+        return `Checks if ${noun ? 'it ' + name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase() : 'condition is true'}. ${appContext}`;
     }
     if (verb === 'add') {
-        return `Adds a new ${noun || 'item'} to the collection`;
+        return `Adds a new ${noun || 'item'} to the collection. ${appContext}`;
     }
     if (verb === 'remove' || verb === 'delete') {
-        return `Removes the specified ${noun || 'item'}`;
+        return `Removes the specified ${noun || 'item'}. ${appContext}`;
     }
     if (verb === 'create' || verb === 'make' || verb === 'build') {
-        return `Constructs and returns a new ${noun || 'object'}`;
+        return `Constructs and returns a new ${noun || 'object'}. ${appContext}`;
     }
     if (verb === 'compute' || verb === 'calculate') {
         return `Calculates the ${noun || 'value'} based on current state`;
