@@ -30,7 +30,7 @@ async function loadAPIData() {
         }
     } catch (error) {
         console.error('Error loading API data:', error);
-        showError('Failed to load API documentation. Please ensure api-data.json exists.');
+        showError(`Failed to load API documentation: ${error.message}`);
     }
 }
 
@@ -219,8 +219,8 @@ function createClassSection(fullClassName, classInfo) {
     // Constructors
     if (classInfo.constructors.length > 0) {
         // Filter: Keep only constructors with the maximum number of parameters
-        const maxParams = Math.max(...classInfo.constructors.map(c => c.parameters.length));
-        const filteredConstructors = classInfo.constructors.filter(c => c.parameters.length === maxParams);
+        const maxParams = Math.max(...classInfo.constructors.map(c => c.parameters ? c.parameters.length : 0));
+        const filteredConstructors = classInfo.constructors.filter(c => (c.parameters ? c.parameters.length : 0) === maxParams);
 
         const constructorsSection = document.createElement('div');
         constructorsSection.className = 'methods-section';
