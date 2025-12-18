@@ -48,16 +48,7 @@ public class MassProperties {
         return props;
     }
 
-    /**
-     * Calculate mass properties for primitive shapes (cube, sphere) using
-     * analytical formulas.
-     * 
-     * @param shape      The primitive shape type
-     * @param param      Size (for cube) or radius (for sphere) in current units
-     * @param material   Material definition
-     * @param unitSystem Unit system for parameter conversion
-     * @return MassProperties object or null if invalid
-     */
+    
     public static MassProperties calculateFromPrimitive(Geometry.Shape shape, float param, Material material,
             UnitSystem unitSystem) {
         if (shape == null || material == null || param <= 0) {

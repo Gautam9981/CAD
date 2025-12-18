@@ -43,11 +43,7 @@ public class Geometry {
         return param;
     }
 
-    /**
-     * Get the current cube subdivision count.
-     * 
-     * @return Number of divisions per edge
-     */
+    
     public static int getCubeDivisions() {
         return cubeDivisions;
     }

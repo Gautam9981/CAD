@@ -1263,6 +1263,16 @@
         "returns": ""
       },
       {
+        "name": "getCubeDivisions",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "int",
+        "parameters": [],
+        "signature": "public static int getCubeDivisions()",
+        "description": "Get the current cube subdivision count.",
+        "returns": "Number of divisions per edge"
+      },
+      {
         "name": "getLoadedStlTriangles",
         "visibility": "public",
         "static": "static",
@@ -7003,6 +7013,21 @@
           }
         ],
         "signature": "public MassPropertiesDialog(Sketch sketch)"
+      },
+      {
+        "name": "MassPropertiesDialog",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "Sketch",
+            "name": "sketch"
+          },
+          {
+            "type": "MassProperties",
+            "name": "props"
+          }
+        ],
+        "signature": "public MassPropertiesDialog(Sketch sketch, MassProperties props)"
       }
     ],
     "methods": [
@@ -7013,6 +7038,16 @@
         "returnType": "void",
         "parameters": [],
         "signature": "private void calculate()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "displayPrimitiveResults",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void displayPrimitiveResults()",
         "description": "",
         "returns": ""
       },

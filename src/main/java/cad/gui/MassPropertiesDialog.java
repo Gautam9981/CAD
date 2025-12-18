@@ -97,10 +97,7 @@ public class MassPropertiesDialog extends Dialog<ButtonType> {
         Platform.runLater(this::calculate);
     }
 
-    /**
-     * Constructor for primitives with precomputed mass properties.
-     * Hides material/thickness inputs since they're not relevant.
-     */
+    
     public MassPropertiesDialog(Sketch sketch, MassProperties props) {
         this.sketch = sketch;
         this.precomputedProps = props;
