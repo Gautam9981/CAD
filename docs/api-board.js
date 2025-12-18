@@ -331,9 +331,13 @@ function getDescription(method, isConstructor) {
             (desc.length < 25 && desc.match(/^(get|set|gets|sets|is|has)\s+(the\s+)?\w+\.?$/i)) ||
             desc.toLowerCase().startsWith("handle " + method.name.replace('handle', '').toLowerCase()) ||
             desc.toLowerCase().startsWith("notify " + method.name.replace('notify', '').toLowerCase()) ||
-            desc.toLowerCase().startsWith("represents") || // Keep this from previous check
+            desc.toLowerCase().startsWith("represents") ||
             desc.toLowerCase().trim() === "standard " + method.name.toLowerCase() ||
-            desc.toLowerCase().includes("instance of")) {
+            desc.toLowerCase().includes("instance of") ||
+            // New trivial overrides
+            desc.toLowerCase().startsWith(verb + " " + noun.toLowerCase()) || // e.g., "Init component"
+            (words.length === 1 && desc.toLowerCase().replace('.', '') === name.toLowerCase()) // e.g. "reset" -> "Reset."
+        ) {
             desc = inferred;
         }
     }
@@ -467,6 +471,33 @@ function inferDescription(method, isConstructor) {
     }
     if (verb === 'convert') {
         return `Converts the object to ${noun || 'another format'}`;
+    }
+    if (verb === 'edit' || verb === 'modify' || verb === 'change') {
+        return `Modifies the properties or configuration of the ${noun || 'object'}`;
+    }
+    if (verb === 'init' || verb === 'initialize') {
+        return `Initializes the ${noun || 'component'} and prepares it for use`;
+    }
+    if (verb === 'reset' || verb === 'clear') {
+        return `Resets the ${noun || 'state'} to its default values`;
+    }
+    if (verb === 'check' || verb === 'validate' || verb === 'verify') {
+        return `Validates the ${noun || 'condition'} and returns the result`;
+    }
+    if (verb === 'refresh' || verb === 'reload') {
+        return `Refreshes the ${noun || 'view'} to reflect current state`;
+    }
+    if (verb === 'select' || verb === 'deselect') {
+        return `Updates the selection state of the ${noun || 'item'}`;
+    }
+    if (verb === 'toggle') {
+        return `Toggles the state of the ${noun || 'option'}`;
+    }
+    if (verb === 'apply') {
+        return `Applies the ${noun || 'configuration'} changes`;
+    }
+    if (verb === 'process') {
+        return `Processes the provided ${noun || 'data'}`;
     }
 
     // exact method name checks

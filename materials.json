@@ -1,0 +1,1477 @@
+[
+  {
+    "name": "Aluminum 1100",
+    "density": 2710.0,
+    "category": "Metals",
+    "description": "99% pure aluminum, excellent corrosion resistance and workability",
+    "ambientColor": [
+      0.25,
+      0.25,
+      0.25,
+      1.0
+    ],
+    "diffuseColor": [
+      0.65,
+      0.65,
+      0.65,
+      1.0
+    ],
+    "specularColor": [
+      0.8,
+      0.8,
+      0.8,
+      1.0
+    ],
+    "shininess": 90.0
+  },
+  {
+    "name": "Aluminum 2024",
+    "density": 2780.0,
+    "category": "Metals",
+    "description": "High-strength aluminum alloy used in aircraft structures",
+    "ambientColor": [
+      0.25,
+      0.25,
+      0.25,
+      1.0
+    ],
+    "diffuseColor": [
+      0.65,
+      0.65,
+      0.65,
+      1.0
+    ],
+    "specularColor": [
+      0.8,
+      0.8,
+      0.8,
+      1.0
+    ],
+    "shininess": 90.0
+  },
+  {
+    "name": "Aluminum 6061",
+    "density": 2700.0,
+    "category": "Metals",
+    "description": "Versatile structural aluminum alloy, excellent machinability",
+    "ambientColor": [
+      0.25,
+      0.25,
+      0.25,
+      1.0
+    ],
+    "diffuseColor": [
+      0.65,
+      0.65,
+      0.65,
+      1.0
+    ],
+    "specularColor": [
+      0.8,
+      0.8,
+      0.8,
+      1.0
+    ],
+    "shininess": 90.0
+  },
+  {
+    "name": "Aluminum 7075",
+    "density": 2810.0,
+    "category": "Metals",
+    "description": "Very high strength aluminum alloy, aerospace applications",
+    "ambientColor": [
+      0.25,
+      0.25,
+      0.25,
+      1.0
+    ],
+    "diffuseColor": [
+      0.65,
+      0.65,
+      0.65,
+      1.0
+    ],
+    "specularColor": [
+      0.8,
+      0.8,
+      0.8,
+      1.0
+    ],
+    "shininess": 90.0
+  },
+  {
+    "name": "Steel 1020",
+    "density": 7850.0,
+    "category": "Metals",
+    "description": "Low carbon steel, general purpose structural applications",
+    "ambientColor": [
+      0.2,
+      0.2,
+      0.2,
+      1.0
+    ],
+    "diffuseColor": [
+      0.5,
+      0.5,
+      0.5,
+      1.0
+    ],
+    "specularColor": [
+      0.75,
+      0.75,
+      0.75,
+      1.0
+    ],
+    "shininess": 85.0
+  },
+  {
+    "name": "Steel 4140",
+    "density": 7850.0,
+    "category": "Metals",
+    "description": "Chromium-molybdenum alloy steel, high strength and toughness",
+    "ambientColor": [
+      0.2,
+      0.2,
+      0.2,
+      1.0
+    ],
+    "diffuseColor": [
+      0.5,
+      0.5,
+      0.5,
+      1.0
+    ],
+    "specularColor": [
+      0.75,
+      0.75,
+      0.75,
+      1.0
+    ],
+    "shininess": 85.0
+  },
+  {
+    "name": "Stainless Steel 304",
+    "density": 8000.0,
+    "category": "Metals",
+    "description": "Austenitic stainless steel, excellent corrosion resistance",
+    "ambientColor": [
+      0.28,
+      0.28,
+      0.28,
+      1.0
+    ],
+    "diffuseColor": [
+      0.7,
+      0.7,
+      0.7,
+      1.0
+    ],
+    "specularColor": [
+      0.85,
+      0.85,
+      0.85,
+      1.0
+    ],
+    "shininess": 95.0
+  },
+  {
+    "name": "Stainless Steel 316",
+    "density": 8000.0,
+    "category": "Metals",
+    "description": "Marine grade stainless steel, superior corrosion resistance",
+    "ambientColor": [
+      0.28,
+      0.28,
+      0.28,
+      1.0
+    ],
+    "diffuseColor": [
+      0.7,
+      0.7,
+      0.7,
+      1.0
+    ],
+    "specularColor": [
+      0.85,
+      0.85,
+      0.85,
+      1.0
+    ],
+    "shininess": 95.0
+  },
+  {
+    "name": "Tool Steel A2",
+    "density": 7860.0,
+    "category": "Metals",
+    "description": "Air-hardening tool steel, good toughness and machinability",
+    "ambientColor": [
+      0.2,
+      0.2,
+      0.2,
+      1.0
+    ],
+    "diffuseColor": [
+      0.5,
+      0.5,
+      0.5,
+      1.0
+    ],
+    "specularColor": [
+      0.75,
+      0.75,
+      0.75,
+      1.0
+    ],
+    "shininess": 85.0
+  },
+  {
+    "name": "Titanium Ti-6Al-4V",
+    "density": 4430.0,
+    "category": "Metals",
+    "description": "Grade 5 titanium, aerospace standard, excellent strength-to-weight",
+    "ambientColor": [
+      0.18,
+      0.18,
+      0.2,
+      1.0
+    ],
+    "diffuseColor": [
+      0.45,
+      0.45,
+      0.5,
+      1.0
+    ],
+    "specularColor": [
+      0.7,
+      0.7,
+      0.75,
+      1.0
+    ],
+    "shininess": 80.0
+  },
+  {
+    "name": "Titanium Grade 2",
+    "density": 4510.0,
+    "category": "Metals",
+    "description": "Commercially pure titanium, good corrosion resistance",
+    "ambientColor": [
+      0.18,
+      0.18,
+      0.2,
+      1.0
+    ],
+    "diffuseColor": [
+      0.45,
+      0.45,
+      0.5,
+      1.0
+    ],
+    "specularColor": [
+      0.7,
+      0.7,
+      0.75,
+      1.0
+    ],
+    "shininess": 80.0
+  },
+  {
+    "name": "Copper",
+    "density": 8960.0,
+    "category": "Metals",
+    "description": "Pure copper, excellent electrical and thermal conductivity",
+    "ambientColor": [
+      0.3,
+      0.15,
+      0.1,
+      1.0
+    ],
+    "diffuseColor": [
+      0.7,
+      0.4,
+      0.25,
+      1.0
+    ],
+    "specularColor": [
+      0.8,
+      0.6,
+      0.5,
+      1.0
+    ],
+    "shininess": 75.0
+  },
+  {
+    "name": "Brass (60/40)",
+    "density": 8500.0,
+    "category": "Metals",
+    "description": "60% copper, 40% zinc, good machinability and corrosion resistance",
+    "ambientColor": [
+      0.3,
+      0.25,
+      0.1,
+      1.0
+    ],
+    "diffuseColor": [
+      0.7,
+      0.6,
+      0.3,
+      1.0
+    ],
+    "specularColor": [
+      0.85,
+      0.75,
+      0.5,
+      1.0
+    ],
+    "shininess": 70.0
+  },
+  {
+    "name": "Bronze",
+    "density": 8800.0,
+    "category": "Metals",
+    "description": "Copper-tin alloy, wear resistant, marine applications",
+    "ambientColor": [
+      0.28,
+      0.18,
+      0.1,
+      1.0
+    ],
+    "diffuseColor": [
+      0.65,
+      0.45,
+      0.3,
+      1.0
+    ],
+    "specularColor": [
+      0.75,
+      0.55,
+      0.4,
+      1.0
+    ],
+    "shininess": 65.0
+  },
+  {
+    "name": "Magnesium AZ31B",
+    "density": 1770.0,
+    "category": "Metals",
+    "description": "Lightweight structural magnesium alloy",
+    "ambientColor": [
+      0.28,
+      0.28,
+      0.28,
+      1.0
+    ],
+    "diffuseColor": [
+      0.68,
+      0.68,
+      0.68,
+      1.0
+    ],
+    "specularColor": [
+      0.8,
+      0.8,
+      0.8,
+      1.0
+    ],
+    "shininess": 85.0
+  },
+  {
+    "name": "Zinc",
+    "density": 7140.0,
+    "category": "Metals",
+    "description": "Pure zinc, die casting applications",
+    "ambientColor": [
+      0.22,
+      0.24,
+      0.26,
+      1.0
+    ],
+    "diffuseColor": [
+      0.55,
+      0.6,
+      0.65,
+      1.0
+    ],
+    "specularColor": [
+      0.7,
+      0.75,
+      0.8,
+      1.0
+    ],
+    "shininess": 70.0
+  },
+  {
+    "name": "Lead",
+    "density": 11340.0,
+    "category": "Metals",
+    "description": "Dense metal, radiation shielding, weights",
+    "ambientColor": [
+      0.15,
+      0.15,
+      0.18,
+      1.0
+    ],
+    "diffuseColor": [
+      0.35,
+      0.35,
+      0.4,
+      1.0
+    ],
+    "specularColor": [
+      0.25,
+      0.25,
+      0.3,
+      1.0
+    ],
+    "shininess": 25.0
+  },
+  {
+    "name": "Nickel 200",
+    "density": 8890.0,
+    "category": "Metals",
+    "description": "Commercially pure nickel, excellent corrosion resistance",
+    "ambientColor": [
+      0.25,
+      0.25,
+      0.25,
+      1.0
+    ],
+    "diffuseColor": [
+      0.62,
+      0.62,
+      0.62,
+      1.0
+    ],
+    "specularColor": [
+      0.78,
+      0.78,
+      0.78,
+      1.0
+    ],
+    "shininess": 88.0
+  },
+  {
+    "name": "ABS",
+    "density": 1050.0,
+    "category": "Plastics",
+    "description": "Acrylonitrile Butadiene Styrene, tough impact-resistant plastic",
+    "ambientColor": [
+      0.25,
+      0.22,
+      0.18,
+      1.0
+    ],
+    "diffuseColor": [
+      0.75,
+      0.7,
+      0.6,
+      1.0
+    ],
+    "specularColor": [
+      0.35,
+      0.35,
+      0.35,
+      1.0
+    ],
+    "shininess": 25.0
+  },
+  {
+    "name": "PLA",
+    "density": 1240.0,
+    "category": "Plastics",
+    "description": "Polylactic Acid, biodegradable, common 3D printing filament",
+    "ambientColor": [
+      0.3,
+      0.3,
+      0.3,
+      1.0
+    ],
+    "diffuseColor": [
+      0.85,
+      0.85,
+      0.85,
+      1.0
+    ],
+    "specularColor": [
+      0.4,
+      0.4,
+      0.4,
+      1.0
+    ],
+    "shininess": 30.0
+  },
+  {
+    "name": "PETG",
+    "density": 1270.0,
+    "category": "Plastics",
+    "description": "Glycol-modified PET, tough, clear, chemical resistant",
+    "ambientColor": [
+      0.28,
+      0.3,
+      0.32,
+      0.95
+    ],
+    "diffuseColor": [
+      0.75,
+      0.8,
+      0.85,
+      0.95
+    ],
+    "specularColor": [
+      0.5,
+      0.5,
+      0.5,
+      0.95
+    ],
+    "shininess": 40.0
+  },
+  {
+    "name": "Nylon 6",
+    "density": 1140.0,
+    "category": "Plastics",
+    "description": "Polyamide, high strength, wear resistant",
+    "ambientColor": [
+      0.3,
+      0.3,
+      0.28,
+      1.0
+    ],
+    "diffuseColor": [
+      0.8,
+      0.8,
+      0.75,
+      1.0
+    ],
+    "specularColor": [
+      0.35,
+      0.35,
+      0.35,
+      1.0
+    ],
+    "shininess": 28.0
+  },
+  {
+    "name": "Nylon 66",
+    "density": 1150.0,
+    "category": "Plastics",
+    "description": "Engineering polyamide, higher melting point than Nylon 6",
+    "ambientColor": [
+      0.3,
+      0.3,
+      0.28,
+      1.0
+    ],
+    "diffuseColor": [
+      0.8,
+      0.8,
+      0.75,
+      1.0
+    ],
+    "specularColor": [
+      0.35,
+      0.35,
+      0.35,
+      1.0
+    ],
+    "shininess": 28.0
+  },
+  {
+    "name": "Polycarbonate",
+    "density": 1200.0,
+    "category": "Plastics",
+    "description": "PC, impact-resistant transparent thermoplastic",
+    "ambientColor": [
+      0.25,
+      0.27,
+      0.3,
+      0.9
+    ],
+    "diffuseColor": [
+      0.7,
+      0.75,
+      0.8,
+      0.9
+    ],
+    "specularColor": [
+      0.6,
+      0.6,
+      0.6,
+      0.9
+    ],
+    "shininess": 50.0
+  },
+  {
+    "name": "Polypropylene",
+    "density": 900.0,
+    "category": "Plastics",
+    "description": "PP, lightweight, chemical resistant, flexible",
+    "ambientColor": [
+      0.28,
+      0.28,
+      0.3,
+      1.0
+    ],
+    "diffuseColor": [
+      0.75,
+      0.75,
+      0.8,
+      1.0
+    ],
+    "specularColor": [
+      0.25,
+      0.25,
+      0.25,
+      1.0
+    ],
+    "shininess": 18.0
+  },
+  {
+    "name": "Polyethylene HD",
+    "density": 960.0,
+    "category": "Plastics",
+    "description": "High-density polyethylene, rigid, chemical resistant",
+    "ambientColor": [
+      0.25,
+      0.25,
+      0.25,
+      1.0
+    ],
+    "diffuseColor": [
+      0.7,
+      0.7,
+      0.7,
+      1.0
+    ],
+    "specularColor": [
+      0.2,
+      0.2,
+      0.2,
+      1.0
+    ],
+    "shininess": 15.0
+  },
+  {
+    "name": "Polyethylene LD",
+    "density": 920.0,
+    "category": "Plastics",
+    "description": "Low-density polyethylene, flexible film applications",
+    "ambientColor": [
+      0.25,
+      0.25,
+      0.25,
+      1.0
+    ],
+    "diffuseColor": [
+      0.7,
+      0.7,
+      0.7,
+      1.0
+    ],
+    "specularColor": [
+      0.15,
+      0.15,
+      0.15,
+      1.0
+    ],
+    "shininess": 10.0
+  },
+  {
+    "name": "PVC Rigid",
+    "density": 1400.0,
+    "category": "Plastics",
+    "description": "Polyvinyl chloride, pipes, construction applications",
+    "ambientColor": [
+      0.22,
+      0.22,
+      0.22,
+      1.0
+    ],
+    "diffuseColor": [
+      0.65,
+      0.65,
+      0.65,
+      1.0
+    ],
+    "specularColor": [
+      0.25,
+      0.25,
+      0.25,
+      1.0
+    ],
+    "shininess": 22.0
+  },
+  {
+    "name": "Acrylic (PMMA)",
+    "density": 1180.0,
+    "category": "Plastics",
+    "description": "Polymethyl methacrylate, transparent, weather resistant",
+    "ambientColor": [
+      0.3,
+      0.3,
+      0.32,
+      0.9
+    ],
+    "diffuseColor": [
+      0.8,
+      0.8,
+      0.85,
+      0.9
+    ],
+    "specularColor": [
+      0.6,
+      0.6,
+      0.6,
+      0.9
+    ],
+    "shininess": 60.0
+  },
+  {
+    "name": "Polystyrene",
+    "density": 1050.0,
+    "category": "Plastics",
+    "description": "PS, rigid transparent plastic, disposable applications",
+    "ambientColor": [
+      0.28,
+      0.28,
+      0.3,
+      0.95
+    ],
+    "diffuseColor": [
+      0.75,
+      0.75,
+      0.8,
+      0.95
+    ],
+    "specularColor": [
+      0.5,
+      0.5,
+      0.5,
+      0.95
+    ],
+    "shininess": 45.0
+  },
+  {
+    "name": "TPU",
+    "density": 1200.0,
+    "category": "Plastics",
+    "description": "Thermoplastic polyurethane, flexible, abrasion resistant",
+    "ambientColor": [
+      0.18,
+      0.18,
+      0.2,
+      1.0
+    ],
+    "diffuseColor": [
+      0.5,
+      0.5,
+      0.55,
+      1.0
+    ],
+    "specularColor": [
+      0.2,
+      0.2,
+      0.2,
+      1.0
+    ],
+    "shininess": 12.0
+  },
+  {
+    "name": "PEEK",
+    "density": 1320.0,
+    "category": "Plastics",
+    "description": "Polyether ether ketone, high-performance engineering plastic",
+    "ambientColor": [
+      0.22,
+      0.2,
+      0.18,
+      1.0
+    ],
+    "diffuseColor": [
+      0.6,
+      0.55,
+      0.5,
+      1.0
+    ],
+    "specularColor": [
+      0.3,
+      0.3,
+      0.3,
+      1.0
+    ],
+    "shininess": 35.0
+  },
+  {
+    "name": "Delrin (Acetal)",
+    "density": 1420.0,
+    "category": "Plastics",
+    "description": "POM, excellent dimensional stability and machinability",
+    "ambientColor": [
+      0.3,
+      0.3,
+      0.3,
+      1.0
+    ],
+    "diffuseColor": [
+      0.82,
+      0.82,
+      0.82,
+      1.0
+    ],
+    "specularColor": [
+      0.35,
+      0.35,
+      0.35,
+      1.0
+    ],
+    "shininess": 30.0
+  },
+  {
+    "name": "Carbon Fiber Composite",
+    "density": 1600.0,
+    "category": "Composites",
+    "description": "Carbon fiber reinforced polymer, very high strength-to-weight",
+    "ambientColor": [
+      0.05,
+      0.05,
+      0.05,
+      1.0
+    ],
+    "diffuseColor": [
+      0.15,
+      0.15,
+      0.15,
+      1.0
+    ],
+    "specularColor": [
+      0.4,
+      0.4,
+      0.4,
+      1.0
+    ],
+    "shininess": 40.0
+  },
+  {
+    "name": "Fiberglass (GFRP)",
+    "density": 1900.0,
+    "category": "Composites",
+    "description": "Glass fiber reinforced plastic, good strength, corrosion resistant",
+    "ambientColor": [
+      0.3,
+      0.3,
+      0.28,
+      1.0
+    ],
+    "diffuseColor": [
+      0.8,
+      0.8,
+      0.75,
+      1.0
+    ],
+    "specularColor": [
+      0.25,
+      0.25,
+      0.25,
+      1.0
+    ],
+    "shininess": 15.0
+  },
+  {
+    "name": "G-10/FR4",
+    "density": 1850.0,
+    "category": "Composites",
+    "description": "Glass-epoxy laminate, electrical insulation, PCB substrate",
+    "ambientColor": [
+      0.18,
+      0.25,
+      0.15,
+      1.0
+    ],
+    "diffuseColor": [
+      0.45,
+      0.6,
+      0.4,
+      1.0
+    ],
+    "specularColor": [
+      0.2,
+      0.2,
+      0.2,
+      1.0
+    ],
+    "shininess": 20.0
+  },
+  {
+    "name": "Oak",
+    "density": 760.0,
+    "category": "Wood",
+    "description": "Hardwood, strong and durable, furniture and construction",
+    "ambientColor": [
+      0.25,
+      0.15,
+      0.08,
+      1.0
+    ],
+    "diffuseColor": [
+      0.6,
+      0.4,
+      0.2,
+      1.0
+    ],
+    "specularColor": [
+      0.15,
+      0.1,
+      0.05,
+      1.0
+    ],
+    "shininess": 8.0
+  },
+  {
+    "name": "Maple",
+    "density": 705.0,
+    "category": "Wood",
+    "description": "Hardwood, fine grain, furniture and flooring",
+    "ambientColor": [
+      0.3,
+      0.25,
+      0.18,
+      1.0
+    ],
+    "diffuseColor": [
+      0.7,
+      0.6,
+      0.45,
+      1.0
+    ],
+    "specularColor": [
+      0.12,
+      0.1,
+      0.06,
+      1.0
+    ],
+    "shininess": 7.0
+  },
+  {
+    "name": "Pine",
+    "density": 550.0,
+    "category": "Wood",
+    "description": "Softwood, lightweight, construction and furniture",
+    "ambientColor": [
+      0.3,
+      0.25,
+      0.15,
+      1.0
+    ],
+    "diffuseColor": [
+      0.7,
+      0.6,
+      0.4,
+      1.0
+    ],
+    "specularColor": [
+      0.12,
+      0.1,
+      0.05,
+      1.0
+    ],
+    "shininess": 6.0
+  },
+  {
+    "name": "Birch",
+    "density": 670.0,
+    "category": "Wood",
+    "description": "Hardwood, fine grain, plywood and furniture",
+    "ambientColor": [
+      0.32,
+      0.28,
+      0.2,
+      1.0
+    ],
+    "diffuseColor": [
+      0.75,
+      0.65,
+      0.5,
+      1.0
+    ],
+    "specularColor": [
+      0.1,
+      0.08,
+      0.05,
+      1.0
+    ],
+    "shininess": 6.0
+  },
+  {
+    "name": "Walnut",
+    "density": 660.0,
+    "category": "Wood",
+    "description": "Hardwood, rich color, high-end furniture",
+    "ambientColor": [
+      0.2,
+      0.12,
+      0.08,
+      1.0
+    ],
+    "diffuseColor": [
+      0.5,
+      0.3,
+      0.2,
+      1.0
+    ],
+    "specularColor": [
+      0.1,
+      0.08,
+      0.05,
+      1.0
+    ],
+    "shininess": 5.0
+  },
+  {
+    "name": "Plywood",
+    "density": 600.0,
+    "category": "Wood",
+    "description": "Engineered wood product, layered veneers",
+    "ambientColor": [
+      0.28,
+      0.22,
+      0.16,
+      1.0
+    ],
+    "diffuseColor": [
+      0.65,
+      0.55,
+      0.4,
+      1.0
+    ],
+    "specularColor": [
+      0.08,
+      0.07,
+      0.05,
+      1.0
+    ],
+    "shininess": 4.0
+  },
+  {
+    "name": "MDF",
+    "density": 750.0,
+    "category": "Wood",
+    "description": "Medium-density fiberboard, smooth surface for finishing",
+    "ambientColor": [
+      0.25,
+      0.2,
+      0.15,
+      1.0
+    ],
+    "diffuseColor": [
+      0.6,
+      0.5,
+      0.38,
+      1.0
+    ],
+    "specularColor": [
+      0.05,
+      0.05,
+      0.05,
+      1.0
+    ],
+    "shininess": 3.0
+  },
+  {
+    "name": "Glass (Soda-lime)",
+    "density": 2500.0,
+    "category": "Ceramics",
+    "description": "Standard window glass, bottles, containers",
+    "ambientColor": [
+      0.25,
+      0.28,
+      0.3,
+      0.7
+    ],
+    "diffuseColor": [
+      0.7,
+      0.75,
+      0.8,
+      0.7
+    ],
+    "specularColor": [
+      0.9,
+      0.9,
+      0.9,
+      0.7
+    ],
+    "shininess": 100.0
+  },
+  {
+    "name": "Glass (Borosilicate)",
+    "density": 2230.0,
+    "category": "Ceramics",
+    "description": "Pyrex, laboratory glassware, heat resistant",
+    "ambientColor": [
+      0.25,
+      0.28,
+      0.3,
+      0.7
+    ],
+    "diffuseColor": [
+      0.7,
+      0.75,
+      0.8,
+      0.7
+    ],
+    "specularColor": [
+      0.9,
+      0.9,
+      0.9,
+      0.7
+    ],
+    "shininess": 100.0
+  },
+  {
+    "name": "Alumina Ceramic",
+    "density": 3900.0,
+    "category": "Ceramics",
+    "description": "Aluminum oxide, high hardness, electrical insulation",
+    "ambientColor": [
+      0.3,
+      0.3,
+      0.28,
+      1.0
+    ],
+    "diffuseColor": [
+      0.85,
+      0.85,
+      0.8,
+      1.0
+    ],
+    "specularColor": [
+      0.6,
+      0.6,
+      0.6,
+      1.0
+    ],
+    "shininess": 70.0
+  },
+  {
+    "name": "Silicon Carbide",
+    "density": 3100.0,
+    "category": "Ceramics",
+    "description": "Very hard ceramic, abrasives, high temperature applications",
+    "ambientColor": [
+      0.12,
+      0.12,
+      0.12,
+      1.0
+    ],
+    "diffuseColor": [
+      0.3,
+      0.3,
+      0.3,
+      1.0
+    ],
+    "specularColor": [
+      0.5,
+      0.5,
+      0.5,
+      1.0
+    ],
+    "shininess": 80.0
+  },
+  {
+    "name": "Porcelain",
+    "density": 2400.0,
+    "category": "Ceramics",
+    "description": "Dense ceramic, electrical insulation, decorative",
+    "ambientColor": [
+      0.32,
+      0.32,
+      0.3,
+      1.0
+    ],
+    "diffuseColor": [
+      0.9,
+      0.9,
+      0.85,
+      1.0
+    ],
+    "specularColor": [
+      0.65,
+      0.65,
+      0.65,
+      1.0
+    ],
+    "shininess": 75.0
+  },
+  {
+    "name": "Concrete",
+    "density": 2400.0,
+    "category": "Construction",
+    "description": "Standard concrete mix, structural applications",
+    "ambientColor": [
+      0.2,
+      0.2,
+      0.2,
+      1.0
+    ],
+    "diffuseColor": [
+      0.5,
+      0.5,
+      0.5,
+      1.0
+    ],
+    "specularColor": [
+      0.05,
+      0.05,
+      0.05,
+      1.0
+    ],
+    "shininess": 3.0
+  },
+  {
+    "name": "Concrete (Lightweight)",
+    "density": 1800.0,
+    "category": "Construction",
+    "description": "Aerated or aggregate concrete, non-structural",
+    "ambientColor": [
+      0.22,
+      0.22,
+      0.22,
+      1.0
+    ],
+    "diffuseColor": [
+      0.55,
+      0.55,
+      0.55,
+      1.0
+    ],
+    "specularColor": [
+      0.03,
+      0.03,
+      0.03,
+      1.0
+    ],
+    "shininess": 2.0
+  },
+  {
+    "name": "Brick",
+    "density": 1920.0,
+    "category": "Construction",
+    "description": "Clay brick, construction and masonry",
+    "ambientColor": [
+      0.25,
+      0.15,
+      0.1,
+      1.0
+    ],
+    "diffuseColor": [
+      0.6,
+      0.35,
+      0.25,
+      1.0
+    ],
+    "specularColor": [
+      0.08,
+      0.05,
+      0.05,
+      1.0
+    ],
+    "shininess": 4.0
+  },
+  {
+    "name": "Granite",
+    "density": 2750.0,
+    "category": "Construction",
+    "description": "Natural stone, countertops, monuments",
+    "ambientColor": [
+      0.22,
+      0.2,
+      0.18,
+      1.0
+    ],
+    "diffuseColor": [
+      0.55,
+      0.5,
+      0.45,
+      1.0
+    ],
+    "specularColor": [
+      0.1,
+      0.1,
+      0.1,
+      1.0
+    ],
+    "shininess": 5.0
+  },
+  {
+    "name": "Marble",
+    "density": 2700.0,
+    "category": "Construction",
+    "description": "Natural stone, decorative applications",
+    "ambientColor": [
+      0.28,
+      0.28,
+      0.3,
+      1.0
+    ],
+    "diffuseColor": [
+      0.85,
+      0.85,
+      0.9,
+      1.0
+    ],
+    "specularColor": [
+      0.4,
+      0.4,
+      0.4,
+      1.0
+    ],
+    "shininess": 35.0
+  },
+  {
+    "name": "Natural Rubber",
+    "density": 920.0,
+    "category": "Elastomers",
+    "description": "Elastic polymer, seals, tires",
+    "ambientColor": [
+      0.08,
+      0.08,
+      0.08,
+      1.0
+    ],
+    "diffuseColor": [
+      0.2,
+      0.2,
+      0.2,
+      1.0
+    ],
+    "specularColor": [
+      0.05,
+      0.05,
+      0.05,
+      1.0
+    ],
+    "shininess": 2.0
+  },
+  {
+    "name": "Neoprene",
+    "density": 1250.0,
+    "category": "Elastomers",
+    "description": "Synthetic rubber, oil and weather resistant",
+    "ambientColor": [
+      0.1,
+      0.1,
+      0.1,
+      1.0
+    ],
+    "diffuseColor": [
+      0.25,
+      0.25,
+      0.25,
+      1.0
+    ],
+    "specularColor": [
+      0.03,
+      0.03,
+      0.03,
+      1.0
+    ],
+    "shininess": 1.5
+  },
+  {
+    "name": "Silicone Rubber",
+    "density": 1100.0,
+    "category": "Elastomers",
+    "description": "High temperature resistant elastomer",
+    "ambientColor": [
+      0.1,
+      0.1,
+      0.1,
+      1.0
+    ],
+    "diffuseColor": [
+      0.28,
+      0.28,
+      0.28,
+      1.0
+    ],
+    "specularColor": [
+      0.05,
+      0.05,
+      0.05,
+      1.0
+    ],
+    "shininess": 2.0
+  },
+  {
+    "name": "Graphite",
+    "density": 2260.0,
+    "category": "Other",
+    "description": "Crystalline carbon, lubricant, electrodes",
+    "ambientColor": [
+      0.08,
+      0.08,
+      0.08,
+      1.0
+    ],
+    "diffuseColor": [
+      0.18,
+      0.18,
+      0.18,
+      1.0
+    ],
+    "specularColor": [
+      0.25,
+      0.25,
+      0.25,
+      1.0
+    ],
+    "shininess": 15.0
+  },
+  {
+    "name": "Teflon (PTFE)",
+    "density": 2200.0,
+    "category": "Other",
+    "description": "Polytetrafluoroethylene, very low friction, chemical resistant",
+    "ambientColor": [
+      0.28,
+      0.28,
+      0.3,
+      1.0
+    ],
+    "diffuseColor": [
+      0.75,
+      0.75,
+      0.8,
+      1.0
+    ],
+    "specularColor": [
+      0.15,
+      0.15,
+      0.15,
+      1.0
+    ],
+    "shininess": 8.0
+  },
+  {
+    "name": "Foam (Polyurethane)",
+    "density": 32.0,
+    "category": "Other",
+    "description": "Lightweight cellular foam, cushioning, insulation",
+    "ambientColor": [
+      0.3,
+      0.3,
+      0.28,
+      1.0
+    ],
+    "diffuseColor": [
+      0.82,
+      0.82,
+      0.75,
+      1.0
+    ],
+    "specularColor": [
+      0.05,
+      0.05,
+      0.05,
+      1.0
+    ],
+    "shininess": 1.0
+  }
+]
