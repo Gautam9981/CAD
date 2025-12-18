@@ -16,7 +16,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyAdapter;
 import javax.swing.SwingUtilities;
 import java.io.IOException;
-
+import cad.core.MassProperties;
 
 public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
 
@@ -39,7 +39,6 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
     private VBOManager vboManager = new VBOManager();
     private boolean vboDirty = true; // Track if VBO needs update
 
-    
     public JOGLCadCanvas(Sketch sketch) {
         // Call the superclass constructor using static helper to configure capabilities
         super(createCapabilities());
@@ -51,7 +50,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
 
         // --- Setup Mouse Listeners for Interaction ---
         addMouseListener(new MouseAdapter() {
-            
+
             @Override
             public void mousePressed(MouseEvent e) {
                 lastMouseX = e.getX();
@@ -59,7 +58,6 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
                 mouseDragging = true; // Start tracking drag
             }
 
-            
             @Override
             public void mouseReleased(MouseEvent e) {
                 mouseDragging = false; // Stop tracking drag
@@ -67,7 +65,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         });
 
         addMouseMotionListener(new MouseMotionAdapter() {
-            
+
             @Override
             public void mouseDragged(MouseEvent e) {
                 if (mouseDragging) {
@@ -92,7 +90,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
 
         // --- Setup Mouse Wheel Listener for Zooming ---
         addMouseWheelListener(e -> {
-            
+
             float notches = e.getWheelRotation(); // Get number of "notches" the wheel was rotated
             zoomZ += notches * 0.5f; // Adjust zoom based on wheel rotation (positive moves away, negative moves
                                      // closer)
@@ -101,7 +99,7 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
 
         // --- Setup Keyboard Listener for View Control ---
         addKeyListener(new KeyAdapter() {
-            
+
             @Override
             public void keyPressed(KeyEvent e) {
                 switch (e.getKeyCode()) {
@@ -129,7 +127,6 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         requestFocusInWindow(); // Requests that this component gain the keyboard focus when it's visible.
     }
 
-    
     private static GLCapabilities createCapabilities() {
         GLCapabilities caps = new GLCapabilities(GLProfile.get("GL2"));
         caps.setSampleBuffers(true);
@@ -137,7 +134,6 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         return caps;
     }
 
-    
     public void setCube(float size, int divisions) {
         // Calls the static method in Geometry to define a cube with the given size and
         // divisions.
@@ -148,7 +144,6 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         show3DModel();
     }
 
-    
     public void setSphere(float radius, int latDiv, int lonDiv) {
         // Calls the static method in Geometry to define a sphere with the given radius
         // and divisions.
@@ -164,7 +159,6 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         show3DModel();
     }
 
-    
     public void loadSTL(String filePath) {
         try {
             // Calls the static method in Geometry to load the STL file data.
@@ -189,20 +183,17 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         }
     }
 
-    
     public void showSketch() {
         show3DModel = false; // Set flag to render 2D sketch
         repaint(); // Request the canvas to redraw itself
     }
 
-    
     public void show3DModel() {
         show3DModel = true; // Set flag to render 3D model
         vboDirty = true; // Mark VBO as dirty (geometry may have changed)
         repaint(); // Request the canvas to redraw itself
     }
 
-    
     @Override
     public void init(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
@@ -236,7 +227,6 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         vboDirty = true;
     }
 
-    
     @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
         GL2 gl = drawable.getGL().getGL2();
@@ -273,7 +263,6 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         gl.glLoadIdentity(); // Reset the modelview matrix
     }
 
-    
     @Override
     public void display(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();
@@ -353,7 +342,6 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
                       // graphics hardware.
     }
 
-    
     private float[] calculateGeometryCenter() {
         // If we have extruded geometry, calculate its center
         if (sketch != null && !sketch.extrudedFaces.isEmpty()) {
@@ -386,7 +374,6 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         return new float[] { 0.0f, 0.0f, 0.0f };
     }
 
-    
     private float calculateGeometrySize() {
         if (sketch != null && !sketch.extrudedFaces.isEmpty()) {
             float minX = Float.MAX_VALUE, maxX = Float.MIN_VALUE;
@@ -419,7 +406,6 @@ public class JOGLCadCanvas extends GLJPanel implements GLEventListener {
         return 50.0f; // Default size for built-in shapes
     }
 
-    
     @Override
     public void dispose(GLAutoDrawable drawable) {
         GL2 gl = drawable.getGL().getGL2();

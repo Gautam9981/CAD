@@ -17,6 +17,8 @@ public class MassPropertiesDialog extends Dialog<ButtonType> {
     private ComboBox<String> materialCombo;
     private TextField thicknessField;
     private TextArea resultsArea;
+    private MassProperties precomputedProps; // For primitives
+    private boolean isPrimitive; // Flag to indicate if using precomputed props
 
     public MassPropertiesDialog(Sketch sketch) {
         this.sketch = sketch;
@@ -95,6 +97,42 @@ public class MassPropertiesDialog extends Dialog<ButtonType> {
         Platform.runLater(this::calculate);
     }
 
+    /**
+     * Constructor for primitives with precomputed mass properties.
+     * Hides material/thickness inputs since they're not relevant.
+     */
+    public MassPropertiesDialog(Sketch sketch, MassProperties props) {
+        this.sketch = sketch;
+        this.precomputedProps = props;
+        this.isPrimitive = true;
+
+        setTitle("Mass Properties (Primitive Shape)");
+        setHeaderText("Mass Properties for " + cad.core.Geometry.getCurrentShape());
+
+        // Create simplified content - just show results
+        VBox content = new VBox(15);
+        content.setPadding(new Insets(20));
+        content.setPrefWidth(450);
+
+        // Results area
+        Label resultsLabel = new Label("Results:");
+        resultsArea = new TextArea();
+        resultsArea.setEditable(false);
+        resultsArea.setPrefRowCount(12);
+        resultsArea.setStyle("-fx-font-family: 'Courier New', monospace;");
+        VBox.setVgrow(resultsArea, Priority.ALWAYS);
+
+        content.getChildren().addAll(
+                resultsLabel,
+                resultsArea);
+
+        getDialogPane().setContent(content);
+        getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+
+        // Display precomputed results immediately
+        Platform.runLater(this::displayPrimitiveResults);
+    }
+
     private void calculate() {
         try {
             // Get material
@@ -164,6 +202,42 @@ public class MassPropertiesDialog extends Dialog<ButtonType> {
         } catch (NumberFormatException ex) {
             showError("Invalid thickness value. Please enter a number.");
         }
+    }
+
+    private void displayPrimitiveResults() {
+        if (precomputedProps == null) {
+            resultsArea.setText("Error: No mass properties available.");
+            return;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        String unit = sketch.getUnitSystem().getAbbreviation();
+
+        sb.append("=".repeat(40)).append("\n");
+        sb.append("MASS PROPERTIES (PRIMITIVE)\n");
+        sb.append("=".repeat(40)).append("\n\n");
+
+        sb.append("Shape Type: ").append(cad.core.Geometry.getCurrentShape()).append("\n");
+        sb.append("Parameter: ").append(String.format("%.2f", cad.core.Geometry.getParam()))
+                .append(" ").append(unit).append("\n\n");
+
+        sb.append("Material\n");
+        sb.append("  Name: ").append(precomputedProps.getMaterial().getName()).append("\n");
+        sb.append("  Density: ").append(String.format("%.1f", precomputedProps.getMaterial().getDensity()))
+                .append(" kg/m³\n");
+        sb.append("  Category: ").append(precomputedProps.getMaterial().getCategory()).append("\n\n");
+
+        sb.append("Geometry\n");
+        sb.append("  Volume: ").append(String.format("%.2f", precomputedProps.getVolume())).append(" mm³\n\n");
+
+        sb.append("Mass\n");
+        sb.append("  Mass: ").append(String.format("%.3f", precomputedProps.getMass())).append(" g\n\n");
+
+        sb.append("Centroid: Origin (0, 0, 0)\n");
+
+        sb.append("\n").append("=".repeat(40));
+
+        resultsArea.setText(sb.toString());
     }
 
     private void showError(String message) {

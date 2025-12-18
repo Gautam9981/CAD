@@ -16,10 +16,8 @@ import com.jogamp.opengl.glu.GLUquadric;
 // GUI import to access sketch data
 import cad.gui.GuiFX;
 
-
 public class Geometry {
 
-    
     public enum Shape {
         NONE,
         CUBE,
@@ -35,30 +33,33 @@ public class Geometry {
     public static int sphereLonDiv = 30; // Sphere longitude divisions
     private static List<float[]> extrudedTriangles = new ArrayList<>(); // Extruded geometry storage
 
-    
     private static List<float[]> loadedStlTriangles = new ArrayList<>();
 
-    
     public static Shape getCurrentShape() {
         return currShape;
     }
 
-    
     public static float getParam() {
         return param;
     }
 
-    
+    /**
+     * Get the current cube subdivision count.
+     * 
+     * @return Number of divisions per edge
+     */
+    public static int getCubeDivisions() {
+        return cubeDivisions;
+    }
+
     public static List<float[]> getLoadedStlTriangles() {
         return loadedStlTriangles;
     }
 
-    
     public static List<float[]> getExtrudedTriangles() {
         return extrudedTriangles;
     }
 
-    
     public static float getModelMaxDimension() {
         List<float[]> trianglesToCheck = null;
 
@@ -120,7 +121,6 @@ public class Geometry {
         return Math.max(Math.max(sizeX, sizeY), sizeZ);
     }
 
-    
     public static List<float[]> loadStl(String filename) throws IOException {
         loadedStlTriangles.clear(); // Clear any previously loaded data
         currShape = Shape.NONE; // Reset shape type while loading
@@ -277,7 +277,6 @@ public class Geometry {
         }
     }
 
-    
     private static void centerModel(float centerX, float centerY, float centerZ) {
         // Translate all vertices by subtracting the center coordinates
         for (float[] triData : loadedStlTriangles) {
@@ -290,7 +289,6 @@ public class Geometry {
         }
     }
 
-    
     public static void createCube(float size, int divisions) {
         if (size < 0.1f || size > 100.0f) {
             throw new IllegalArgumentException("Cube size must be between 0.1 and 100.0");
@@ -317,12 +315,10 @@ public class Geometry {
                 totalTriangles);
     }
 
-    
     public static void createSphere(float radius, int divisions) {
         createSphere(radius, divisions, divisions);
     }
 
-    
     public static void createSphere(float radius, int latDiv, int lonDiv) {
         if (radius < 0.1f || radius > 80.0f) {
             throw new IllegalArgumentException("Sphere radius must be between 0.1 and 80.0");
@@ -341,7 +337,6 @@ public class Geometry {
         System.out.printf("Sphere created with radius %.2f and %dx%d subdivisions%n", radius, latDiv, lonDiv);
     }
 
-    
     private static void generateCubeTriangles(float size, int divisions) {
         loadedStlTriangles.clear(); // Clear any previous data
 
@@ -490,7 +485,6 @@ public class Geometry {
         }
     }
 
-    
     private static void generateSphereTriangles(float radius, int latDiv, int lonDiv) {
         loadedStlTriangles.clear(); // Clear any previous data
 
@@ -537,7 +531,6 @@ public class Geometry {
         }
     }
 
-    
     private static float[] calculateNormal(float x1, float y1, float z1,
             float x2, float y2, float z2,
             float x3, float y3, float z3) {
@@ -561,7 +554,6 @@ public class Geometry {
         return new float[] { nx, ny, nz };
     }
 
-    
     // public static void extrude(Sketch sketch, float height) {
     // if (!sketch.isClosedLoop()) {
     // System.out.println("Sketch must contain at least one closed loop (polygon) to
@@ -584,7 +576,6 @@ public class Geometry {
     // extrudedTriangles.size() + " triangles.");
     // }
 
-    
     // private static void convertFaceToTriangles(Sketch.Face3D face) {
     // List<Sketch.Point3D> vertices = face.getVertices();
     // int numVertices = vertices.size();
@@ -606,7 +597,6 @@ public class Geometry {
     // }
     // }
 
-    
     // private static void addTriangleToExtruded(Sketch.Point3D p1, Sketch.Point3D
     // p2, Sketch.Point3D p3) {
     // // Calculate normal vector using cross product
@@ -630,7 +620,6 @@ public class Geometry {
     // extrudedTriangles.add(triangle);
     // }
 
-    
     private static float[] calculateTriangleNormal(Sketch.Point3D p1, Sketch.Point3D p2, Sketch.Point3D p3) {
         // Edge vectors
         float ex1 = p2.getX() - p1.getX(), ey1 = p2.getY() - p1.getY(), ez1 = p2.getZ() - p1.getZ();
@@ -652,7 +641,6 @@ public class Geometry {
         return new float[] { nx, ny, nz };
     }
 
-    
     public static void saveStl(String filename) throws IOException {
         // Check if we have extruded faces available from GuiFX.sketch
         boolean hasExtrudedGeometry = GuiFX.sketch != null && !GuiFX.sketch.extrudedFaces.isEmpty();
@@ -683,7 +671,6 @@ public class Geometry {
         System.out.println("Saved STL file: " + filename);
     }
 
-    
     private static void writeLoadedStlTriangles(PrintWriter out) {
         for (float[] triData : loadedStlTriangles) {
             // triData format: [nx, ny, nz, v1x, v1y, v1z, v2x, v2y, v2z, v3x, v3y, v3z]
@@ -695,8 +682,6 @@ public class Geometry {
         }
     }
 
-    
-    
     private static void writeExtrudedSketchToStl(PrintWriter out, Sketch sketch) {
         int triangleCount = 0;
 
@@ -725,7 +710,6 @@ public class Geometry {
         System.out.println("Wrote " + triangleCount + " triangles from extruded sketch to STL.");
     }
 
-    
     private static void writeTriangleFromPoints(PrintWriter out, Sketch.Point3D p1, Sketch.Point3D p2,
             Sketch.Point3D p3) {
         // Calculate normal vector using cross product
@@ -739,7 +723,6 @@ public class Geometry {
                 p3.getX(), p3.getY(), p3.getZ());// V3
     }
 
-    
     private static void generateCubeStl(PrintWriter out, float size, int divisions) {
         float half = size / 2.0f;
         float step = size / divisions;
@@ -813,7 +796,6 @@ public class Geometry {
         }
     }
 
-    
     private static void generateSphereStl(PrintWriter out, float radius, int latDiv, int lonDiv) {
         // This method generates sphere geometry. For robust results, it might be better
         // to pre-calculate normals based on the sphere's surface (normalized vertex
@@ -850,7 +832,6 @@ public class Geometry {
         }
     }
 
-    
     private static float[] sph(float r, float theta, float phi) {
         return new float[] {
                 r * (float) Math.sin(theta) * (float) Math.cos(phi),
@@ -859,12 +840,10 @@ public class Geometry {
         };
     }
 
-    
     private static void writeTriangle(PrintWriter out, float[] a, float[] b, float[] c) {
         writeTriangle(out, a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2]);
     }
 
-    
     private static void writeTriangle(PrintWriter out,
             float nx, float ny, float nz,
             float ax, float ay, float az,
@@ -880,7 +859,6 @@ public class Geometry {
         out.println("  endfacet");
     }
 
-    
     private static void writeTriangle(PrintWriter out,
             float ax, float ay, float az,
             float bx, float by, float bz,
@@ -906,7 +884,6 @@ public class Geometry {
         writeTriangle(out, nx, ny, nz, ax, ay, az, bx, by, bz, cx, cy, cz);
     }
 
-    
     public static void drawCurrentShape(GL2 gl) { // Renamed from drawLoadedStl to reflect general purpose
         System.out.println("drawCurrentShape called with shape: " + currShape); // Debug
         switch (currShape) {
@@ -935,8 +912,6 @@ public class Geometry {
                 break;
         }
     }
-
-    
 
     public static void drawCube(GL2 gl, float size, int divisions) {
         float half = size / 2.0f;
@@ -988,7 +963,6 @@ public class Geometry {
         gl.glEnd();
     }
 
-    
     // CHANGE: Made private to public to allow JOGLCadCanvas to call it directly if
     // desired.
     // However, the preferred method is to call drawCurrentShape.
@@ -1002,7 +976,6 @@ public class Geometry {
         glu.gluDeleteQuadric(quadric); // Clean up the quadric object
     }
 
-    
     // CHANGE: Made private to public to allow JOGLCadCanvas to call it directly if
     // desired.
     // However, the preferred method is to call drawCurrentShape.
@@ -1029,7 +1002,6 @@ public class Geometry {
         System.out.println("Finished drawing " + loadedStlTriangles.size() + " triangles"); // Debug
     }
 
-    
     // public static void drawExtruded(GL2 gl) {
     // System.out.println("drawExtruded called. Triangle count: " +
     // extrudedTriangles.size()); // Debug
@@ -1055,7 +1027,7 @@ public class Geometry {
     // System.out.println("Finished drawing " + extrudedTriangles.size() + "
     // extruded triangles"); // Debug
     // }
-    
+
     public static float[] calculateCentroid() {
         double totalVolume = 0;
         double momentX = 0;
@@ -1102,7 +1074,6 @@ public class Geometry {
         };
     }
 
-    
     public static void revolve(Sketch sketch, float angleDegrees, int steps) {
         extrudedTriangles.clear();
 
@@ -1173,7 +1144,6 @@ public class Geometry {
         extrudedTriangles.add(tri);
     }
 
-    
     public static void loft(Sketch sketch, float height) {
         extrudedTriangles.clear();
 
@@ -1209,7 +1179,7 @@ public class Geometry {
         currShape = Shape.EXTRUDED; // Reuse EXTRUDED for loft results
         System.out.println("Loft created. Generated " + extrudedTriangles.size() + " triangles.");
     }
-    
+
     public static float calculateSurfaceArea() {
         List<float[]> trianglesToCheck = getActiveTriangles();
         if (trianglesToCheck == null || trianglesToCheck.isEmpty()) {
@@ -1237,7 +1207,6 @@ public class Geometry {
         return totalArea;
     }
 
-    
     public static float calculateVolume() {
         List<float[]> trianglesToCheck = getActiveTriangles();
         if (trianglesToCheck == null || trianglesToCheck.isEmpty()) {
@@ -1266,24 +1235,23 @@ public class Geometry {
         return Math.abs(totalVolume);
     }
 
-    
     private static List<float[]> getActiveTriangles() {
         if (currShape == Shape.STL_LOADED) {
             return loadedStlTriangles;
         } else if (currShape == Shape.EXTRUDED) {
-             return extrudedTriangles;
+            return extrudedTriangles;
         } else if (currShape == Shape.CUBE || currShape == Shape.SPHERE) {
-             return loadedStlTriangles; 
+            return loadedStlTriangles;
         }
         return new ArrayList<>();
     }
 
     // --- 3D Selection / Ray Picking ---
 
-    
     public static float[] pickFace(float[] rayOrigin, float[] rayDir) {
         List<float[]> triangles = getActiveTriangles();
-        if (triangles == null || triangles.isEmpty()) return null;
+        if (triangles == null || triangles.isEmpty())
+            return null;
 
         float minDst = Float.MAX_VALUE;
         float[] closestTri = null;
@@ -1303,9 +1271,8 @@ public class Geometry {
         return closestTri;
     }
 
-    
     private static Float intersectRayTriangle(float[] rayOrigin, float[] rayVector,
-                                              float[] v0, float[] v1, float[] v2) {
+            float[] v0, float[] v1, float[] v2) {
         float EPSILON = 0.0000001f;
         float[] edge1 = new float[3];
         float[] edge2 = new float[3];
@@ -1352,7 +1319,8 @@ public class Geometry {
         if (v < 0.0 || u + v > 1.0)
             return null;
 
-        // At this stage we can compute t to find out where the intersection point is on the line.
+        // At this stage we can compute t to find out where the intersection point is on
+        // the line.
         float t = f * (edge2[0] * q[0] + edge2[1] * q[1] + edge2[2] * q[2]);
 
         if (t > EPSILON) // ray intersection
@@ -1364,7 +1332,6 @@ public class Geometry {
         }
     }
 
-    
     public static float calculateTriangleArea(float[] tri) {
         // v1 = (tri[3], tri[4], tri[5])
         // v2 = (tri[6], tri[7], tri[8])
@@ -1372,16 +1339,16 @@ public class Geometry {
         float ax = tri[6] - tri[3];
         float ay = tri[7] - tri[4];
         float az = tri[8] - tri[5];
-        
+
         float bx = tri[9] - tri[3];
         float by = tri[10] - tri[4];
         float bz = tri[11] - tri[5];
-        
+
         // Area = 0.5 * |A x B|
-        float cx = ay*bz - az*by;
-        float cy = az*bx - ax*bz;
-        float cz = ax*by - ay*bx;
-        
-        return 0.5f * (float)Math.sqrt(cx*cx + cy*cy + cz*cz);
+        float cx = ay * bz - az * by;
+        float cy = az * bx - ax * bz;
+        float cz = ax * by - ay * bx;
+
+        return 0.5f * (float) Math.sqrt(cx * cx + cy * cy + cz * cz);
     }
 }

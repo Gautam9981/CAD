@@ -3,7 +3,6 @@ package cad.core;
 import cad.core.Sketch.*;
 import java.util.List;
 
-
 public class MassProperties {
     private double area; // mm²
     private Point2D centroid; // Geometric center
@@ -11,11 +10,9 @@ public class MassProperties {
     private Material material;
     private double thickness; // mm
 
-    
     private MassProperties() {
     }
 
-    
     public static MassProperties calculate(Sketch sketch, Material material, double thickness, UnitSystem unitSystem) {
         if (sketch == null || material == null) {
             return null;
@@ -51,7 +48,60 @@ public class MassProperties {
         return props;
     }
 
-    
+    /**
+     * Calculate mass properties for primitive shapes (cube, sphere) using
+     * analytical formulas.
+     * 
+     * @param shape      The primitive shape type
+     * @param param      Size (for cube) or radius (for sphere) in current units
+     * @param material   Material definition
+     * @param unitSystem Unit system for parameter conversion
+     * @return MassProperties object or null if invalid
+     */
+    public static MassProperties calculateFromPrimitive(Geometry.Shape shape, float param, Material material,
+            UnitSystem unitSystem) {
+        if (shape == null || material == null || param <= 0) {
+            return null;
+        }
+
+        MassProperties props = new MassProperties();
+        props.material = material;
+        props.thickness = 0; // Not applicable for 3D primitives
+
+        // Convert parameter to mm
+        double paramMm = convertLengthToMm(param, unitSystem);
+        double volumeMm3;
+
+        switch (shape) {
+            case CUBE:
+                // Volume = side³
+                volumeMm3 = Math.pow(paramMm, 3);
+                // For display purposes, treat as area × thickness
+                props.area = paramMm * paramMm; // One face area
+                props.thickness = paramMm; // Side length as "thickness"
+                props.centroid = new Point2D(0, 0); // Centered at origin
+                break;
+
+            case SPHERE:
+                // Volume = (4/3) × π × r³
+                volumeMm3 = (4.0 / 3.0) * Math.PI * Math.pow(paramMm, 3);
+                // For display, approximate as cross-sectional area × diameter
+                props.area = Math.PI * paramMm * paramMm; // Cross-section
+                props.thickness = 2 * paramMm; // Diameter
+                props.centroid = new Point2D(0, 0); // Centered at origin
+                break;
+
+            default:
+                return null; // Unsupported shape
+        }
+
+        // Calculate mass: volume (mm³) × density (g/mm³)
+        double densityGPerMm3 = material.getDensity() / 1_000_000.0;
+        props.mass = volumeMm3 * densityGPerMm3;
+
+        return props;
+    }
+
     private static double convertLengthToMm(double length, UnitSystem unitSystem) {
         return switch (unitSystem) {
             case MMGS -> length; // Already in mm
@@ -62,7 +112,6 @@ public class MassProperties {
         };
     }
 
-    
     private static double convertAreaToMm2(double area, UnitSystem unitSystem) {
         return switch (unitSystem) {
             case MMGS -> area; // Already in mm²
@@ -73,7 +122,6 @@ public class MassProperties {
         };
     }
 
-    
     private static class AreaCentroidResult {
         double area;
         Point2D centroid;
@@ -84,7 +132,6 @@ public class MassProperties {
         }
     }
 
-    
     private static AreaCentroidResult calculateAreaAndCentroid(List<Entity> entities) {
         double totalArea = 0.0;
         double weightedCx = 0.0;
@@ -120,7 +167,6 @@ public class MassProperties {
         return new AreaCentroidResult(totalArea, centroid);
     }
 
-    
     private static double calculatePolygonArea(Polygon polygon) {
         List<Sketch.PointEntity> points = polygon.getSketchPoints();
         if (points.size() < 3) {
@@ -139,7 +185,6 @@ public class MassProperties {
         return Math.abs(area / 2.0);
     }
 
-    
     private static Point2D calculatePolygonCentroid(Polygon polygon) {
         List<Sketch.PointEntity> points = polygon.getSketchPoints();
         if (points.size() < 3) {
@@ -170,32 +215,26 @@ public class MassProperties {
 
     // Getters
 
-    
     public double getArea() {
         return area;
     }
 
-    
     public Point2D getCentroid() {
         return centroid;
     }
 
-    
     public double getMass() {
         return mass;
     }
 
-    
     public Material getMaterial() {
         return material;
     }
 
-    
     public double getThickness() {
         return thickness;
     }
 
-    
     public double getVolume() {
         return area * thickness;
     }
@@ -220,7 +259,6 @@ public class MassProperties {
                 centroid.getY());
     }
 
-    
     public String toDisplayString() {
         return String.format(
                 "Material: %s\n" +

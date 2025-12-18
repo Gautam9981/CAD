@@ -90,6 +90,7 @@ import cad.core.CoincidentConstraint;
 import cad.core.HorizontalConstraint;
 import cad.core.VerticalConstraint;
 import cad.core.FixedConstraint;
+import cad.core.MassProperties;
 import cad.core.Sketch.Line;
 import cad.core.Sketch.PointEntity;
 import cad.core.Sketch.Entity;
@@ -307,7 +308,10 @@ public class GuiFX extends Application {
             System.err.println("Could not load CSS: " + e.getMessage());
         }
         primaryStage.setScene(scene);
-        primaryStage.setOnCloseRequest(e -> cleanupAndExit());
+        primaryStage.setOnCloseRequest(e -> {
+            cleanupAndExit();
+            e.consume(); // Mark event as handled to prevent platform from blocking
+        });
         primaryStage.setMaximized(true); // Start maximized like SW
         primaryStage.show();
 
@@ -575,6 +579,33 @@ public class GuiFX extends Application {
     }
 
     private void cleanupAndExit() {
+        // First, ask if user wants to save
+        Alert saveAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        saveAlert.setTitle("Save Before Exit?");
+        saveAlert.setHeaderText("Do you want to save your work before exiting?");
+        saveAlert.setContentText("Choose an option:");
+
+        ButtonType saveButton = new ButtonType("Save");
+        ButtonType dontSaveButton = new ButtonType("Don't Save");
+        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+
+        saveAlert.getButtonTypes().setAll(saveButton, dontSaveButton, cancelButton);
+
+        Optional<ButtonType> result = saveAlert.showAndWait();
+
+        if (result.isEmpty() || result.get() == cancelButton) {
+            // User cancelled - don't exit
+            return;
+        }
+
+        if (result.get() == saveButton) {
+            // Show save dialog
+            showSaveDialog();
+            // Note: We continue with exit even if save is cancelled
+            // This matches common application behavior
+        }
+
+        // Proceed with cleanup and exit
         try {
             // Stop the OpenGL animator immediately
             if (animator != null) {
@@ -3084,8 +3115,35 @@ public class GuiFX extends Application {
     }
 
     private void showMassPropertiesDialog() {
-        MassPropertiesDialog dialog = new MassPropertiesDialog(sketch);
-        dialog.showAndWait();
+        // Check if we're viewing a primitive shape that doesn't have a sketch
+        Geometry.Shape currentShape = Geometry.getCurrentShape();
+
+        if (currentShape == Geometry.Shape.CUBE || currentShape == Geometry.Shape.SPHERE) {
+            // Use analytical calculation for primitives
+            if (sketch.getMaterial() == null) {
+                appendOutput("Error: No material assigned. Please set a material first.");
+                return;
+            }
+
+            MassProperties props = MassProperties.calculateFromPrimitive(
+                    currentShape,
+                    Geometry.getParam(),
+                    sketch.getMaterial(),
+                    sketch.getUnitSystem());
+
+            if (props == null) {
+                appendOutput("Error: Could not calculate mass properties.");
+                return;
+            }
+
+            // Show the dialog with primitive properties
+            MassPropertiesDialog dialog = new MassPropertiesDialog(sketch, props);
+            dialog.showAndWait();
+        } else {
+            // Use existing sketch-based calculation for extruded shapes
+            MassPropertiesDialog dialog = new MassPropertiesDialog(sketch);
+            dialog.showAndWait();
+        }
     }
 
     private void toggleCentroid() {
