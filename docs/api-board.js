@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadAPIData() {
     try {
         const response = await fetch('api-data.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         apiData = await response.json();
         filteredData = { ...apiData };
 
@@ -328,6 +331,12 @@ function getDescription(method, isConstructor) {
     } else {
         const cleanExisting = desc.toLowerCase().replace(/[^a-z]/g, '');
         const cleanName = method.name.toLowerCase().replace(/[^a-z]/g, '');
+
+        // Extract verb/noun for trivial check
+        const words = method.name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase().split(' ');
+        const verb = words[0];
+        const noun = words.slice(1).join(' ');
+        const name = method.name;
 
         if (cleanExisting === cleanName ||
             cleanExisting === cleanName + 'command' ||
