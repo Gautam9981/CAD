@@ -43,7 +43,6 @@ public class Geometry {
         return param;
     }
 
-    
     public static int getCubeDivisions() {
         return cubeDivisions;
     }
@@ -1079,36 +1078,20 @@ public class Geometry {
             return;
         }
 
-        // For simplicity, revolve the first polygon
-        Sketch.Polygon poly = polygons.get(0);
-        List<Sketch.PointEntity> points = poly.getSketchPoints();
-        int nPoints = points.size();
+        try {
+            // Use JCSG for revolve operation
+            eu.mihosoft.jcsg.CSG csg = CSGAdapter.revolveSketch(sketch, angleDegrees, steps);
 
-        float angleRad = (float) Math.toRadians(angleDegrees);
-        float stepAngle = angleRad / steps;
+            // Convert CSG back to triangle list for rendering
+            List<float[]> triangles = CSGAdapter.csgToTriangles(csg);
+            extrudedTriangles.addAll(triangles);
 
-        for (int i = 0; i < steps; i++) {
-            float theta1 = i * stepAngle;
-            float theta2 = (i + 1) * stepAngle;
-
-            for (int j = 0; j < nPoints; j++) {
-                Sketch.PointEntity p1 = points.get(j);
-                Sketch.PointEntity p2 = points.get((j + 1) % nPoints); // Close loop
-
-                // Rotate p1 and p2 by theta1
-                float[] v1 = rotateY(p1, theta1);
-                float[] v2 = rotateY(p2, theta1);
-                // Rotate p1 and p2 by theta2
-                float[] v3 = rotateY(p2, theta2);
-                float[] v4 = rotateY(p1, theta2);
-
-                // Create 2 triangles for the quad (v1, v2, v3, v4)
-                addTriangleToExtruded(v1, v2, v3);
-                addTriangleToExtruded(v1, v3, v4);
-            }
+            currShape = Shape.EXTRUDED; // Reuse EXTRUDED for revolve results
+            System.out.println("Revolved sketch using JCSG. Generated " + extrudedTriangles.size() + " triangles.");
+        } catch (Exception e) {
+            System.err.println("Error during revolve operation: " + e.getMessage());
+            e.printStackTrace();
         }
-        currShape = Shape.EXTRUDED; // Reuse EXTRUDED for revolve results
-        System.out.println("Revolved sketch. Generated " + extrudedTriangles.size() + " triangles.");
     }
 
     private static float[] rotateY(Sketch.PointEntity p, float theta) {

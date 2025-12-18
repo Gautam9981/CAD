@@ -92,6 +92,13 @@
             <artifactId>gson</artifactId>
             <version>2.10.1</version>
         </dependency>
+
+        <!-- JCSG for Constructive Solid Geometry operations -->
+        <dependency>
+            <groupId>eu.mihosoft.vrl.jcsg</groupId>
+            <artifactId>jcsg</artifactId>
+            <version>0.5.7</version>
+        </dependency>
     </dependencies>
 
     <profiles>

@@ -45,6 +45,7 @@ rm -rf "$STAGING_DIR"
 mkdir -p "$STAGING_DIR"
 cp "$JAR_FILE" "$STAGING_DIR/"
 cp "../src/main/resources/sketchapp-icon.ico" "$STAGING_DIR/" || true
+cp "../materials.json" "$STAGING_DIR/" || echo "Warning: materials.json not found, will use defaults"
 
 echo "Creating Windows installer..."
 
