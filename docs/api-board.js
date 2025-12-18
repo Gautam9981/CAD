@@ -376,31 +376,51 @@ function inferParamDescription(param) {
     const name = param.name.toLowerCase();
     const type = param.type.toLowerCase();
 
+    // Sketch and drawing objects
+    if (name === 'sketch') return 'Target sketch containing entities and constraints';
+    if (name === 'entity') return 'Sketch entity (line, circle, point, etc.) to operate on';
+    if (name === 'entitytype') return 'Type of entity to create (e.g., LINE, CIRCLE, POINT)';
+    if (name === 'constraint') return 'Geometric constraint to apply or modify';
+    if (name === 'dimension') return 'Measurement dimension to add or update';
+
     // Common abbreviations
-    if (name === 'x') return 'The X coordinate';
-    if (name === 'y') return 'The Y coordinate';
-    if (name === 'z') return 'The Z coordinate';
-    if (name === 'w' || name === 'width') return 'The width value';
-    if (name === 'h' || name === 'height') return 'The height value';
-    if (name === 'l' || name === 'length') return 'The length value';
+    if (name === 'x') return 'X coordinate in the sketch plane';
+    if (name === 'y') return 'Y coordinate in the sketch plane';
+    if (name === 'z') return 'Z coordinate (depth/extrusion distance)';
+    if (name === 'w' || name === 'width') return 'Width value in current units';
+    if (name === 'h' || name === 'height') return 'Height value in current units';
+    if (name === 'l' || name === 'length') return 'Length value in current units';
+    if (name === 'radius') return 'Radius for circular or arc entities';
+    if (name === 'angle') return 'Angle in degrees';
 
     // Points
-    if (name === 'p' || name === 'p1' || name === 'start') return 'The start point';
-    if (name === 'p2' || name === 'end') return 'The end point';
-    if (name === 'pt' || name === 'point') return 'The point object';
+    if (name === 'p' || name === 'p1' || name === 'start') return 'Starting point coordinates';
+    if (name === 'p2' || name === 'end') return 'Ending point coordinates';
+    if (name === 'pt' || name === 'point') return 'Point entity or coordinates';
+    if (name === 'center') return 'Center point of the shape';
 
     // Graphics/Events
-    if (name === 'g' || name === 'graphics' || name === 'gc') return 'The graphics context used for drawing';
-    if (name === 'e' || name === 'event' || name === 'evt') return 'The event object';
+    if (name === 'gl' || name === 'g' || name === 'graphics' || name === 'gc') return 'OpenGL graphics context for rendering';
+    if (name === 'e' || name === 'event' || name === 'evt') return 'User input event (mouse, keyboard)';
+
+    // Materials and properties
+    if (name === 'material') return 'Material definition with properties (density, strength, etc.)';
+    if (name === 'color') return 'RGB color value for rendering';
+    if (name === 'density') return 'Material density in kg/m³';
+    if (name === 'name') return 'Descriptive name or identifier';
 
     // Common types
-    if (type.includes('string') && name === 'name') return 'The name identifier';
-    if (type.includes('color') || name === 'color') return 'The color to apply';
-    if (name === 'text' || name === 'msg' || name === 'message') return 'The text content';
-    if (name === 'idx' || name === 'index') return 'The zero-based index';
+    if (name === 'text' || name === 'msg' || name === 'message') return 'Text content or message string';
+    if (name === 'label') return 'Display label text';
+    if (name === 'value') return 'Numeric value or measurement';
+    if (name === 'idx' || name === 'index') return 'Zero-based array index';
+    if (name === 'id') return 'Unique identifier';
+    if (name === 'visible') return 'Visibility flag (true = shown, false = hidden)';
+    if (name === 'selected') return 'Selection state flag';
 
-    // Default fallback
-    return `The ${param.name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()} parameter`;
+    // Default fallback - be more descriptive
+    const readable = param.name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
+    return `${readable.charAt(0).toUpperCase() + readable.slice(1)} value`;
 }
 
 // Infer description from method name
@@ -440,24 +460,23 @@ function inferDescription(method, isConstructor) {
     else if (noun === 'msg' || noun === 'message') enhancedNoun = 'message text';
 
     // Handle specific verbs
-    const appContext = 'In the CAD application, this method contributes to core functionality such as dimension rendering, material management, or UI interaction.';
     if (verb === 'get') {
-        return `Retrieves the ${enhancedNoun}. ${appContext}`;
+        return `Retrieves the ${enhancedNoun}`;
     }
     if (verb === 'set') {
-        return `Sets the ${enhancedNoun}. ${appContext}`;
+        return `Sets the ${enhancedNoun}`;
     }
     if (verb === 'is' || verb === 'has' || verb === 'can') {
-        return `Checks if ${noun ? 'it ' + name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase() : 'condition is true'}. ${appContext}`;
+        return `Checks if ${noun ? 'it ' + name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase() : 'condition is true'}`;
     }
     if (verb === 'add') {
-        return `Adds a new ${noun || 'item'} to the collection. ${appContext}`;
+        return `Adds a new ${noun || 'item'} to the collection`;
     }
     if (verb === 'remove' || verb === 'delete') {
-        return `Removes the specified ${noun || 'item'}. ${appContext}`;
+        return `Removes the specified ${noun || 'item'}`;
     }
     if (verb === 'create' || verb === 'make' || verb === 'build') {
-        return `Constructs and returns a new ${noun || 'object'}. ${appContext}`;
+        return `Constructs and returns a new ${noun || 'object'}`;
     }
     if (verb === 'compute' || verb === 'calculate') {
         return `Calculates the ${noun || 'value'} based on current state`;
