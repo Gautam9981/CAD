@@ -218,18 +218,22 @@ function createClassSection(fullClassName, classInfo) {
 
     // Constructors
     if (classInfo.constructors.length > 0) {
+        // Filter: Keep only constructors with the maximum number of parameters
+        const maxParams = Math.max(...classInfo.constructors.map(c => c.parameters.length));
+        const filteredConstructors = classInfo.constructors.filter(c => c.parameters.length === maxParams);
+
         const constructorsSection = document.createElement('div');
         constructorsSection.className = 'methods-section';
         constructorsSection.innerHTML = `
             <h3 class="section-title">
                 Constructors
-                <span class="method-count">(${classInfo.constructors.length})</span>
+                <span class="method-count">(${filteredConstructors.length})</span>
             </h3>
         `;
 
         const constructorsGrid = document.createElement('div');
         constructorsGrid.className = 'methods-grid';
-        classInfo.constructors.forEach(constructor => {
+        filteredConstructors.forEach(constructor => {
             constructorsGrid.appendChild(createMethodCard(constructor, true));
         });
         constructorsSection.appendChild(constructorsGrid);
