@@ -2035,7 +2035,7 @@
           }
         ],
         "signature": "public void updateSmartDimension(float mx, float my)",
-        "description": "Updates the dimension type and position based on mouse cursor text position. Logic mimics SolidWorks Smart Dimension: - Drag off to side -> Vertical - Drag off to top/bottom -> Horizontal - Drag diagonally/perp -> Aligned",
+        "description": "",
         "returns": ""
       },
       {
@@ -4745,7 +4745,7 @@
           }
         ],
         "signature": "public PointEntity getClosestVertex(float x, float y, float tolerance)",
-        "description": "Finds the closest vertex (start/end point of line, or vertex of polygon)",
+        "description": "",
         "returns": ""
       },
       {
@@ -4771,7 +4771,7 @@
           }
         ],
         "signature": "public Line getClosestLineSegment(float x, float y, float tolerance)",
-        "description": "Finds the closest line segment (Line entity or Polygon edge) Returns a Line object representing the segment.",
+        "description": "",
         "returns": ""
       },
       {
@@ -4797,7 +4797,7 @@
           }
         ],
         "signature": "public PolygonEdgeContext getClosestPolygonEdge(float x, float y, float tolerance)",
-        "description": "Finds the closest polygon edge and returns full context (for curvature calculation)",
+        "description": "",
         "returns": ""
       }
     ]
