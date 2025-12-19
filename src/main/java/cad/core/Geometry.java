@@ -1078,8 +1078,7 @@ public class Geometry {
             return;
         }
 
-        // System.out.println("Revolve operation is currently disabled (JCSG dependency
-        // removed).");
+        System.out.println("Revolve operation is currently disabled (dependency removed).");
         // implementation removed
     }
 
