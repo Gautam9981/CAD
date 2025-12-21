@@ -9,6 +9,7 @@ Binaries/**/*.dmg
 Binaries/**/*.deb
 Binaries/**/*.rpm
 Binaries/**/*.msi
+Binaries/**/*.xbps
 Binaries/Windows/
 Binaries/macOS/
 Binaries/MacOS/

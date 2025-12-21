@@ -296,41 +296,37 @@ sudo dnf install sketchapp-4.0.0-1.x86_64.rpm
 ```
 
 **For Other Distros (Void, Solus, Slackware, etc.):**
-Download the `.tar.gz` package, extract it, and run the binary:
-```bash
 tar -xzf SketchApp-Linux-4.0.0.tar.gz
 ./SketchApp/bin/SketchApp
 ```
+
+**For Arch Linux (PKGBUILD):**
+1. Navigate to the `Binaries/Packages/Arch` directory in the source.
+2. Run `makepkg -si` to build and install.
+
+**For Void Linux (.xbps):**
+1. Download the `.xbps` package (e.g., `SketchApp-4.0.0_1.x86_64.xbps`) from releases.
+2. Index the package in the current directory:
+   ```bash
+   xbps-rindex -a *.xbps
+   ```
+3. Install the package:
+   ```bash
+   sudo xbps-install --repository=$PWD SketchApp
+   ```
 
 
 
 **Running the Application:**
 ```bash
-/opt/sketchapp/bin/sketchapp
+/opt/sketchapp/bin/SketchApp
 ```
 
 The installer creates:
 - Desktop launcher in application menu (under Graphics)
 - Installation in `/opt/sketchapp`
 
-### Creating Native Packages (Community)
 
-The generic `.tar.gz` can be easily repackaged for other distributions:
-
-**Slackware (.txz) - [SlackBuilds.org Info](https://slackbuilds.org/howto/)**
-- Use `makepkg` to create a package from the directory structure.
-- Example: `makepkg -l y -c n ../sketchapp-4.0.0-x86_64-1.txz` inside the extracted root.
-- Resource: [Slackware Package Management](https://docs.slackware.com/slackware:sysadmin_guide_package_management)
-
-**Void Linux (xbps) - [Manual](https://github.com/void-linux/void-packages/blob/master/Manual.md)**
-- Create a `template` file in `xbps-src/srcpkgs/sketchapp/template`.
-- Set `build_style=install` and use `vinstall` to copy files to `/opt`.
-- Resource: [Void Linux Handbook - Packages](https://docs.voidlinux.org/xbps/index.html)
-
-**Arch Linux (AUR) - [ArchWiki](https://wiki.archlinux.org/title/Creating_packages)**
-- Create a `PKGBUILD` file.
-- Define `package()`: `cp -r "$srcdir/SketchApp" "$pkgdir/opt/sketchapp"`.
-- Resource: [Java Packaging Guidelines](https://wiki.archlinux.org/title/Java_packaging_guidelines)
 
 ---
 
@@ -352,6 +348,27 @@ The generic `.tar.gz` can be easily repackaged for other distributions:
 
 > [!NOTE]
 > The macOS builds are generated on macOS 15 (Sequoia). They may not run on older versions of macOS (e.g., older Intel Macs).
+
+## Verifying Downloads
+
+To ensure the integrity of your download, you can verify the SHA256 checksum. You can find the `SHA256SUMS` file in the releases or the `Binaries/` directory.
+
+### Linux / macOS
+Run the following command in your terminal where you downloaded the file and `SHA256SUMS`:
+
+```bash
+# Verify the downloaded file
+shasum -a 256 -c SHA256SUMS --ignore-missing
+```
+*Note: If `shasum` is not available, you can use `sha256sum -c SHA256SUMS --ignore-missing`.*
+
+### Windows
+Open PowerShell and run the following command to generate the hash for your downloaded file:
+
+```powershell
+Get-FileHash .\SketchApp-Windows-x64.zip -Algorithm SHA256
+```
+Compare the output hash with the corresponding entry in the `SHA256SUMS` file.
 
 
 ## Contributors
