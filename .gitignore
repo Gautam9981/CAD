@@ -10,7 +10,8 @@ Binaries/**/*.deb
 Binaries/**/*.rpm
 Binaries/**/*.msi
 Binaries/**/*.xbps
-Binaries/**/*.tar.gz */
+Binaries/**/*.tar.gz
+Binaries/**/*.pkg.tar.zst
 Binaries/Windows/
 Binaries/macOS/
 Binaries/MacOS/
