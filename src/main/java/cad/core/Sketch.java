@@ -1367,7 +1367,7 @@ public class Sketch {
                         float end = (float) Math.toRadians(arc.getEndAngle());
 
                         if (end < start) {
-                            end += 2.0 * Math.PI;
+                            end += (float) (2.0 * Math.PI);
                         }
 
                         float angleDiff = end - start;
