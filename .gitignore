@@ -1,0 +1,56 @@
+# Build output
+target/
+bin/
+*.class
+
+# Build installers and artifacts  
+Binaries/**/*.exe
+Binaries/**/*.dmg
+Binaries/**/*.deb
+Binaries/**/*.rpm
+Binaries/**/*.msi
+Binaries/**/*.xbps
+Binaries/**/*.tar.gz */
+Binaries/Windows/
+Binaries/macOS/
+Binaries/MacOS/
+Binaries/Linux/
+*.tar.gz
+*.zip
+*.jar
+*.war
+*.nar
+*.ear
+*.rar
+
+# IDE
+.vscode/
+.idea/
+*.iml
+.DS_Store
+out/
+.classpath
+.project
+.settings/
+
+# Maven
+dependency-reduced-pom.xml
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+
+# Markdown files (except README.md)
+*.md
+!README.md
+
+# Test cases and macros
+test-cases/
+macros/
