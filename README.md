@@ -443,7 +443,7 @@ Explore the full API reference: [https://gautam9981.github.io/CAD/](https://gaut
 
 **Contributing**
 
-We welcome contributions! To contribute:
+I welcome contributions! To contribute:
 
 1. Fork the repository
 
