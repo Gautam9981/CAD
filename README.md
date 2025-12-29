@@ -441,7 +441,7 @@ Explore the full API reference: [https://gautam9981.github.io/CAD/](https://gaut
 
 ---
 
-Contributing
+**Contributing**
 
 We welcome contributions! To contribute:
 
