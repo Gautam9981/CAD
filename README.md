@@ -454,3 +454,5 @@ I welcome contributions! To contribute:
 Optional: Fill out our Feedback Form to suggest features or report issues.
 
 Help shape this project! [Feedback Form](https://forms.gle/pbKVRUrLYv9ob9nG6) (optional)
+
+**All contributions to this project are licensed under the Apache License 2.0.**
