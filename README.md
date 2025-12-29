@@ -441,6 +441,16 @@ Explore the full API reference: [https://gautam9981.github.io/CAD/](https://gaut
 
 ---
 
-## Feedback
+Contributing
+
+We welcome contributions! To contribute:
+
+1. Fork the repository
+
+2. Create a new branch for your feature or bugfix
+
+3. Submit a pull request describing your changes. Please follow existing code style and write clear commit messages. Consider documenting new features and updating tests when applicable, by using the docs/ files
+
+Optional: Fill out our Feedback Form to suggest features or report issues.
 
 Help shape this project! [Feedback Form](https://forms.gle/pbKVRUrLYv9ob9nG6) (optional)
