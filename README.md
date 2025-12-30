@@ -455,4 +455,34 @@ Optional: Fill out our Feedback Form to suggest features or report issues.
 
 Help shape this project! [Feedback Form](https://forms.gle/pbKVRUrLYv9ob9nG6) (optional)
 
+## License
+
+SketchApp is licensed under the **Apache License 2.0**.  
+You can find the full license in the [`LICENSE`](LICENSE) file included with this project.
+
+## Third-Party Dependencies
+
+This project uses several third-party libraries. All are included in the release and are listed in the [`NOTICE.txt`](NOTICE.txt) file.
+
+### Key Libraries
+
+| Library | Version | License |
+|---------|--------|---------|
+| antlr:antlr | 2.7.7 | BSD License |
+| com.formdev:flatlaf | 3.6 | Apache 2.0 |
+| com.formdev:flatlaf-intellij-themes | 3.6 | Apache 2.0 |
+| com.google.code.gson:gson | 2.10.1 | Apache 2.0 |
+| eu.mihosoft.vrl.jcsg:jcsg | 0.5.7 | BSD 2-Clause |
+| eu.mihosoft.vvecmath:vvecmath | 0.3.8 | BSD 2-Clause |
+| junit:junit | 4.13.1 | Eclipse Public License 1.0 |
+| org.hamcrest:hamcrest-core | 1.3 | New BSD License |
+| org.jogamp.gluegen:gluegen-rt | 2.6.0 | BSD-2, BSD-3, BSD-4 |
+| org.jogamp.jogl:jogl-all | 2.6.0 | Apache 1.1, Apache 2.0, BSD-2, BSD-3, SGI Free Software License B, Ubuntu Font Licence 1.0 |
+| org.openjfx:javafx | 23.0.1 | GPLv2+CE |
+| org.slf4j:slf4j-api / slf4j-simple | 1.6.1 | MIT License |
+
+All third-party libraries are distributed under their respective licenses, and you can see full details in [`NOTICE.txt`](NOTICE.txt).
+
+---
+
 **All contributions to this project are licensed under the Apache License 2.0.**
