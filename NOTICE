@@ -1,0 +1,64 @@
+SketchApp
+Copyright (c) 2025 Gautam Mahajan
+
+This product includes software developed by third parties. The following third-party libraries are used and their respective licenses are included below.
+
+------------------------------------------------------------
+antlr:antlr:2.7.7
+License: BSD License
+
+com.formdev:flatlaf:3.6
+License: Apache License, Version 2.0
+
+com.formdev:flatlaf-intellij-themes:3.6
+License: Apache License, Version 2.0
+
+com.google.code.gson:gson:2.10.1
+License: Apache License, Version 2.0
+
+eu.mihosoft.vrl.jcsg:jcsg:0.5.7
+License: BSD 2-Clause
+
+eu.mihosoft.vvecmath:vvecmath:0.3.8
+License: BSD 2-Clause
+
+junit:junit:4.13.1
+License: Eclipse Public License 1.0
+
+org.hamcrest:hamcrest-core:1.3
+License: New BSD License
+
+org.jogamp.gluegen:gluegen-rt:2.6.0
+License: BSD-2 License, BSD-3 License, BSD-4 License
+
+org.jogamp.gluegen:gluegen-rt-main:2.6.0
+License: BSD-2 License, BSD-3 License, BSD-4 License
+
+org.jogamp.jogl:jogl-all:2.6.0
+License: Apache License Version 1.1, Apache License Version 2.0, BSD-2 License, BSD-3 License, SGI Free Software License B, Ubuntu Font Licence 1.0
+
+org.jogamp.jogl:jogl-all-main:2.6.0
+License: Apache License Version 1.1, Apache License Version 2.0, BSD-2 License, BSD-3 License, SGI Free Software License B, Ubuntu Font Licence 1.0
+
+org.openjfx:javafx-base:23.0.1
+License: GPLv2+CE
+
+org.openjfx:javafx-controls:23.0.1
+License: GPLv2+CE
+
+org.openjfx:javafx-fxml:23.0.1
+License: GPLv2+CE
+
+org.openjfx:javafx-graphics:23.0.1
+License: GPLv2+CE
+
+org.openjfx:javafx-swing:23.0.1
+License: GPLv2+CE
+
+org.slf4j:slf4j-api:1.6.1
+License: MIT License
+
+org.slf4j:slf4j-simple:1.6.1
+License: MIT License
+
+------------------------------------------------------------
