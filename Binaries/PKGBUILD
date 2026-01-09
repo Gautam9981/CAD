@@ -1,0 +1,98 @@
+# Maintainer: Gautam Mahajan <mahajanga801@gmail.com>
+
+pkgname=SketchApp
+pkgver=4.5.0
+pkgrel=1
+pkgdesc="CAD Tool for Linux, macOS, and Windows"
+arch=('x86_64' 'aarch64')
+url="https://github.com/Gautam9981/CAD"
+license=('Apache-2.0')
+
+# Required to unzip the source archives
+makedepends=('unzip')
+
+# Architecture-specific sources (ZIP files)
+source_x86_64=("https://github.com/Gautam9981/CAD/releases/download/v${pkgver}/SketchApp-Linux-x64-tar.zip")
+source_aarch64=("https://github.com/Gautam9981/CAD/releases/download/v${pkgver}/SketchApp-Linux-arm64-tar.zip")
+
+# SHA256 sums of the ZIP files
+sha256sums_x86_64=('003d8579a90ad085a5d1ff6bcc2314a170e08067c0d2a9d16efb552552254d7c')
+sha256sums_aarch64=('6b10fd9e8ca00c60f9ef09927d8fad74758c6e0961bdcf07ac5d8300358e36ad')
+
+prepare() {
+    cd "$srcdir"
+
+    # Select the correct zip file for the architecture
+    if [[ "$CARCH" == "x86_64" ]]; then
+        local zip_file="SketchApp-Linux-x64-tar.zip"
+        local tar_pattern="SketchApp-Linux-x64-${pkgver}.tar.gz"
+    else
+        local zip_file="SketchApp-Linux-arm64-tar.zip"
+        local tar_pattern="SketchApp-Linux-arm64-${pkgver}.tar.gz"
+    fi
+
+    # Unzip the ZIP file
+    echo "Unzipping $zip_file..."
+    unzip -q "$zip_file"
+
+    # Find the inner tarball
+    local tar_file
+    tar_file=$(find . -maxdepth 1 -name "$tar_pattern" -print -quit)
+
+    if [[ -n "$tar_file" ]]; then
+        echo "Extracting $tar_file..."
+        tar -xzf "$tar_file"
+    else
+        echo "Error: No tar.gz file found inside $zip_file"
+        ls -la
+        return 1
+    fi
+
+    # Ensure the main directory exists
+    if [[ ! -d "SketchApp" ]]; then
+        echo "Error: Directory 'SketchApp' not found after extraction"
+        ls -la
+        return 1
+    fi
+}
+
+package() {
+    local _app_dir="SketchApp"
+
+    cd "$srcdir/$_app_dir"
+
+    # Create directory structure
+    install -d "$pkgdir/usr/bin"
+    install -d "$pkgdir/usr/share/sketchapp"
+    install -d "$pkgdir/usr/share/pixmaps"
+    install -d "$pkgdir/usr/share/applications"
+
+    # Copy application files
+    cp -r * "$pkgdir/usr/share/sketchapp/"
+
+    # Make the main binary executable
+    chmod +x "$pkgdir/usr/share/sketchapp/bin/SketchApp"
+
+    # Optional symlink to /usr/bin
+    ln -s "/usr/share/sketchapp/bin/SketchApp" "$pkgdir/usr/bin/sketchapp"
+
+    # Install the icon if it exists
+    if [[ -f "$srcdir/$_app_dir/lib/SketchApp.png" ]]; then
+        install -m644 "$srcdir/$_app_dir/lib/SketchApp.png" "$pkgdir/usr/share/pixmaps/sketchapp.png"
+    fi
+
+    # Create the desktop entry
+    cat > "$pkgdir/usr/share/applications/sketchapp.desktop" <<EOF
+[Desktop Entry]
+Version=${pkgver}
+Name=SketchApp
+Comment=A vector design tool for macOS, now available for Linux
+Exec=/usr/share/sketchapp/bin/SketchApp
+Icon=sketchapp
+Terminal=false
+Type=Application
+Categories=Graphics;Design;
+MimeType=application/x-sketch;
+EOF
+}
+
