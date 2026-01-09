@@ -557,6 +557,17 @@
         "visibility": "public",
         "parameters": [
           {
+            "type": "Object...",
+            "name": "objects"
+          }
+        ],
+        "signature": "public CoincidentConstraint(Object... objects)"
+      },
+      {
+        "name": "CoincidentConstraint",
+        "visibility": "public",
+        "parameters": [
+          {
             "type": "cad.core.Point",
             "name": "p1"
           },
@@ -591,6 +602,27 @@
         "returnType": "double",
         "parameters": [],
         "signature": "public double getError()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "getErrorPair",
+        "visibility": "private",
+        "static": "",
+        "returnType": "double",
+        "parameters": [
+          {
+            "type": "Object",
+            "name": "o1",
+            "description": ""
+          },
+          {
+            "type": "Object",
+            "name": "o2",
+            "description": ""
+          }
+        ],
+        "signature": "private double getErrorPair(Object o1, Object o2)",
         "description": "",
         "returns": ""
       },
@@ -637,12 +669,54 @@
         "returns": ""
       },
       {
+        "name": "getPointArcError",
+        "visibility": "private",
+        "static": "",
+        "returnType": "double",
+        "parameters": [
+          {
+            "type": "cad.core.Point",
+            "name": "p",
+            "description": ""
+          },
+          {
+            "type": "cad.core.Sketch.Arc",
+            "name": "a",
+            "description": ""
+          }
+        ],
+        "signature": "private double getPointArcError(cad.core.Point p, cad.core.Sketch.Arc a)",
+        "description": "",
+        "returns": ""
+      },
+      {
         "name": "solve",
         "visibility": "public",
         "static": "",
         "returnType": "void",
         "parameters": [],
         "signature": "public void solve()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "solvePair",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "Object",
+            "name": "o1",
+            "description": ""
+          },
+          {
+            "type": "Object",
+            "name": "o2",
+            "description": ""
+          }
+        ],
+        "signature": "private void solvePair(Object o1, Object o2)",
         "description": "",
         "returns": ""
       },
@@ -685,27 +759,6 @@
           }
         ],
         "signature": "private void solvePointCircle(cad.core.Point p, cad.core.Sketch.Circle c)",
-        "description": "",
-        "returns": ""
-      },
-      {
-        "name": "getPointArcError",
-        "visibility": "private",
-        "static": "",
-        "returnType": "double",
-        "parameters": [
-          {
-            "type": "cad.core.Point",
-            "name": "p",
-            "description": ""
-          },
-          {
-            "type": "cad.core.Sketch.Arc",
-            "name": "a",
-            "description": ""
-          }
-        ],
-        "signature": "private double getPointArcError(cad.core.Point p, cad.core.Sketch.Arc a)",
         "description": "",
         "returns": ""
       },
@@ -2095,6 +2148,32 @@
         "returns": ""
       },
       {
+        "name": "sweep",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "cad.core.Sketch",
+            "name": "profile",
+            "description": ""
+          },
+          {
+            "type": "cad.core.Sketch",
+            "name": "path",
+            "description": ""
+          },
+          {
+            "type": "boolean",
+            "name": "twist",
+            "description": ""
+          }
+        ],
+        "signature": "public static void sweep(cad.core.Sketch profile, cad.core.Sketch path, boolean twist)",
+        "description": "",
+        "returns": ""
+      },
+      {
         "name": "calculateSurfaceArea",
         "visibility": "public",
         "static": "static",
@@ -2111,6 +2190,43 @@
         "returnType": "float",
         "parameters": [],
         "signature": "public static float calculateVolume()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "extrudeCut",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "cad.core.Sketch",
+            "name": "sketch",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "depth",
+            "description": ""
+          }
+        ],
+        "signature": "public static void extrudeCut(cad.core.Sketch sketch, float depth)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "shell",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float",
+            "name": "thickness",
+            "description": ""
+          }
+        ],
+        "signature": "public static void shell(float thickness)",
         "description": "",
         "returns": ""
       },
@@ -3649,6 +3765,25 @@
           }
         ],
         "signature": "public RadialDimension(float centerX, float centerY, float radius, boolean showDiameter, String unit)"
+      },
+      {
+        "name": "RadialDimension",
+        "visibility": "public",
+        "parameters": [
+          {
+            "type": "cad.core.Sketch.Arc",
+            "name": "arc"
+          },
+          {
+            "type": "boolean",
+            "name": "showDiameter"
+          },
+          {
+            "type": "String",
+            "name": "unit"
+          }
+        ],
+        "signature": "public RadialDimension(cad.core.Sketch.Arc arc, boolean showDiameter, String unit)"
       }
     ],
     "methods": [
@@ -7116,6 +7251,16 @@
         "signature": "private void showUnsavedChangesDialog(Stage owner)",
         "description": "",
         "returns": ""
+      },
+      {
+        "name": "saveBeforeExit",
+        "visibility": "private",
+        "static": "",
+        "returnType": "boolean",
+        "parameters": [],
+        "signature": "private boolean saveBeforeExit()",
+        "description": "Opens a native file chooser to save the current work before exiting. Uses the OS-native file manager (Nautilus/Dolphin on Linux, File Explorer on Windows, Finder on macOS).",
+        "returns": "true if file was saved successfully, false if cancelled"
       },
       {
         "name": "main",
