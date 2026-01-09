@@ -362,7 +362,26 @@ sudo dnf install sketchapp-4.5.0-1.x86_64.rpm
 
 To ensure the integrity of your download, you can verify the SHA256 checksum. You can find the `SHA256SUMS` file in the releases or the `Binaries/` directory.
 
-### Linux / macOS
+### Verifying GPG Signatures
+
+To ensure the release files have not been tampered with, you can verify the GPG signature.
+
+1.  **Import the Public Key**
+    Download `public.gpg` from the release and import it:
+    ```bash
+    gpg --import public.gpg
+    ```
+    **Key ID:** `8EB08A8C4A7723F4D74013DA7224C931D9B24AD1`
+    **Fingerprint:** `97618304F1FB877217E8B8516261D7A47482CB80`
+
+2.  **Verify the Signature**
+    Download `SHA256SUMS` and `SHA256SUMS.asc`. Run:
+    ```bash
+    gpg --verify SHA256SUMS.asc SHA256SUMS
+    ```
+    Confirm that the output reports a **Good signature**.
+
+### Verifying Checksums
 Run the following command in your terminal where you downloaded the file and `SHA256SUMS`:
 
 ```bash
