@@ -1,0 +1,48 @@
+# --- DIRECTORY EXCLUSIONS (Fastest Method) ---
+# Ignore the entire Binaries folder and standard build folders
+Binaries/
+target/
+build/
+bin/
+.mvn/
+env/
+venv/
+.venv/
+.idea/
+.vscode/
+
+# --- FILE PATTERN EXCLUSIONS (Safety Net) ---
+# Just in case these files exist outside the Binaries/ folder
+
+# Linux Packages
+*.xbps
+*.pkg.tar.zst
+*.deb
+*.rpm
+*.iso
+*.img
+*.exe
+*.dmg
+
+# Compressed Archives
+*.zip
+*.tar.gz
+*.tar.xz
+*.7z
+*.rar
+
+# Java & Python Artifacts
+*.class
+*.jar
+*.war
+*.ear
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Documentation & Media
+*.pdf
+*.svg
+*.png
+*.jpg
