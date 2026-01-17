@@ -7752,9 +7752,9 @@
       }
     ]
   },
-  "cad.operations.Unknown": {
+  "cad.operations.CSGToBRepConverter": {
     "package": "cad.operations",
-    "className": "Unknown",
+    "className": "CSGToBRepConverter",
     "file": "cad/operations/CSGToBRepConverter.java",
     "constructors": [],
     "methods": []

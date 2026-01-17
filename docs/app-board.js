@@ -461,97 +461,105 @@ function inferDescription(method, isConstructor) {
 
     // Handle specific verbs
     if (verb === 'get') {
-        return `Retrieves the ${enhancedNoun}`;
+        return `Retrieves the ${enhancedNoun}.`;
     }
     if (verb === 'set') {
-        return `Sets the ${enhancedNoun}`;
+        return `Sets the ${enhancedNoun}.`;
     }
     if (verb === 'is' || verb === 'has' || verb === 'can') {
-        return `Checks if ${noun ? 'it ' + name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase() : 'condition is true'}`;
+        return `Checks if ${noun ? 'it ' + name.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase() : 'condition is true'}.`;
     }
     if (verb === 'add') {
-        return `Adds a new ${noun || 'item'} to the collection`;
+        return `Adds a new ${noun || 'item'} to the collection.`;
     }
     if (verb === 'remove' || verb === 'delete') {
-        return `Removes the specified ${noun || 'item'}`;
+        return `Removes the specified ${noun || 'item'}.`;
     }
     if (verb === 'create' || verb === 'make' || verb === 'build') {
-        return `Constructs and returns a new ${noun || 'object'}`;
+        if (noun.includes('brep') || noun.includes('body')) {
+            return `Constructs a new Boundary Representation (B-Rep) body from the provided inputs.`;
+        }
+        return `Constructs and returns a new ${noun || 'object'}.`;
     }
     if (verb === 'compute' || verb === 'calculate') {
-        return `Calculates the ${noun || 'value'} based on current state`;
+        return `Calculates the ${noun || 'value'} based on current state.`;
     }
     if (verb === 'solve') {
-        return `Solves the active limits or equations`;
+        return `Solves the active limits or equations to satisfy constraints.`;
     }
     if (verb === 'update') {
-        return `Updates the ${noun || 'internal state'}`;
+        return `Updates the ${noun || 'internal state'} to reflect changes.`;
     }
     if (verb === 'handle') {
-        return `Executes the logic for the '${noun}' command or event`;
+        return `Executes the logic for the '${noun}' command or event.`;
     }
     if (verb === 'render' || verb === 'draw') {
-        return `Renders the ${noun || 'component'} to the graphics context`;
+        return `Renders the ${noun || 'component'} to the graphics context.`;
     }
     if (verb === 'export') {
-        return `Exports the ${noun || 'data'} to an external file format`;
+        return `Exports the ${noun || 'data'} to an external file format.`;
     }
     if (verb === 'load' || verb === 'import') {
-        return `Loads ${noun || 'data'} from an external source`;
+        return `Loads ${noun || 'data'} from an external source.`;
     }
     if (verb === 'parse') {
-        return `Parses the ${noun || 'input'} string`;
+        return `Parses the ${noun || 'input'} string.`;
     }
     if (verb === 'convert') {
-        return `Converts the object to ${noun || 'another format'}`;
+        return `Converts the object to ${noun || 'another format'}.`;
     }
     if (verb === 'edit' || verb === 'modify' || verb === 'change') {
-        return `Modifies the properties or configuration of the ${noun || 'object'}`;
+        return `Modifies the properties or configuration of the ${noun || 'object'}.`;
     }
     if (verb === 'init' || verb === 'initialize') {
-        return `Initializes the ${noun || 'component'} and prepares it for use`;
+        return `Initializes the ${noun || 'component'} and prepares it for use.`;
     }
     if (verb === 'reset' || verb === 'clear') {
-        return `Resets the ${noun || 'state'} to its default values`;
+        return `Resets the ${noun || 'state'} to its default values.`;
     }
     if (verb === 'check' || verb === 'validate' || verb === 'verify') {
-        return `Validates the ${noun || 'condition'} and returns the result`;
+        return `Validates the ${noun || 'condition'} and returns the result.`;
     }
     if (verb === 'refresh' || verb === 'reload') {
-        return `Refreshes the ${noun || 'view'} to reflect current state`;
+        return `Refreshes the ${noun || 'view'} to reflect current state.`;
     }
     if (verb === 'select' || verb === 'deselect') {
-        return `Updates the selection state of the ${noun || 'item'}`;
+        return `Updates the selection state of the ${noun || 'item'}.`;
     }
     if (verb === 'toggle') {
-        return `Toggles the state of the ${noun || 'option'}`;
+        return `Toggles the state of the ${noun || 'option'}.`;
     }
     if (verb === 'apply') {
-        return `Applies the ${noun || 'configuration'} changes`;
+        return `Applies the ${noun || 'configuration'} changes.`;
     }
     if (verb === 'process') {
-        return `Processes the provided ${noun || 'data'}`;
+        return `Processes the provided ${noun || 'data'}.`;
+    }
+
+    // Upload faces specific
+    if (name === 'uploadFaces') {
+        return "Uploads the geometric face data to the GPU buffer for rendering.";
     }
 
     // exact method name checks
-    if (name === 'execute') return "Executes the command operation";
-    if (name === 'undo') return "Reverses the effects of this command";
-    if (name === 'redo') return "Re-applies the effects of this command";
-    if (name === 'toString') return "Returns a string representation of this object";
-    if (name === 'hashCode') return "Returns a hash code value for the object";
-    if (name === 'equals') return "Indicates whether some other object is equal to this one";
-    if (name === 'run') return "Executes the runnable task";
+    if (name === 'execute') return "Executes the command operation.";
+    if (name === 'undo') return "Reverses the effects of this command.";
+    if (name === 'redo') return "Re-applies the effects of this command.";
+    if (name === 'toString') return "Returns a string representation of this object.";
+    if (name === 'hashCode') return "Returns a hash code value for the object.";
+    if (name === 'equals') return "Indicates whether some other object is equal to this one.";
+    if (name === 'run') return "Executes the runnable task.";
 
     // Default: "Do Something" -> "Do something"
     // If it's a single word and not a common verb, try to deduce meaning
     if (words.length === 1) {
         // If void return and no params, it might be an action like "init" or "reset"
         if (method.returnType === 'void') {
-            return `Performs the ${name} operation`;
+            return `Performs the ${name} operation.`;
         }
         // If it returns something, it might be a getter-like: e.g. "length()"
         if (method.returnType !== 'void' && method.parameters.length === 0) {
-            return `Gets the ${name} of the object`;
+            return `Gets the ${name} of the object.`;
         }
     }
 
