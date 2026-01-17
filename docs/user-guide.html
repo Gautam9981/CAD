@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SketchApp - User Guide</title>
+    <link rel="stylesheet" href="app-board.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .guide-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            color: #e2e8f0;
+        }
+
+        .guide-section {
+            margin-bottom: 3rem;
+            background: #1e293b;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .guide-title {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: #3b82f6;
+        }
+
+        h2 {
+            border-bottom: 1px solid #334155;
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+
+        .shortcut-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .shortcut-table th,
+        .shortcut-table td {
+            text-align: left;
+            padding: 0.75rem;
+            border-bottom: 1px solid #334155;
+        }
+
+        .shortcut-table th {
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        kbd {
+            background: #334155;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-family: monospace;
+            border: 1px solid #475569;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: #94a3b8;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            color: #f8fafc;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="guide-container">
+        <a href="index.html" class="back-link">← Back to Home</a>
+
+        <h1 class="guide-title">SketchApp User Guide</h1>
+
+        <div class="guide-section">
+            <h2>Introduction</h2>
+            <p>Welcome to SketchApp! This application allows you to create 2D sketches and extruder them into 3D models.
+                It features a constraint-based solver and parametric modeling capabilities.</p>
+        </div>
+
+        <div class="guide-section">
+            <h2>Keyboard Shortcuts</h2>
+            <table class="shortcut-table">
+                <thead>
+                    <tr>
+                        <th>Action</th>
+                        <th>Shortcut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>New Sketch</td>
+                        <td><kbd>Ctrl</kbd> + <kbd>N</kbd></td>
+                    </tr>
+                    <tr>
+                        <td>Extrude</td>
+                        <td><kbd>Ctrl</kbd> + <kbd>E</kbd></td>
+                    </tr>
+                    <tr>
+                        <td>Undo</td>
+                        <td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td>
+                    </tr>
+                    <tr>
+                        <td>Redo</td>
+                        <td><kbd>Ctrl</kbd> + <kbd>Y</kbd></td>
+                    </tr>
+                    <tr>
+                        <td>Save</td>
+                        <td><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
+                    </tr>
+                    <tr>
+                        <td>Pan View</td>
+                        <td><kbd>Middle Click</kbd> + Drag</td>
+                    </tr>
+                    <tr>
+                        <td>Rotate View</td>
+                        <td><kbd>Right Click</kbd> + Drag</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="guide-section">
+            <h2>Basic Operations</h2>
+            <h3>Sketching</h3>
+            <p>Select a plane and use the toolbar to draw lines, circles, and arcs. Apply constraints like Parallel,
+                Perpendicular, and Coincident to define the geometry.</p>
+
+            <h3>Extrusion</h3>
+            <p>Once your sketch is closed, use the Extrude command to turn it into a 3D solid. You can specify the depth
+                and direction.</p>
+        </div>
+    </div>
+</body>
+
+</html>
