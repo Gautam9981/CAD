@@ -381,7 +381,7 @@ sudo dnf install sketchapp-4.5.0-1.x86_64.rpm
 
 
 > [!NOTE]
-> The macOS x64 binary has been tested and confirmed working on macOS 14.8.3 and newer. The ARM variant is untested. Both builds are generated on macOS 15 (Sequoia).
+> The macOS x64 binary has been tested and confirmed working on macOS 12.7.6 and newer. Both builds are generated on macOS 15 (Sequoia).
 
 ## Verifying Downloads
 
