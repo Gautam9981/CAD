@@ -5,167 +5,57 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SketchApp - User Guide</title>
-    <link rel="stylesheet" href="app-board.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="landing.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        .guide-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 2rem;
-            color: #e2e8f0;
-        }
-
-        .guide-section {
-            margin-bottom: 3rem;
-            background: #1e293b;
-            padding: 2rem;
-            border-radius: 12px;
-            border: 1px solid #334155;
-        }
-
-        .guide-title {
-            font-size: 2rem;
-            margin-bottom: 1.5rem;
-            color: #3b82f6;
-        }
-
-        h2 {
-            border-bottom: 1px solid #334155;
-            padding-bottom: 0.5rem;
-            margin-top: 0;
-        }
-
-        .shortcut-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        .shortcut-table th,
-        .shortcut-table td {
-            text-align: left;
-            padding: 0.75rem;
-            border-bottom: 1px solid #334155;
-        }
-
-        .shortcut-table th {
-            color: #94a3b8;
-            font-weight: 500;
-        }
-
-        kbd {
-            background: #334155;
-            padding: 0.2rem 0.5rem;
-            border-radius: 4px;
-            font-family: monospace;
-            border: 1px solid #475569;
+        /* Override specific landing.css styles for this page if needed, or reuse */
+        .landing-container {
+            margin-top: 5vh;
         }
 
         .back-link {
-            display: inline-block;
-            margin-bottom: 2rem;
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
             color: #94a3b8;
             text-decoration: none;
+            z-index: 20;
         }
 
         .back-link:hover {
-            color: #f8fafc;
+            color: white;
         }
     </style>
 </head>
 
 <body>
-    <div class="guide-container">
-        <a href="index.html" class="back-link">← Back to Home</a>
+    <div class="background-blur"></div>
+    <a href="index.html" class="back-link">← Back to Home</a>
 
-        <h1 class="guide-title">SketchApp User Guide</h1>
-
-        <div class="guide-section">
-            <h2>Introduction</h2>
-            <p>Welcome to SketchApp! This application allows you to create 2D sketches and extruder them into 3D models.
-                It features a constraint-based solver and parametric modeling capabilities.</p>
+    <div class="landing-container">
+        <div class="logo-container">
+            <h1 class="logo">User Guide</h1>
+            <p class="subtitle">Select a topic to get started</p>
         </div>
 
-        <div class="guide-section">
-            <h2>Keyboard Shortcuts</h2>
-            <table class="shortcut-table">
-                <thead>
-                    <tr>
-                        <th>Action</th>
-                        <th>Shortcut</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>New Sketch</td>
-                        <td><kbd>Ctrl</kbd> + <kbd>N</kbd></td>
-                    </tr>
-                    <tr>
-                        <td>Extrude</td>
-                        <td><kbd>Ctrl</kbd> + <kbd>E</kbd></td>
-                    </tr>
-                    <tr>
-                        <td>Undo</td>
-                        <td><kbd>Ctrl</kbd> + <kbd>Z</kbd></td>
-                    </tr>
-                    <tr>
-                        <td>Redo</td>
-                        <td><kbd>Ctrl</kbd> + <kbd>Y</kbd></td>
-                    </tr>
-                    <tr>
-                        <td>Save</td>
-                        <td><kbd>Ctrl</kbd> + <kbd>S</kbd></td>
-                    </tr>
-                    <tr>
-                        <td>Pan View</td>
-                        <td><kbd>Middle Click</kbd> + Drag</td>
-                    </tr>
-                    <tr>
-                        <td>Rotate View</td>
-                        <td><kbd>Right Click</kbd> + Drag</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <div class="nav-cards">
+            <a href="features.html" class="nav-card">
+                <span class="card-icon">⚡</span>
+                <span class="card-title">Features</span>
+                <span class="card-desc">Overview of sketching tools, 3D operations, and analysis.</span>
+            </a>
 
-        <div class="guide-section">
-            <h2>Basic Operations</h2>
+            <a href="shortcuts.html" class="nav-card">
+                <span class="card-icon">⌨️</span>
+                <span class="card-title">Shortcuts</span>
+                <span class="card-desc">Speed up your workflow with keyboard commands.</span>
+            </a>
 
-            <h3>1. Sketching</h3>
-            <p>Sketching is the foundation of your 3D models. Use the toolbar or shortcuts to create 2D geometry.</p>
-            <ul>
-                <li><strong>Line</strong>: Click and drag to create segments.</li>
-                <li><strong>Circle</strong>: Click for center, drag for radius.</li>
-                <li><strong>Arc</strong>: Define center, start, and end points.</li>
-                <li><strong>Spline</strong>: Create smooth curves by defining control points. Double-click to finish.
-                </li>
-                <li><strong>Polygon</strong>: Create regular polygons (triangles, hexagons, etc.).</li>
-                <li><strong>Point</strong>: Place reference points in the workspace.</li>
-            </ul>
-
-            <h3>2. Constraints</h3>
-            <p>Constraints define the rules for your geometry, ensuring your design intention is met.</p>
-            <ul>
-                <li><strong>Geometric</strong>: Horizontal, Vertical, Parallel, Perpendicular, Tangent, Concentric.</li>
-                <li><strong>Positioning</strong>: Coincident (connect points), Midpoint, Fixed (lock position).</li>
-                <li><strong>Relations</strong>: Equal (same length/radius), Collinear, Symmetric.</li>
-            </ul>
-
-            <h3>3. 3D Features</h3>
-            <p>Turn your 2D sketches into 3D solids.</p>
-            <ul>
-                <li><strong>Extrude</strong>: Push a closed sketch profile into 3D space.</li>
-                <li><strong>Revolve</strong>: Rotate a profile around an axis.</li>
-                <li><strong>Sweep</strong>: Move a profile along a path.</li>
-                <li><strong>Loft</strong>: Blend multiple profiles together.</li>
-                <li><strong>Boolean Operations</strong>: Cut material or Intersect two bodies.</li>
-                <li><strong>Primitives</strong>: Quickly create Cubes and Spheres without sketching.</li>
-            </ul>
-
-            <h3>4. Analysis & Aerodynamics</h3>
-            <p><strong>NACA Airfoils</strong>: Generate standard airfoil shapes for aerodynamic design.</p>
-            <p><strong>CFD Analysis</strong>: Run Computational Fluid Dynamics simulations on your models.</p>
-            <p><strong>Mass Properties</strong>: Calculate volume, surface area, and center of mass.</p>
+            <a href="tutorials.html" class="nav-card">
+                <span class="card-icon">📺</span>
+                <span class="card-title">Tutorials</span>
+                <span class="card-desc">Watch step-by-step video guides and examples.</span>
+            </a>
         </div>
     </div>
 </body>
