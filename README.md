@@ -309,6 +309,21 @@ Implemented kite creation functionality (sketching + extruding). Feature in inte
 
 ---
 
+### Day 32 (1/17/26) - Documentation Overhaul
+**Major Update:** Complete reconstruction of the application documentation
+- **New Structure:** Split into distinct "User Guide" and "Developer API" sections
+- **User Guide Hub:** Centralized hub connecting to:
+  - **Shortcuts:** Quick reference for keyboard commands
+  - **Features:** Detailed overview of Sketching, Constraints, 3D Operations, and Analysis tools
+  - **Tutorials:** Platform for local video guides (videos coming soon!)
+- **Developer API:** Improved Javadoc-style methods descriptions and fixed "Unknown" class mappings
+- **Visual Upgrade:** Implemented premium "Glassmorphism" UI for all documentation pages
+
+**Coming Soon:**
+- 🎥 **Video Tutorials:** I will be adding step-by-step video guides to the Tutorials section very soon to demonstrate key workflows like "First Sketch" and "Aerodynamics Analysis".
+
+---
+
 ## Installation & Running
 
 ### Windows
