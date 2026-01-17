@@ -57,13 +57,17 @@
 
         .video-thumbnail {
             width: 100%;
-            height: 180px;
-            /* 16:9 approx */
+            height: auto;
             background: #0f172a;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #64748b;
+        }
+
+        video {
+            width: 100%;
+            display: block;
         }
 
         .video-content {
@@ -102,8 +106,10 @@
             <!-- Video 1 -->
             <div class="video-card">
                 <div class="video-thumbnail">
-                    <!-- Embed YouTube iframe here -->
-                    <span>Coming Soon</span>
+                    <video controls>
+                        <source src="videos/tutorials_01.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
                 </div>
                 <div class="video-content">
                     <div class="video-title">Getting Started: Your First Sketch</div>
@@ -115,7 +121,10 @@
             <!-- Video 2 -->
             <div class="video-card">
                 <div class="video-thumbnail">
-                    <span>Coming Soon</span>
+                    <video controls>
+                        <source src="videos/tutorials_02.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
                 </div>
                 <div class="video-content">
                     <div class="video-title">Mastering Constraints</div>
@@ -126,7 +135,10 @@
             <!-- Video 3 -->
             <div class="video-card">
                 <div class="video-thumbnail">
-                    <span>Coming Soon</span>
+                    <video controls>
+                        <source src="videos/tutorials_03.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
                 </div>
                 <div class="video-content">
                     <div class="video-title">Aerodynamics Workflow</div>
@@ -136,16 +148,20 @@
         </div>
 
         <div class="create-tutorial-tip">
-            <h3>🎥 How to create your own tutorials:</h3>
+            <h3>🎥 How to host your own tutorials:</h3>
             <ol>
-                <li><strong>Record</strong>: Use free software like <a href="https://obsproject.com/"
-                        style="color: #60a5fa;">OBS Studio</a> (available on Linux) to record your screen.</li>
-                <li><strong>Edit</strong>: Trim the start/end using Kdenlive or just upload directly if it's a single
-                    take.</li>
-                <li><strong>Upload</strong>: Upload to YouTube or Vimeo.</li>
-                <li><strong>Embed</strong>: Copy the "Embed" code (iframe) and paste it into the
-                    <code>.video-thumbnail</code> div in this file.</li>
+                <li><strong>Record</strong>: Use <a href="https://obsproject.com/" style="color: #60a5fa;">OBS
+                        Studio</a> to record your screen.</li>
+                <li><strong>Save</strong>: Save your recording as an <code>.mp4</code> or <code>.webm</code> file.</li>
+                <li><strong>Organize</strong>: Move your video file into the <code>docs/videos/</code> folder in this
+                    project.</li>
+                <li><strong>Link</strong>: Rename your files to match the links above (e.g.,
+                    <code>tutorials_01.mp4</code>) OR edit this HTML file to point to your new filename.</li>
             </ol>
+            <p style="margin-top: 1rem; font-size: 0.9em; color: #94a3b8;">
+                <strong>Note:</strong> If you plan to push these changes to GitHub, keep your video files small (under
+                50MB) or use Git LFS.
+            </p>
         </div>
     </div>
 </body>
