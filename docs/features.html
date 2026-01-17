@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SketchApp - Features</title>
+    <link rel="stylesheet" href="app-board.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .guide-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            color: #e2e8f0;
+        }
+
+        .guide-section {
+            margin-bottom: 3rem;
+            background: #1e293b;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #334155;
+        }
+
+        .guide-title {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            color: #3b82f6;
+        }
+
+        h2 {
+            border-bottom: 1px solid #334155;
+            padding-bottom: 0.5rem;
+            margin-top: 0;
+        }
+
+        ul {
+            line-height: 1.6;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 2rem;
+            color: #94a3b8;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            color: #f8fafc;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="guide-container">
+        <a href="user-guide.html" class="back-link">← Back to User Guide</a>
+
+        <h1 class="guide-title">Basic Features</h1>
+
+        <div class="guide-section">
+            <h2>1. Sketching Tools</h2>
+            <p>Sketching is the foundation of your 3D models. Use the toolbar or shortcuts to create 2D geometry.</p>
+            <ul>
+                <li><strong>Line</strong>: Click and drag to create segments.</li>
+                <li><strong>Circle</strong>: Click for center, drag for radius.</li>
+                <li><strong>Arc</strong>: Define center, start, and end points.</li>
+                <li><strong>Spline</strong>: Create smooth curves by defining control points. Double-click to finish.
+                </li>
+                <li><strong>Polygon</strong>: Create regular polygons (triangles, hexagons, etc.).</li>
+                <li><strong>Point</strong>: Place reference points in the workspace.</li>
+            </ul>
+        </div>
+
+        <div class="guide-section">
+            <h2>2. Constraints</h2>
+            <p>Constraints define the rules for your geometry, ensuring your design intention is met.</p>
+            <ul>
+                <li><strong>Geometric</strong>: Horizontal, Vertical, Parallel, Perpendicular, Tangent, Concentric.</li>
+                <li><strong>Positioning</strong>: Coincident (connect points), Midpoint, Fixed (lock position).</li>
+                <li><strong>Relations</strong>: Equal (same length/radius), Collinear, Symmetric.</li>
+            </ul>
+        </div>
+
+        <div class="guide-section">
+            <h2>3. 3D Features</h2>
+            <p>Turn your 2D sketches into 3D solids.</p>
+            <ul>
+                <li><strong>Extrude</strong>: Push a closed sketch profile into 3D space.</li>
+                <li><strong>Revolve</strong>: Rotate a profile around an axis.</li>
+                <li><strong>Sweep</strong>: Move a profile along a path.</li>
+                <li><strong>Loft</strong>: Blend multiple profiles together.</li>
+                <li><strong>Boolean Operations</strong>: Cut material or Intersect two bodies.</li>
+                <li><strong>Primitives</strong>: Quickly create Cubes and Spheres without sketching.</li>
+            </ul>
+        </div>
+
+        <div class="guide-section">
+            <h2>4. Analysis & Aerodynamics</h2>
+            <p>Advanced tools for specialized workflows.</p>
+            <ul>
+                <li><strong>NACA Airfoils</strong>: Generate standard airfoil shapes for aerodynamic design.</li>
+                <li><strong>CFD Analysis</strong>: Run Computational Fluid Dynamics simulations on your models.</li>
+                <li><strong>Mass Properties</strong>: Calculate volume, surface area, and center of mass.</li>
+            </ul>
+        </div>
+    </div>
+</body>
+
+</html>
