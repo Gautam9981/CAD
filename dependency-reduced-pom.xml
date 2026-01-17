@@ -302,6 +302,11 @@
           <version>23.0.1</version>
           <classifier>linux-aarch64</classifier>
         </dependency>
+        <dependency>
+          <groupId>commons-io</groupId>
+          <artifactId>commons-io</artifactId>
+          <version>2.14</version>
+        </dependency>
       </dependencies>
     </profile>
   </profiles>
