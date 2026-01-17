@@ -1,0 +1,17 @@
+# Binaries
+Binaries/
+*.zip
+*.tar.zst
+*.xbps
+*.rpm
+*.deb
+x86_64-repodata/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+
+# Java
+target/
+*.class
