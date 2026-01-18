@@ -8,7 +8,7 @@ echo "=== Building macOS Installer for SketchApp ==="
 
 # Configuration
 APP_NAME="SketchApp"
-APP_VERSION="4.5.0"
+APP_VERSION="5.0.0"
 MAIN_CLASS="cad.Main"
 JAR_FILE="../target/SketchApp.jar"
 OUTPUT_DIR="installer"
