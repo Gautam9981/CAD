@@ -211,7 +211,7 @@ public class GuiFX extends Application {
             }
         });
 
-        primaryStage.setTitle("SketchApp (4.5)");
+        primaryStage.setTitle("SketchApp (5.0)");
 
         primaryStage.setOnCloseRequest(event -> {
             if (sketch.isModified()) {
