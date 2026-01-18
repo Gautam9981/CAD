@@ -364,17 +364,6 @@ sudo dnf install sketchapp-4.5.0-1.x86_64.rpm
    sudo pacman -U SketchApp-debug-4.5.0-1-x86_64.pkg.tar.zst
    ```
 
-**For Void Linux (.xbps):**
-1. Download the `.xbps` package (e.g., `SketchApp-4.5.0_1.x86_64.xbps`) from releases.
-2. Index the package in the current directory:
-   ```bash
-   xbps-rindex -a *.xbps
-   ```
-3. Install the package:
-   ```bash
-   sudo xbps-install --repository=$PWD SketchApp
-   ```
-
 
 
 ---
