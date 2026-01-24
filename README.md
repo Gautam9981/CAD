@@ -349,11 +349,19 @@ Implemented kite creation functionality (sketching + extruding). Feature in inte
 sudo dpkg -i sketchapp_4.5.0-1_amd64.deb
 sudo apt-get install -f  # Install any missing dependencies
 ```
+**To run:**
+```bash
+/opt/sketchapp/bin/sketchapp
+```
 
 **For Fedora/RHEL/CentOS (.rpm):**
 ```bash
 sudo dnf install sketchapp-4.5.0-1.x86_64.rpm
 # Or: sudo rpm -i sketchapp-4.5.0-1.x86_64.rpm
+```
+**To run:**
+```bash
+/opt/sketchapp/bin/sketchapp
 ```
 
 **For Arch Linux (.pkg.tar.zst):**
@@ -363,17 +371,10 @@ sudo dnf install sketchapp-4.5.0-1.x86_64.rpm
    sudo pacman -U SketchApp-4.5.0-1-x86_64.pkg.tar.zst
    sudo pacman -U SketchApp-debug-4.5.0-1-x86_64.pkg.tar.zst
    ```
-
-**For Void Linux (.xbps):**
-1. Download the `.xbps` package (e.g., `SketchApp-4.5.0_1.x86_64.xbps`) from releases.
-2. Index the package in the current directory:
-   ```bash
-   xbps-rindex -a *.xbps
-   ```
-3. Install the package:
-   ```bash
-   sudo xbps-install --repository=$PWD SketchApp
-   ```
+**To run:**
+```bash
+sketchapp
+```
 
 
 
