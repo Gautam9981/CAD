@@ -1,7 +1,6 @@
 package cad.core;
 
 import java.util.UUID;
-import java.util.List;
 
 public abstract class Constraint {
     protected String id;
@@ -30,9 +29,7 @@ public abstract class Constraint {
         this.active = active;
     }
 
-    
     public abstract double getError();
-    
-    
+
     public abstract void solve();
 }

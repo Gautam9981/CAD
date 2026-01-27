@@ -14,7 +14,6 @@ public enum ConstraintType {
 
     SYMMETRIC,
 
-    // Advanced constraints
     TANGENT,
     CONCENTRIC,
     MIDPOINT,

@@ -5,13 +5,11 @@ import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.embed.swing.SwingNode;
 import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 
 import javafx.scene.control.TextArea;
@@ -33,8 +31,6 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Tooltip;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.TreeView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.Alert;
@@ -86,8 +82,6 @@ import cad.core.MassProperties;
 import cad.core.Sketch.Line;
 import cad.core.Sketch.PointEntity;
 import cad.core.Sketch.Entity;
-
-import cad.core.Sketch.Entity;
 import cad.core.ViewChangeCommand;
 import cad.aerodynamics.NacaDialog;
 import cad.aerodynamics.CfdDialog;
@@ -96,8 +90,7 @@ import cad.analysis.FlowVisualizer;
 public class GuiFX extends Application {
 
     private TextArea outputArea;
-    private TextArea helpText;
-    private ScrollPane helpScrollPane;
+
     private JOGLCadCanvas glCanvas;
     private SwingNode canvasNode;
     private FPSAnimator animator;
@@ -253,7 +246,11 @@ public class GuiFX extends Application {
         btnRight.setTooltip(new Tooltip("Right View"));
         btnRight.setOnAction(e -> setViewRight());
 
-        headsUpToolbar.getItems().addAll(btnIso, btnFront, btnTop, btnRight);
+        Button btn2D3D = new Button("2D/3D");
+        btn2D3D.setTooltip(new Tooltip("Toggle 2D/3D View"));
+        btn2D3D.setOnAction(e -> toggleSketchView());
+
+        headsUpToolbar.getItems().addAll(btnIso, btnFront, btnTop, btnRight, new Separator(), btn2D3D);
         viewportStack.getChildren().add(headsUpToolbar);
 
         initializeCanvasAsync(viewportStack);
@@ -262,11 +259,9 @@ public class GuiFX extends Application {
 
         TabPane featureManager = createControlPanel();
 
-        TabPane taskPane = createTaskPane();
-
         SplitPane horizontalSplit = new SplitPane();
-        horizontalSplit.getItems().addAll(featureManager, root.getCenter(), taskPane);
-        horizontalSplit.setDividerPositions(0.2, 0.85);
+        horizontalSplit.getItems().addAll(featureManager, root.getCenter());
+        horizontalSplit.setDividerPositions(0.2);
 
         root.setCenter(horizontalSplit);
 
@@ -298,6 +293,13 @@ public class GuiFX extends Application {
 
         ribbon.getStyleClass().add("ribbon-pane");
 
+        Tab fileTab = new Tab("File");
+        ToolBar fileToolbar = new ToolBar();
+        fileToolbar.getItems().addAll(
+                createRibbonButton("Load", "Open File", e -> showLoadDialog()),
+                createRibbonButton("Save", "Save STL", e -> showSaveDialog()));
+        fileTab.setContent(fileToolbar);
+
         Tab editTab = new Tab("Edit");
         ToolBar editToolbar = new ToolBar();
         editToolbar.getItems().addAll(
@@ -309,10 +311,7 @@ public class GuiFX extends Application {
         ToolBar sketchToolbar = new ToolBar();
         sketchToolbar.getItems().addAll(
                 createRibbonButton("Sketch", "Create/Edit Sketch", e -> appendOutput("Sketch Mode Active")),
-                createRibbonButton("Load", "Open File", e -> showLoadDialog()),
-                createRibbonButton("Save", "Save STL", e -> showSaveDialog()),
-                new Separator(),
-                createRibbonButton("2D/3D View", "Toggle 2D/3D View", e -> toggleSketchView()),
+                createRibbonButton("Dimension", "Measure Distance/Radius", e -> activateDimensionTool()),
                 new Separator(),
                 createRibbonButton("Line", "Line Entity",
                         e -> activateSketchTool(SketchInteractionManager.InteractionMode.SKETCH_LINE,
@@ -323,14 +322,13 @@ public class GuiFX extends Application {
                 createRibbonButton("Arc", "Arc Entity",
                         e -> activateSketchTool(SketchInteractionManager.InteractionMode.SKETCH_ARC,
                                 "Arc: Click center, start point, then end point")),
+                createRibbonButton("Spline", "Spline Entity",
+                        e -> activateSketchTool(SketchInteractionManager.InteractionMode.SKETCH_SPLINE,
+                                "Spline: Click to add points, double-click to finish")),
                 createRibbonButton("Polygon", "Polygon Entity", e -> showPolygonParametersDialog()),
                 createRibbonButton("Point", "Point Entity",
                         e -> activateSketchTool(SketchInteractionManager.InteractionMode.SKETCH_POINT,
                                 "Point: Click to place points")),
-                createRibbonButton("Spline", "Spline Entity",
-                        e -> activateSketchTool(SketchInteractionManager.InteractionMode.SKETCH_SPLINE,
-                                "Spline: Click to add points, double-click to finish")),
-
                 createRibbonButton("Kite", "Kite Entity", e -> showKiteDialog()),
                 createRibbonButton("NACA", "NACA Airfoil", e -> showNacaDialog()),
                 new Separator(),
@@ -360,7 +358,6 @@ public class GuiFX extends Application {
         Tab evaluateTab = new Tab("Evaluate");
         ToolBar evaluateToolbar = new ToolBar();
         evaluateToolbar.getItems().addAll(
-                createRibbonButton("Dimension", "Measure Distance/Radius", e -> activateDimensionTool()),
                 createRibbonButton("Mass Props", "Calculate Mass Properties", e -> showMassPropertiesDialog()),
                 createRibbonButton("Centroid", "Toggle Centroid Display", e -> toggleCentroid()),
                 new Separator(),
@@ -374,8 +371,6 @@ public class GuiFX extends Application {
                 new Separator(),
                 createRibbonButton("Horizontal", "Make Horizontal", e -> applyHorizontalConstraint()),
                 createRibbonButton("Vertical", "Make Vertical", e -> applyVerticalConstraint()),
-                createRibbonButton("Coincident", "Make Coincident", e -> applyCoincidentConstraint()),
-                createRibbonButton("Fixed", "Fix Position", e -> applyFixedConstraint()),
                 createRibbonButton("Coincident", "Make Coincident", e -> applyCoincidentConstraint()),
                 createRibbonButton("Fixed", "Fix Position", e -> applyFixedConstraint()),
                 new Separator(),
@@ -400,9 +395,7 @@ public class GuiFX extends Application {
         toolsToolbar.getItems().addAll(
                 createRibbonButton("Record", "Record Macro", e -> macroManager.startRecording()),
                 createRibbonButton("Stop", "Stop Recording", e -> macroManager.stopRecording()),
-                createRibbonButton("Run", "Run Macro", e -> showRunMacroMenu()),
-                new Separator(),
-                createRibbonButton("Add-Ins", "Manage Add-Ins", e -> appendOutput("Add-In Manager opened.")));
+                createRibbonButton("Run", "Run Macro", e -> showRunMacroMenu()));
         toolsTab.setContent(toolsToolbar);
 
         Tab aeroTab = new Tab("Aerodynamics");
@@ -412,7 +405,8 @@ public class GuiFX extends Application {
                 createRibbonButton("Analyze", "CFD Analysis", e -> showCfdDialog()));
         aeroTab.setContent(aeroToolbar);
 
-        ribbon.getTabs().addAll(editTab, sketchTab, featuresTab, constraintsTab, evaluateTab, aeroTab, toolsTab);
+        ribbon.getTabs().addAll(fileTab, editTab, sketchTab, featuresTab, constraintsTab, evaluateTab, aeroTab,
+                toolsTab);
         return ribbon;
     }
 
@@ -471,56 +465,6 @@ public class GuiFX extends Application {
         container.getChildren().add(tree);
 
         return container;
-    }
-
-    private TabPane createTaskPane() {
-        TabPane taskPane = new TabPane();
-        taskPane.setSide(javafx.geometry.Side.RIGHT);
-        taskPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
-        taskPane.setMinWidth(250);
-
-        Tab resourcesTab = new Tab("Resources");
-        VBox resourcesContent = new VBox(10);
-        resourcesContent.setPadding(new Insets(10));
-        resourcesContent.setStyle("-fx-background-color: white;");
-
-        resourcesContent.getChildren().addAll(
-                new Label("SketchApp Tools"),
-                new Button("Property Tab Builder"),
-                new Button("Rx"),
-                new Separator(),
-                new Label("Online Resources"),
-                new Button("Customer Portal"),
-                new Button("MySketchApp"),
-                new Button("User Forums"));
-        resourcesTab.setContent(resourcesContent);
-
-        Tab libraryTab = new Tab("Design Library");
-        VBox libraryContent = new VBox();
-        libraryContent.setPadding(new Insets(5));
-        TreeItem<String> libRoot = new TreeItem<>("Design Library");
-        libRoot.setExpanded(true);
-        libRoot.getChildren().addAll(List.of(
-                new TreeItem<>("Toolbox"),
-                new TreeItem<>("3D Interconnect"),
-                new TreeItem<>("Routing"),
-                new TreeItem<>("Smart Components")));
-        TreeView<String> libTree = new TreeView<>(libRoot);
-        libraryContent.getChildren().add(libTree);
-        libraryTab.setContent(libraryContent);
-
-        Tab appearancesTab = new Tab("Appearances");
-        appearancesTab.setContent(new Label("  Appearances, Scenes,\n  and Decals"));
-
-        Tab helpTab = new Tab("Help");
-        VBox helpContent = new VBox();
-        helpContent.setFillWidth(true);
-        helpContent.getChildren().add(createHelpPane());
-        helpTab.setContent(helpContent);
-
-        taskPane.getTabs().addAll(resourcesTab, libraryTab, appearancesTab, helpTab);
-
-        return taskPane;
     }
 
     private void initializeCanvasAsync(StackPane parent) {
@@ -722,16 +666,6 @@ public class GuiFX extends Application {
         if (selected.size() == 2) {
             Entity e1 = selected.get(0);
             Entity e2 = selected.get(1);
-
-            Object obj1 = e1 instanceof Sketch.PointEntity ? ((Sketch.PointEntity) e1).getPoint() : e1;
-            Object obj2 = e2 instanceof Sketch.PointEntity ? ((Sketch.PointEntity) e2).getPoint() : e2;
-
-            // TangentConstraint handles Line-Circle, Circle-Circle, Arc-Line, etc.
-            // We need to pass the raw geometric objects usually, but let's see what
-            // TangentConstraint expects.
-            // It expects: Sketch.Circle/Arc/Line objects. Entity subclasses match this
-            // mostly.
-
             Constraint c = new cad.core.TangentConstraint(e1, e2);
             sketch.addConstraint(c);
             appendOutput("Added Tangent Constraint");
@@ -791,7 +725,6 @@ public class GuiFX extends Application {
 
     private void applyMidpointConstraint() {
         List<Entity> selected = interactionManager.getSelectedEntities();
-        // Try to find one point and one line
         Sketch.PointEntity p = null;
         Sketch.Line l = null;
 
@@ -826,22 +759,12 @@ public class GuiFX extends Application {
 
     private void applyCollinearConstraint() {
         List<Entity> selected = interactionManager.getSelectedEntities();
-        // Need 3 points? Or 2 lines?
-        // CollinearConstraint implementation expects 3 Points
-        // Standard CAD "Collinear" usually means two lines are collinear.
-        // Our implementation checks area of triangle of 3 points.
-        // Let's implement Collinear for 2 lines using the logic:
-        // Line 1 is (p1, p2), Line 2 is (p3, p4).
-        // 3 points (p1, p2, p3) collinear AND (p1, p2, p4) collinear implies lines are
-        // collinear.
 
         if (selected.size() == 2 && selected.get(0) instanceof Sketch.Line && selected.get(1) instanceof Sketch.Line) {
             Sketch.Line l1 = (Sketch.Line) selected.get(0);
             Sketch.Line l2 = (Sketch.Line) selected.get(1);
 
-            // Constrain l2's start point to be collinear with l1
             Constraint c1 = new cad.core.CollinearConstraint(l1.getStartPoint(), l1.getEndPoint(), l2.getStartPoint());
-            // Constrain l2's end point to be collinear with l1
             Constraint c2 = new cad.core.CollinearConstraint(l1.getStartPoint(), l1.getEndPoint(), l2.getEndPoint());
 
             sketch.addConstraint(c1);
@@ -850,8 +773,6 @@ public class GuiFX extends Application {
             glCanvas.repaint();
 
         } else if (selected.size() == 3) {
-            // Check if all are points
-            // ... helper for points if needed
             appendOutput("Select 2 lines for Collinear");
         } else {
             appendOutput("Select 2 lines for Collinear");
@@ -860,7 +781,6 @@ public class GuiFX extends Application {
 
     private void applySymmetricConstraint() {
         List<Entity> selected = interactionManager.getSelectedEntities();
-        // Need 2 points and 1 center line
         Sketch.PointEntity p1 = null;
         Sketch.PointEntity p2 = null;
         Sketch.Line centerLine = null;
@@ -873,10 +793,7 @@ public class GuiFX extends Application {
                     p2 = (Sketch.PointEntity) e;
             }
             if (e instanceof Sketch.Line) {
-                centerLine = (Sketch.Line) e; // Use last selected line as symmetry axis?
-                // Ideally user selects 2 points then a line, or we infer center line is
-                // construction line?
-                // For now, assume 1 line selected.
+                centerLine = (Sketch.Line) e;
             }
         }
 
@@ -2217,48 +2134,6 @@ public class GuiFX extends Application {
         return new float[] { worldX, worldY };
     }
 
-    private TitledPane createHelpPane() {
-        helpText = new TextArea();
-        helpText.setEditable(false);
-        helpText.setWrapText(true);
-        helpText.setText("Shortcuts:\n" +
-                "Rotate: Arrow Keys\n" +
-                "Zoom: Mouse Scroll\n" +
-                "Reset: Double-click plane\n" +
-                "Undo: Ctrl+Z");
-
-        helpScrollPane = new ScrollPane(helpText);
-        helpScrollPane.setFitToWidth(true);
-
-        TitledPane helpPane = new TitledPane("Help / Shortcuts", helpScrollPane);
-        helpPane.setCollapsible(true);
-        helpPane.setExpanded(false);
-        return helpPane;
-    }
-
-    private void showHelp() {
-        if (helpText == null)
-            return;
-        helpText.setText(
-                "Keyboard Shortcuts:\n" +
-                        "-------------------\n" +
-                        "Rotate View:   Arrow Keys\n" +
-                        "Zoom View:     Mouse Scroll\n" +
-                        "Reset View:    Double-click Planes in Tree\n" +
-                        "Undo:          Ctrl + Z\n" +
-                        "Redo:          Ctrl + Shift + Z\n" +
-                        "Help:          H\n\n" +
-                        "Features:\n" +
-                        "---------\n" +
-                        "Sketches:      Create 2D profiles on Z=0 plane\n" +
-                        "Constraints:   Apply Geometric relations (Horiz, Vert)\n" +
-                        "Dimensions:    Context-aware 2D and 3D measurements\n" +
-                        "Extrude:       Convert closed sketch to 3D solid\n" +
-                        "Revolve:       Revolve sketch (requires CL centerline)\n" +
-                        "Tree View:     Manage history and view planes\n\n" +
-                        "Tip: Switch to 'Sketch' tab to start drawing!");
-    }
-
     private void showSaveDialog() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save File");
@@ -3255,40 +3130,27 @@ public class GuiFX extends Application {
 
         if (result.isPresent()) {
             if (result.get() == buttonTypeSave) {
-                // Open native OS file chooser to let user choose save location
                 boolean saved = saveBeforeExit();
                 if (saved) {
-                    // Only exit if save was successful or user completed the operation
                     Platform.exit();
                     System.exit(0);
                 }
-                // If save was cancelled, don't exit - return to the application
             } else if (result.get() == buttonTypeDontSave) {
                 Platform.exit();
                 System.exit(0);
             }
-            // If Cancel was clicked, do nothing - dialog closes and app stays open
         }
     }
 
-    /**
-     * Opens a native file chooser to save the current work before exiting.
-     * Uses the OS-native file manager (Nautilus/Dolphin on Linux, File Explorer on
-     * Windows, Finder on macOS).
-     * 
-     * @return true if file was saved successfully, false if cancelled
-     */
     private boolean saveBeforeExit() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Your Work");
 
-        // Determine what type of content we have
         boolean has3DModel = (Geometry.getCurrentShape() != Geometry.Shape.NONE &&
                 !Geometry.getExtrudedTriangles().isEmpty()) ||
                 !Geometry.getLoadedStlTriangles().isEmpty();
         boolean hasSketch = sketch != null && !sketch.getEntities().isEmpty();
 
-        // Set up file filters based on what content exists
         if (has3DModel) {
             FileChooser.ExtensionFilter stlFilter = new FileChooser.ExtensionFilter("3D Model (*.stl)", "*.stl");
             fileChooser.getExtensionFilters().add(stlFilter);
@@ -3305,7 +3167,6 @@ public class GuiFX extends Application {
             }
         }
 
-        // If no content, default to DXF
         if (!has3DModel && !hasSketch) {
             FileChooser.ExtensionFilter dxfFilter = new FileChooser.ExtensionFilter("2D Sketch (*.dxf)", "*.dxf");
             fileChooser.getExtensionFilters().add(dxfFilter);
@@ -3320,7 +3181,6 @@ public class GuiFX extends Application {
             String filepath = file.getAbsolutePath();
 
             try {
-                // Determine file type and save accordingly
                 if (filepath.toLowerCase().endsWith(".stl")) {
                     if (!filepath.toLowerCase().endsWith(".stl")) {
                         filepath += ".stl";
@@ -3329,7 +3189,6 @@ public class GuiFX extends Application {
                     appendOutput("3D Model saved to: " + filepath);
                     return true;
                 } else {
-                    // Default to DXF for sketches
                     if (!filepath.toLowerCase().endsWith(".dxf")) {
                         filepath += ".dxf";
                     }
@@ -3348,7 +3207,6 @@ public class GuiFX extends Application {
                 return false;
             }
         } else {
-            // User cancelled the save dialog
             appendOutput("Save cancelled by user.");
             return false;
         }

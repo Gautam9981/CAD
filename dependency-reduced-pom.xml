@@ -4,7 +4,7 @@
   <groupId>cad</groupId>
   <artifactId>SketchApp</artifactId>
   <name>SketchApp</name>
-  <version>4.5.0</version>
+  <version>5.0.0</version>
   <build>
     <finalName>SketchApp</finalName>
     <pluginManagement>
@@ -303,9 +303,19 @@
           <classifier>linux-aarch64</classifier>
         </dependency>
         <dependency>
-          <groupId>commons-io</groupId>
-          <artifactId>commons-io</artifactId>
-          <version>2.14</version>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-lang3</artifactId>
+          <version>3.18.0</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-core</artifactId>
+          <version>2.25.3</version>
+        </dependency>
+        <dependency>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+          <version>32.0.1-android</version>
         </dependency>
       </dependencies>
     </profile>
@@ -332,8 +342,8 @@
     </dependency>
   </dependencies>
   <properties>
-    <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>17</maven.compiler.release>
     <jogl.version>2.6.0</jogl.version>
   </properties>
 </project>
