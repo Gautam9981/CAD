@@ -79,7 +79,7 @@ public class MaterialDatabaseDialog extends Dialog<ButtonType> {
 
     private TableView<Material> createMaterialTable() {
         TableView<Material> table = new TableView<>();
-        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 
         TableColumn<Material, String> nameCol = new TableColumn<>("Name");
         nameCol.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getName()));

@@ -21,7 +21,6 @@ import eu.mihosoft.jcsg.Polygon;
 import eu.mihosoft.jcsg.Extrude;
 import eu.mihosoft.jcsg.Vertex;
 import eu.mihosoft.vvecmath.Vector3d;
-import java.util.stream.Collectors;
 
 public class Geometry {
 
@@ -503,71 +502,6 @@ public class Geometry {
                 }
             }
         }
-    }
-
-    private static void generateSphereTriangles(float radius, int latDiv, int lonDiv) {
-        loadedStlTriangles.clear();
-
-        for (int lat = 0; lat < latDiv; lat++) {
-            for (int lon = 0; lon < lonDiv; lon++) {
-
-                float lat1 = (float) (Math.PI * lat / latDiv - Math.PI / 2);
-                float lat2 = (float) (Math.PI * (lat + 1) / latDiv - Math.PI / 2);
-                float lon1 = (float) (2 * Math.PI * lon / lonDiv);
-                float lon2 = (float) (2 * Math.PI * (lon + 1) / lonDiv);
-
-                float x1 = (float) (radius * Math.cos(lat1) * Math.cos(lon1));
-                float y1 = (float) (radius * Math.sin(lat1));
-                float z1 = (float) (radius * Math.cos(lat1) * Math.sin(lon1));
-
-                float x2 = (float) (radius * Math.cos(lat1) * Math.cos(lon2));
-                float y2 = (float) (radius * Math.sin(lat1));
-                float z2 = (float) (radius * Math.cos(lat1) * Math.sin(lon2));
-
-                float x3 = (float) (radius * Math.cos(lat2) * Math.cos(lon1));
-                float y3 = (float) (radius * Math.sin(lat2));
-                float z3 = (float) (radius * Math.cos(lat2) * Math.sin(lon1));
-
-                float x4 = (float) (radius * Math.cos(lat2) * Math.cos(lon2));
-                float y4 = (float) (radius * Math.sin(lat2));
-                float z4 = (float) (radius * Math.cos(lat2) * Math.sin(lon2));
-
-                if (lat > 0) {
-
-                    float[] normal1 = calculateNormal(x1, y1, z1, x2, y2, z2, x3, y3, z3);
-                    float[] tri1 = { normal1[0], normal1[1], normal1[2], x1, y1, z1, x2, y2, z2, x3, y3, z3 };
-                    loadedStlTriangles.add(tri1);
-                }
-
-                if (lat < latDiv - 1) {
-
-                    float[] normal2 = calculateNormal(x2, y2, z2, x4, y4, z4, x3, y3, z3);
-                    float[] tri2 = { normal2[0], normal2[1], normal2[2], x2, y2, z2, x4, y4, z4, x3, y3, z3 };
-                    loadedStlTriangles.add(tri2);
-                }
-            }
-        }
-    }
-
-    private static float[] calculateNormal(float x1, float y1, float z1,
-            float x2, float y2, float z2,
-            float x3, float y3, float z3) {
-
-        float ex1 = x2 - x1, ey1 = y2 - y1, ez1 = z2 - z1;
-        float ex2 = x3 - x1, ey2 = y3 - y1, ez2 = z3 - z1;
-
-        float nx = ey1 * ez2 - ez1 * ey2;
-        float ny = ez1 * ex2 - ex1 * ez2;
-        float nz = ex1 * ey2 - ey1 * ex2;
-
-        float length = (float) Math.sqrt(nx * nx + ny * ny + nz * nz);
-        if (length > 0) {
-            nx /= length;
-            ny /= length;
-            nz /= length;
-        }
-
-        return new float[] { nx, ny, nz };
     }
 
     private static void applyBooleanOperation(CSG newShape, BooleanOp op) {
@@ -1210,19 +1144,7 @@ public class Geometry {
         };
     }
 
-    private static void addTriangleToExtruded(float[] v1, float[] v2, float[] v3) {
-
-        float[] normal = calculateNormal(v1[0], v1[1], v1[2], v2[0], v2[1], v2[2], v3[0], v3[1], v3[2]);
-        float[] tri = new float[12];
-        System.arraycopy(normal, 0, tri, 0, 3);
-        System.arraycopy(v1, 0, tri, 3, 3);
-        System.arraycopy(v2, 0, tri, 6, 3);
-        System.arraycopy(v3, 0, tri, 9, 3);
-        extrudedTriangles.add(tri);
-    }
-
     public static void loft(Sketch sketch, float height) {
-        // JCSG Implementation
         List<Sketch.Polygon> polygons = sketch.getPolygons();
         if (polygons.size() < 2) {
             System.out.println("Need at least 2 polygons to loft.");
@@ -1235,7 +1157,6 @@ public class Geometry {
 
         List<Polygon> jcsgPolygons = new ArrayList<>();
 
-        // Helper to make vector
         for (int i = 0; i < n; i++) {
             Sketch.PointEntity b1 = bottom.get(i);
             Sketch.PointEntity b2 = bottom.get((i + 1) % n);
@@ -1247,7 +1168,6 @@ public class Geometry {
             Vector3d vt1 = Vector3d.xyz(t1.getX(), t1.getY(), height);
             Vector3d vt2 = Vector3d.xyz(t2.getX(), t2.getY(), height);
 
-            // Side Quad: vb1 -> vb2 -> vt2 -> vt1
             jcsgPolygons.add(new Polygon(
                     new Vertex(vb1, Vector3d.xyz(0, 0, 1)),
                     new Vertex(vb2, Vector3d.xyz(0, 0, 1)),
@@ -1255,12 +1175,6 @@ public class Geometry {
                     new Vertex(vt1, Vector3d.xyz(0, 0, 1))));
         }
 
-        // Add caps if needed? For now just sides as per original "loft" which often
-        // implied solid but here we just did sides.
-        // A true solid loft needs caps. The previous implementation didn't seem to add
-        // caps explicitly either (it used addTriangleToExtruded).
-        // Let's add caps to make it a solid CSG.
-        // Bottom Cap (Reverse winding: vb2 -> vb1 ...)
         List<Vertex> botCap = new ArrayList<>();
         List<Vertex> topCap = new ArrayList<>();
         for (int i = 0; i < n; i++) {
@@ -1280,7 +1194,6 @@ public class Geometry {
     }
 
     public static void sweep(cad.core.Sketch profile, cad.core.Sketch path, boolean twist) {
-        // JCSG Implementation
         List<Sketch.Polygon> profilePolys = profile.getPolygons();
         List<Sketch.Polygon> pathPolys = path.getPolygons();
 
@@ -1317,7 +1230,6 @@ public class Geometry {
                 tz /= len;
             }
 
-            // Standard Z-up frame
             float bx = ty;
             float by = -tx;
             float bz = 0;
@@ -1351,7 +1263,6 @@ public class Geometry {
                 Vector3d p3 = f2.get((j + 1) % m);
                 Vector3d p4 = f2.get(j);
 
-                // p1->p2->p3->p4
                 jcsgPolygons.add(new Polygon(
                         new Vertex(p1, Vector3d.xyz(0, 0, 1)),
                         new Vertex(p2, Vector3d.xyz(0, 0, 1)),
@@ -1425,7 +1336,6 @@ public class Geometry {
             return;
         }
 
-        // 1. Create Tool Body
         CSG toolCSG = null;
         for (cad.core.Sketch.Entity entity : sketch.getEntities()) {
             CSG entityCSG = null;
@@ -1435,7 +1345,6 @@ public class Geometry {
                 for (cad.core.Sketch.PointEntity p : poly.getSketchPoints()) {
                     points.add(Vector3d.xyz(p.getX(), p.getY(), 0));
                 }
-                // Extrude tool by depth
                 entityCSG = Extrude.points(Vector3d.xyz(0, 0, depth), points);
             } else if (entity instanceof cad.core.Sketch.Circle) {
                 cad.core.Sketch.Circle circle = (cad.core.Sketch.Circle) entity;
@@ -1456,7 +1365,6 @@ public class Geometry {
         if (toolCSG == null)
             return;
 
-        // 2. Boolean Difference
         applyBooleanOperation(toolCSG, BooleanOp.DIFFERENCE);
         updateMeshFromCSG();
         System.out.println("Extrude Cut performed.");
@@ -1474,11 +1382,8 @@ public class Geometry {
         // Using JCSG Polygon objects directly
 
         for (Polygon p : oldPolygons) {
-            // 1. Outer face (keep original)
             shellPolygons.add(p.clone());
 
-            // 2. Inner face (offset and reverse)
-            // JCSG Polygon has vertices.
             List<Vertex> innerVertices = new ArrayList<>();
             Vector3d n = p.getPlane().getNormal();
 
