@@ -1,6 +1,5 @@
 package cad.core;
 
-import cad.core.Sketch.Entity;
 import java.util.List;
 
 public class AddPolygonCommand implements Command {

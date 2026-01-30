@@ -23,18 +23,15 @@ public class ConcentricConstraint extends Constraint {
 
     @Override
     public void solve() {
-        // Move circle2's center to match circle1's center
         Point center1 = new Point(circle1.getX(), circle1.getY());
         Point center2 = new Point(circle2.getX(), circle2.getY());
         
         double avgX = (center1.x + center2.x) / 2.0;
         double avgY = (center1.y + center2.y) / 2.0;
         
-        // Update both circle centers to the average position
         center1.move(avgX, avgY);
         center2.move(avgX, avgY);
         
-        // Update the actual circle objects
         circle1.setCenter((float) avgX, (float) avgY);
         circle2.setCenter((float) avgX, (float) avgY);
     }

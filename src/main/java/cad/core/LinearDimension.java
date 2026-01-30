@@ -45,51 +45,15 @@ public class LinearDimension extends Dimension {
         while (diffAngle > Math.PI)
             diffAngle -= 2 * Math.PI;
         diffAngle = Math.abs(diffAngle);
-
-        
-        
-
-        
-        
-        
-
-        
-        
-
-        
-        
-        
-
-        
-        
-        
-
-        
-        
-
-        
-        
-        
-
         
         boolean lineIsMoreVert = height > width;
-
         if (lineIsMoreVert) {
-            
-            
-            
-            
-            
             if (dx > dy) {
                 alignment = Alignment.VERTICAL;
             } else {
                 alignment = Alignment.ALIGNED;
             }
         } else {
-            
-            
-            
-            
             if (dy > dx) {
                 alignment = Alignment.HORIZONTAL;
             } else {
@@ -104,8 +68,6 @@ public class LinearDimension extends Dimension {
         
 
         double absSlope = (dx == 0) ? 999 : Math.abs((my - cy) / (mx - cx));
-
-        
         if (absSlope > 1.5) { 
             alignment = Alignment.HORIZONTAL;
         } else if (absSlope < 0.5) { 

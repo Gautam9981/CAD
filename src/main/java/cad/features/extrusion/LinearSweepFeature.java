@@ -43,19 +43,16 @@ public class LinearSweepFeature {
         
         List<Face> sideFaces = createSideFaces(body, lowerEdges, upperEdges, sideEdges);
         
-        // Add adjacency information for lower face
         for (Edge edge : lowerEdges) {
             edge.addAdjacentFace(lowerFace);
         }
         body.addFace(lowerFace);
         
-        // Add adjacency information for upper face
         for (Edge edge : upperEdges) {
             edge.addAdjacentFace(upperFace);
         }
         body.addFace(upperFace);
         
-        // Add adjacency information for side faces
         for (Face sideFace : sideFaces) {
             for (Edge edge : sideFace.getOuterLoop().getEdges()) {
                 edge.addAdjacentFace(sideFace);
@@ -94,7 +91,6 @@ public class LinearSweepFeature {
             }
         }
         
-        // Check if we have a closed loop of lines/arcs
         Map<Vector3d, Integer> vertexCount = new HashMap<>();
         
         for (Sketch.Entity entity : entities) {
@@ -121,7 +117,6 @@ public class LinearSweepFeature {
             }
         }
         
-        // All vertices should have exactly 2 connected edges for a closed loop
         for (int count : vertexCount.values()) {
             if (count != 2) {
                 return false;
