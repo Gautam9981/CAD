@@ -12,7 +12,6 @@ public class CoincidentConstraint extends Constraint {
         this.entities = new ArrayList<>(Arrays.asList(objects));
     }
 
-    // Legacy constructor compatibility if needed (though varargs covers it)
     public CoincidentConstraint(cad.core.Point p1, cad.core.Point p2) {
         super(ConstraintType.COINCIDENT);
         this.entities = new ArrayList<>();
@@ -48,7 +47,6 @@ public class CoincidentConstraint extends Constraint {
                 points.add(p);
         }
 
-        // Case 1: All Points
         if (points.size() == entities.size()) {
             if (points.isEmpty())
                 return 0;
@@ -69,19 +67,17 @@ public class CoincidentConstraint extends Constraint {
             return err;
         }
 
-        // Case 2: Standard 2-entity constraints (legacy support + specific types)
         if (entities.size() == 2) {
             return getErrorPair(entities.get(0), entities.get(1));
         }
 
-        // Case 3: Multiple Points constrained to ONE curve (Line/Circle/Arc)
         Object curve = null;
         for (Object o : entities) {
             if (!(o instanceof cad.core.Point) && !(o instanceof cad.core.Sketch.PointEntity)) {
                 if (curve == null)
                     curve = o;
                 else
-                    return 0; // Don't know how to handle multiple curves yet
+                    return 0; 
             }
         }
 
@@ -127,7 +123,6 @@ public class CoincidentConstraint extends Constraint {
             return getPointArcError(asPoint(o2), (cad.core.Sketch.Arc) o1);
         }
 
-        // Logic for Line-Line, Circle-Circle, etc.
         if (o1 instanceof cad.core.Sketch.Line && o2 instanceof cad.core.Sketch.Line) {
             cad.core.Sketch.Line l1 = (cad.core.Sketch.Line) o1;
             cad.core.Sketch.Line l2 = (cad.core.Sketch.Line) o2;
@@ -228,13 +223,11 @@ public class CoincidentConstraint extends Constraint {
             return;
         }
 
-        // Case 2: Pairwise (Legacy 2 items)
         if (entities.size() == 2) {
             solvePair(entities.get(0), entities.get(1));
             return;
         }
 
-        // Case 3: N Points to 1 Curve
         Object curve = null;
         for (Object o : entities) {
             if (!(o instanceof cad.core.Point) && !(o instanceof cad.core.Sketch.PointEntity)) {

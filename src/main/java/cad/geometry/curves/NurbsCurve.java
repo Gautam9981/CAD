@@ -108,7 +108,7 @@ public class NurbsCurve extends Curve {
 
     private double calculateBasisDerivative(int i, int degree, double t, double[] knots) {
         if (degree == 0) {
-            return 0.0; // Constant basis function
+            return 0.0; 
         }
         
         double leftDerivative = 0.0, rightDerivative = 0.0;
