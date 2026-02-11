@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 API Documentation Extractor for CAD Application
-Extracts all method signatures, parameters, and return types from Java source files
+Extracts all method signatures, parameters, return types, and application scope from Java source files
 """
 
 import os
@@ -13,19 +13,46 @@ class JavaMethodExtractor:
     def __init__(self, src_dir):
         self.src_dir = src_dir
         self.api_data = {}
+        # Map of simple class name -> full package name (for matching)
+        self.class_lookup = {}
         
+    def get_line_number(self, content, position):
+        """Calculate line number from character position"""
+        return content.count('\n', 0, position) + 1
+
     def extract_package(self, content):
         """Extract package name from Java file"""
         match = re.search(r'package\s+([\w.]+);', content)
         return match.group(1) if match else "default"
-        
-    def extract_class_name(self, content):
-        """Extract class name from Java file"""
-        # Match class, interface, enum, record definition at the start of a line
-        # Supports modifiers: public, abstract, final, static (for nested), and 'record' (modern Java)
-        pattern = r'^\s*(?:public\s+|protected\s+|private\s+)?(?:abstract\s+|static\s+|final\s+)*(?:class|interface|enum|record)\s+(\w+)'
+    
+    def extract_imports(self, content):
+        """Extract all imported classes"""
+        imports = []
+        for match in re.finditer(r'import\s+([\w.]+);', content):
+            imports.append(match.group(1))
+        return imports
+
+    def extract_class_info(self, content):
+        """Extract class name and inheritance info"""
+        # Improved regex to capture inheritance
+        pattern = r'^\s*(?:public|protected|private)?\s*(?:abstract|static|final)*\s*(?:class|interface|enum|record)\s+(\w+)(?:\s+extends\s+([\w.]+))?(?:\s+implements\s+([\w.,\s]+))?'
         match = re.search(pattern, content, re.MULTILINE)
-        return match.group(1) if match else "Unknown"
+        
+        info = {
+            "name": "Unknown",
+            "extends": None,
+            "implements": [],
+            "line": 1
+        }
+        
+        if match:
+            info["name"] = match.group(1)
+            info["extends"] = match.group(2)
+            if match.group(3):
+                info["implements"] = [i.strip() for i in match.group(3).split(',')]
+            info["line"] = self.get_line_number(content, match.start())
+            
+        return info
     
     def extract_javadoc(self, content, method_start_pos):
         """Extract Javadoc comment immediately before a method"""
@@ -104,11 +131,12 @@ class JavaMethodExtractor:
         control_keywords = {'if', 'else', 'for', 'while', 'switch', 'case', 'try', 'catch', 'finally', 'do'}
         
         # Improved regex to match method signatures more precisely
-        # This pattern looks for proper method declarations with access modifiers or return types
         method_pattern = r'^\s*(public|protected|private)?\s*(static\s+)?(final\s+)?(synchronized\s+)?([<>\w\[\],\s?]+)\s+(\w+)\s*\((.*?)\)\s*(?:throws\s+[\w\s,.<>]+)?\s*\{'
         
         for match in re.finditer(method_pattern, content, re.MULTILINE):
             method_start_pos = match.start()
+            line_number = self.get_line_number(content, method_start_pos)
+            
             visibility = match.group(1) or "package-private"
             is_static = "static" if match.group(2) else ""
             return_type = match.group(5).strip()
@@ -158,6 +186,7 @@ class JavaMethodExtractor:
             
             methods.append({
                 "name": method_name,
+                "line": line_number,
                 "visibility": visibility,
                 "static": is_static,
                 "returnType": return_type,
@@ -217,6 +246,7 @@ class JavaMethodExtractor:
         for match in re.finditer(constructor_pattern, content, re.MULTILINE | re.DOTALL):
             visibility = match.group(1) or "package-private"
             params_str = match.group(2).strip()
+            line_number = self.get_line_number(content, match.start())
             
             # Parse parameters
             parameters = []
@@ -236,6 +266,7 @@ class JavaMethodExtractor:
             param_list = ", ".join([f"{p['type']} {p['name']}" for p in parameters])
             constructors.append({
                 "name": class_name,
+                "line": line_number,
                 "visibility": visibility,
                 "parameters": parameters,
                 "signature": f"{visibility} {class_name}({param_list})"
@@ -245,39 +276,134 @@ class JavaMethodExtractor:
     
     def process_file(self, file_path):
         """Process a single Java file and extract API information"""
-        with open(file_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-        
-        package = self.extract_package(content)
-        class_name = self.extract_class_name(content)
-        methods = self.extract_methods(content, class_name)
-        constructors = self.extract_constructors(content, class_name)
-        
-        # Get relative path for display
-        rel_path = os.path.relpath(file_path, self.src_dir)
-        
-        return {
-            "package": package,
-            "className": class_name,
-            "file": rel_path,
-            "constructors": constructors,
-            "methods": methods
-        }
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            package = self.extract_package(content)
+            class_info = self.extract_class_info(content)
+            class_name = class_info["name"]
+            
+            # Only process if we found a valid class
+            if class_name == "Unknown":
+                return None
+                
+            methods = self.extract_methods(content, class_name)
+            constructors = self.extract_constructors(content, class_name)
+            imports = self.extract_imports(content)
+            
+            # Get relative path for display
+            rel_path = os.path.relpath(file_path, self.src_dir)
+            
+            return {
+                "package": package,
+                "className": class_name,
+                "file": rel_path,
+                "line": class_info["line"],
+                "extends": class_info["extends"],
+                "implements": class_info["implements"],
+                "imports": imports,
+                "constructors": constructors,
+                "methods": methods,
+                "usedBy": [], # To be populated in pass 2
+                "uses": []    # To be populated in pass 2
+            }
+        except Exception as e:
+            print(f"Error processing {file_path}: {e}")
+            return None
     
     def extract_all(self):
         """Extract API information from all Java files"""
         java_files = list(Path(self.src_dir).rglob("*.java"))
         
+        # Pass 1: Extract all basic info
         for java_file in sorted(java_files):
-            try:
-                class_info = self.process_file(str(java_file))
-                full_class_name = f"{class_info['package']}.{class_info['className']}"
-                self.api_data[full_class_name] = class_info
-            except Exception as e:
-                print(f"Error processing {java_file}: {e}")
+            class_data = self.process_file(str(java_file))
+            if class_data:
+                full_class_name = f"{class_data['package']}.{class_data['className']}"
+                self.api_data[full_class_name] = class_data
+                self.class_lookup[class_data['className']] = full_class_name
+        
+        # Pass 2: Analyze Usage and Scope
+        self.analyze_scope()
         
         return self.api_data
     
+    def analyze_scope(self):
+        """Analyze usage references to determine scope"""
+        
+        # Iterate over all classes
+        for consumer_name, consumer_data in self.api_data.items():
+            
+            # Check for usage in this class
+            # 1. Check inheritance
+            if consumer_data["extends"]:
+                parent_simple = consumer_data["extends"]
+                parent_full = self.resolve_class(parent_simple, consumer_data)
+                if parent_full:
+                    self.add_usage(parent_full, consumer_name, "Extended by")
+
+            # 2. Check fields/variables (simple heuristic: look for ClassName varName)
+            # This requires reading the file again or storing more data. 
+            # Let's use the methods/constructors we already extracted.
+            
+            for method in consumer_data["methods"]:
+                # Check return type
+                self.check_reference(method["returnType"], consumer_name, consumer_data)
+                # Check parameters
+                for param in method["parameters"]:
+                    self.check_reference(param["type"], consumer_name, consumer_data)
+                    
+            for ctor in consumer_data["constructors"]:
+                for param in ctor["parameters"]:
+                    self.check_reference(param["type"], consumer_name, consumer_data)
+
+    def check_reference(self, type_str, consumer_name, consumer_data):
+        """Check if a type string references a known class"""
+        # Clean type string (remove arrays, generics)
+        base_type = re.sub(r'[\[\]<>,]', ' ', type_str).split()[0]
+        
+        target_full = self.resolve_class(base_type, consumer_data)
+        if target_full and target_full != consumer_name:
+             self.add_usage(target_full, consumer_name, "Used by")
+
+    def resolve_class(self, simple_name, context_data):
+        """Resolve a simple class name to full package name using imports"""
+        if not simple_name: return None
+        
+        # 1. Check if it's in the same package
+        same_pkg_candidate = f"{context_data['package']}.{simple_name}"
+        if same_pkg_candidate in self.api_data:
+            return same_pkg_candidate
+            
+        # 2. Check imports
+        for imp in context_data["imports"]:
+            if imp.endswith(f".{simple_name}"):
+                return imp # Found explicit import
+            if imp.endswith(".*"):
+                # Wildcard import - tricky, but we can check if candidate exists
+                candidate = f"{imp[:-2]}.{simple_name}"
+                if candidate in self.api_data:
+                    return candidate
+        
+        # 3. Check global lookup (might be ambiguous, but better than nothing)
+        if simple_name in self.class_lookup:
+             # Only return if it's the only one, or we assume the first one
+             return self.class_lookup[simple_name]
+             
+        return None
+
+    def add_usage(self, target_class, source_class, relationship):
+        """Register a usage relationship"""
+        if target_class in self.api_data:
+            # Add to 'usedBy' of target
+            if source_class not in self.api_data[target_class]["usedBy"]:
+                self.api_data[target_class]["usedBy"].append(source_class)
+            
+            # Add to 'uses' of source
+            if target_class not in self.api_data[source_class]["uses"]:
+                self.api_data[source_class]["uses"].append(target_class)
+
     def save_to_json(self, output_file):
         """Save extracted API data to JSON file"""
         with open(output_file, 'w', encoding='utf-8') as f:

@@ -108,6 +108,13 @@
             <artifactId>jzy3d-native-jogl-awt</artifactId>
             <version>2.1.0</version>
         </dependency>
+
+        <!-- Log4j Core -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.25.3</version>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -319,11 +326,7 @@
                     <artifactId>commons-lang3</artifactId>
                     <version>3.18.0</version>
                   </dependency> 
-                 <dependency>
-                    <groupId>org.apache.logging.log4j</groupId>
-                    <artifactId>log4j-core</artifactId>
-                    <version>2.25.3</version>
-                 </dependency>
+
                  <dependency>
                    <groupId>com.google.guava</groupId>
                     <artifactId>guava</artifactId>
