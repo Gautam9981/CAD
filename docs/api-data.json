@@ -2370,32 +2370,6 @@
         "returns": ""
       },
       {
-        "name": "generateSphereTriangles",
-        "visibility": "private",
-        "static": "static",
-        "returnType": "void",
-        "parameters": [
-          {
-            "type": "float",
-            "name": "radius",
-            "description": ""
-          },
-          {
-            "type": "int",
-            "name": "latDiv",
-            "description": ""
-          },
-          {
-            "type": "int",
-            "name": "lonDiv",
-            "description": ""
-          }
-        ],
-        "signature": "private static void generateSphereTriangles(float radius, int latDiv, int lonDiv)",
-        "description": "",
-        "returns": ""
-      },
-      {
         "name": "applyBooleanOperation",
         "visibility": "private",
         "static": "static",
@@ -2870,32 +2844,6 @@
         "returns": ""
       },
       {
-        "name": "addTriangleToExtruded",
-        "visibility": "private",
-        "static": "static",
-        "returnType": "void",
-        "parameters": [
-          {
-            "type": "float[]",
-            "name": "v1",
-            "description": ""
-          },
-          {
-            "type": "float[]",
-            "name": "v2",
-            "description": ""
-          },
-          {
-            "type": "float[]",
-            "name": "v3",
-            "description": ""
-          }
-        ],
-        "signature": "private static void addTriangleToExtruded(float[] v1, float[] v2, float[] v3)",
-        "description": "",
-        "returns": ""
-      },
-      {
         "name": "loft",
         "visibility": "public",
         "static": "static",
@@ -3027,6 +2975,74 @@
           }
         ],
         "signature": "public static float[] pickFace(float[] rayOrigin, float[] rayDir)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "pickEdge",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "float[]",
+        "parameters": [
+          {
+            "type": "float[]",
+            "name": "rayOrigin",
+            "description": ""
+          },
+          {
+            "type": "float[]",
+            "name": "rayDir",
+            "description": ""
+          }
+        ],
+        "signature": "public static float[] pickEdge(float[] rayOrigin, float[] rayDir)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "distPointToSegment",
+        "visibility": "private",
+        "static": "static",
+        "returnType": "float",
+        "parameters": [
+          {
+            "type": "float[]",
+            "name": "p",
+            "description": ""
+          },
+          {
+            "type": "float[]",
+            "name": "a",
+            "description": ""
+          },
+          {
+            "type": "float[]",
+            "name": "b",
+            "description": ""
+          }
+        ],
+        "signature": "private static float distPointToSegment(float[] p, float[] a, float[] b)",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "filletEdge",
+        "visibility": "public",
+        "static": "static",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float[]",
+            "name": "edgePoints",
+            "description": ""
+          },
+          {
+            "type": "float",
+            "name": "radius",
+            "description": ""
+          }
+        ],
+        "signature": "public static void filletEdge(float[] edgePoints, float radius)",
         "description": "",
         "returns": ""
       },
@@ -9774,16 +9790,6 @@
         "returns": ""
       },
       {
-        "name": "createTaskPane",
-        "visibility": "private",
-        "static": "",
-        "returnType": "TabPane",
-        "parameters": [],
-        "signature": "private TabPane createTaskPane()",
-        "description": "",
-        "returns": ""
-      },
-      {
         "name": "initializeCanvasAsync",
         "visibility": "private",
         "static": "",
@@ -9918,6 +9924,32 @@
         "returns": ""
       },
       {
+        "name": "activateFilletTool",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [],
+        "signature": "private void activateFilletTool()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "showFilletDialog",
+        "visibility": "private",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "float[]",
+            "name": "edgePoints",
+            "description": ""
+          }
+        ],
+        "signature": "private void showFilletDialog(float[] edgePoints)",
+        "description": "",
+        "returns": ""
+      },
+      {
         "name": "applyTangentConstraint",
         "visibility": "private",
         "static": "",
@@ -10014,6 +10046,22 @@
         "returnType": "TitledPane",
         "parameters": [],
         "signature": "private TitledPane createConsolePane()",
+        "description": "",
+        "returns": ""
+      },
+      {
+        "name": "setEdgeSelectionMode",
+        "visibility": "public",
+        "static": "",
+        "returnType": "void",
+        "parameters": [
+          {
+            "type": "boolean",
+            "name": "mode",
+            "description": ""
+          }
+        ],
+        "signature": "public void setEdgeSelectionMode(boolean mode)",
         "description": "",
         "returns": ""
       },
@@ -10814,26 +10862,6 @@
         "returns": ""
       },
       {
-        "name": "createHelpPane",
-        "visibility": "private",
-        "static": "",
-        "returnType": "TitledPane",
-        "parameters": [],
-        "signature": "private TitledPane createHelpPane()",
-        "description": "",
-        "returns": ""
-      },
-      {
-        "name": "showHelp",
-        "visibility": "private",
-        "static": "",
-        "returnType": "void",
-        "parameters": [],
-        "signature": "private void showHelp()",
-        "description": "",
-        "returns": ""
-      },
-      {
         "name": "showSaveDialog",
         "visibility": "private",
         "static": "",
@@ -11188,8 +11216,8 @@
         "returnType": "boolean",
         "parameters": [],
         "signature": "private boolean saveBeforeExit()",
-        "description": "Opens a native file chooser to save the current work before exiting. Uses the OS-native file manager (Nautilus/Dolphin on Linux, File Explorer on Windows, Finder on macOS).",
-        "returns": "true if file was saved successfully, false if cancelled"
+        "description": "",
+        "returns": ""
       },
       {
         "name": "main",
