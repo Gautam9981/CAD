@@ -337,8 +337,8 @@
     </dependency>
   </dependencies>
   <properties>
-    <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.release>17</maven.compiler.release>
     <jogl.version>2.6.0</jogl.version>
   </properties>
 </project>
