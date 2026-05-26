@@ -285,8 +285,8 @@ public class GuiFX extends Application {
                 createRibbonButton("Intersect", "Boolean Intersect", e -> performIntersect()),
                 createRibbonButton("Fillet", "Round Edges", e -> activateFilletTool()),
                 createRibbonButton("Shell", "Shell Feature", e -> performShell()),
-                createRibbonButton("Wrap", "Wrap Feature", e -> showNotImplemented("Wrap")),
-                createRibbonButton("Draft", "Draft Feature", e -> showNotImplemented("Draft")));
+                createRibbonButton("Wrap", "Wrap Feature", e -> performWrap()),
+                createRibbonButton("Draft", "Draft Feature", e -> performDraft()));
         featuresTab.setContent(featuresToolbar);
         Tab evaluateTab = new Tab("Evaluate");
         ToolBar evaluateToolbar = new ToolBar();
@@ -1954,6 +1954,146 @@ public class GuiFX extends Application {
                 });
         dialog.setScene(new Scene(layout, 300, 150));
         dialog.show();
+    }
+    private void performDraft() {
+        if (sketch == null) {
+            appendOutput("No sketch available for drafted extrusion.");
+            return;
+        }
+        javafx.scene.control.Dialog<double[]> dialog = new javafx.scene.control.Dialog<>();
+        dialog.setTitle("Drafted Extrude");
+        dialog.setHeaderText("Extrude sketch with draft angle");
+        ButtonType okButton = new ButtonType("Extrude", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButton, ButtonType.CANCEL);
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+        TextField heightField = new TextField("10.0");
+        TextField angleField = new TextField("3.0");
+        grid.add(new Label("Height:"), 0, 0);
+        grid.add(heightField, 1, 0);
+        grid.add(new Label("Draft Angle (deg):"), 0, 1);
+        grid.add(angleField, 1, 1);
+        dialog.getDialogPane().setContent(grid);
+        Platform.runLater(() -> heightField.requestFocus());
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == okButton) {
+                try {
+                    double h = Double.parseDouble(heightField.getText());
+                    double a = Double.parseDouble(angleField.getText());
+                    return new double[] { h, a };
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+            return null;
+        });
+        Optional<double[]> result = dialog.showAndWait();
+        result.ifPresent(params -> {
+            double height = params[0];
+            double angleDeg = params[1];
+            if (height <= 0) {
+                appendOutput("Height must be positive.");
+                return;
+            }
+            if (Math.abs(angleDeg) < 1e-3) {
+                appendOutput("Draft angle too small; use plain Extrude instead.");
+                return;
+            }
+            try {
+                cad.math.Vector3d dir = cad.math.Vector3d.Z_AXIS;
+                cad.features.extrusion.LinearSweepFeature feature = cad.features.extrusion.LinearSweepFeature
+                        .builder()
+                        .sketch(sketch)
+                        .distance(height)
+                        .direction(dir)
+                        .draft(Math.toRadians(angleDeg))
+                        .build();
+                cad.topology.BRepBody body = feature.generate();
+                java.util.List<float[]> tris = cad.core.Geometry.convertBodyToTriangles(body);
+                cad.core.Geometry.setExtrudedTriangles(tris);
+                if (glRenderer != null) {
+                    glRenderer.setStlTriangles(tris);
+                    glRenderer.setShowSketch(false);
+                }
+                requestViewChange(false);
+                glCanvas.repaint();
+                appendOutput(String.format("Drafted extrusion created (h=%.2f, draft=%.2f°).", height, angleDeg));
+            } catch (Exception ex) {
+                appendOutput("Failed to create drafted extrusion: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        });
+    }
+    private void performWrap() {
+        if (sketch == null) {
+            appendOutput("No sketch available to wrap.");
+            return;
+        }
+        javafx.scene.control.Dialog<double[]> dialog = new javafx.scene.control.Dialog<>();
+        dialog.setTitle("Wrap Sketch");
+        dialog.setHeaderText("Wrap sketch profile around a cylinder");
+        ButtonType okButton = new ButtonType("Wrap", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButton, ButtonType.CANCEL);
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+        TextField radiusField = new TextField("20.0");
+        TextField heightField = new TextField("10.0");
+        grid.add(new Label("Cylinder Radius:"), 0, 0);
+        grid.add(radiusField, 1, 0);
+        grid.add(new Label("Wrap Height:"), 0, 1);
+        grid.add(heightField, 1, 1);
+        dialog.getDialogPane().setContent(grid);
+        Platform.runLater(() -> radiusField.requestFocus());
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == okButton) {
+                try {
+                    double r = Double.parseDouble(radiusField.getText());
+                    double h = Double.parseDouble(heightField.getText());
+                    return new double[] { r, h };
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+            return null;
+        });
+        Optional<double[]> result = dialog.showAndWait();
+        result.ifPresent(params -> {
+            double radius = params[0];
+            double height = params[1];
+            if (radius <= 0 || height <= 0) {
+                appendOutput("Radius and height must be positive.");
+                return;
+            }
+            try {
+                cad.core.Sketch profile = sketch;
+                cad.core.Sketch path = new cad.core.Sketch();
+                int segments = 64;
+                java.util.List<cad.core.Sketch.PointEntity> pathPoints = new java.util.ArrayList<>();
+                for (int i = 0; i < segments; i++) {
+                    double t = (double) i / segments;
+                    double angle = 2 * Math.PI * t;
+                    float x = (float) (radius * Math.cos(angle));
+                    float y = (float) (radius * Math.sin(angle));
+                    pathPoints.add(path.new PointEntity(x, y));
+                }
+                path.addPolygon(pathPoints);
+                cad.core.Geometry.sweep(profile, path, false);
+                if (glRenderer != null) {
+                    glRenderer.setStlTriangles(cad.core.Geometry.getExtrudedTriangles());
+                    glRenderer.setShowSketch(false);
+                }
+                requestViewChange(false);
+                glCanvas.repaint();
+                appendOutput(String.format("Wrapped sketch around cylinder (r=%.2f, h=%.2f).", radius, height));
+            } catch (Exception ex) {
+                appendOutput("Failed to wrap sketch: " + ex.getMessage());
+                ex.printStackTrace();
+            }
+        });
     }
     private void performShell() {
         if (Geometry.getExtrudedTriangles() == null || Geometry.getExtrudedTriangles().isEmpty()) {
