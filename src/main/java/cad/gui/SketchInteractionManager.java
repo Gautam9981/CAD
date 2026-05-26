@@ -88,8 +88,9 @@ public class SketchInteractionManager {
         if (currentMode == InteractionMode.SELECT) {
             handleSelectionClick(worldX, worldY);
         } else if (currentMode == InteractionMode.DIMENSION_TOOL) {
-        } else if (currentMode == InteractionMode.DIMENSION_TOOL) {
-            handleDimensionClick(worldX, worldY);
+            // Dimension Tool is handled by `GuiFX` on mouse click.
+            // Avoid triggering dimension creation here to prevent duplicates.
+            isDrawing = false;
         } else if (currentMode == InteractionMode.SKETCH_ARC) {
             handleArcClick(worldX, worldY);
         }
@@ -241,7 +242,28 @@ public class SketchInteractionManager {
             currentY = worldY;
             sketch.clearTempEntities();
 
-            if (currentMode == InteractionMode.SKETCH_ARC) {
+            if (currentMode == InteractionMode.SKETCH_LINE) {
+                sketch.addTempEntity(new Sketch.Line(startX, startY, currentX, currentY));
+            } else if (currentMode == InteractionMode.SKETCH_CIRCLE) {
+                float radius = (float) Math.sqrt(Math.pow(currentX - startX, 2) + Math.pow(currentY - startY, 2));
+                if (radius > 0.0f) {
+                    sketch.addTempEntity(new Sketch.Circle(startX, startY, radius));
+                }
+            } else if (currentMode == InteractionMode.SKETCH_POLYGON) {
+                float radius = (float) Math.sqrt(Math.pow(currentX - startX, 2) + Math.pow(currentY - startY, 2));
+                if (radius >= 0.1f) {
+                    List<PointEntity> points = new ArrayList<>();
+                    for (int i = 0; i < polygonSides; i++) {
+                        double angle = 2 * Math.PI * i / polygonSides;
+                        float px = startX + (float) (radius * Math.cos(angle));
+                        float py = startY + (float) (radius * Math.sin(angle));
+                        points.add(new PointEntity(px, py));
+                    }
+                    sketch.addTempEntity(new Sketch.Polygon(points));
+                }
+            } else if (currentMode == InteractionMode.SKETCH_POINT) {
+                sketch.addTempEntity(new PointEntity(currentX, currentY));
+            } else if (currentMode == InteractionMode.SKETCH_ARC) {
                 if (arcClickCount == 1) {
                     sketch.addTempEntity(new Sketch.Line(arcCenter.getX(), arcCenter.getY(), currentX, currentY));
                 } else if (arcClickCount == 2) {

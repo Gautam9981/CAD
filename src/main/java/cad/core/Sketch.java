@@ -1693,7 +1693,10 @@ public class Sketch {
 
         if (entity instanceof Line) {
             Line line = (Line) entity;
-            return new LinearDimension(line.getX1(), line.getY1(), line.getX2(), line.getY2(), unit);
+            LinearDimension dim = new LinearDimension(line.getX1(), line.getY1(), line.getX2(), line.getY2(), unit);
+            // Use the click position to choose a consistent placement direction for the dimension.
+            dim.updateSmartDimension(clickX, clickY);
+            return dim;
         } else if (entity instanceof Circle) {
             Circle circle = (Circle) entity;
             float dx = clickX - circle.getX();
@@ -1713,9 +1716,24 @@ public class Sketch {
         } else if (entity instanceof Polygon) {
             Polygon poly = (Polygon) entity;
             if (poly.points.size() >= 2) {
-                PointEntity p1 = poly.points.get(0);
-                PointEntity p2 = poly.points.get(1);
-                return new LinearDimension(p1.getX(), p1.getY(), p2.getX(), p2.getY(), unit);
+                // Measure the closest polygon edge segment instead of just points[0] -> points[1].
+                List<PointEntity> pts = poly.points;
+                int bestI = 0;
+                float bestDist = Float.MAX_VALUE;
+                for (int i = 0; i < pts.size(); i++) {
+                    PointEntity p1 = pts.get(i);
+                    PointEntity p2 = pts.get((i + 1) % pts.size());
+                    float dist = distancePointToSegment(clickX, clickY, p1.getX(), p1.getY(), p2.getX(), p2.getY());
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        bestI = i;
+                    }
+                }
+                PointEntity p1 = pts.get(bestI);
+                PointEntity p2 = pts.get((bestI + 1) % pts.size());
+                LinearDimension dim = new LinearDimension(p1.getX(), p1.getY(), p2.getX(), p2.getY(), unit);
+                dim.updateSmartDimension(clickX, clickY);
+                return dim;
             }
         }
 

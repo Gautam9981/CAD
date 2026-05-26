@@ -97,6 +97,10 @@ public class LinearDimension extends Dimension {
             
             this.offsetDistance = (mx - cx) * perpX + (my - cy) * perpY;
         }
+        
+        // Keep rendering state consistent when alignment/value/offsetDistance change.
+        updateLabel();
+        calculatePosition();
     }
 
     public LinearDimension(float x1, float y1, float x2, float y2, String unit) {
