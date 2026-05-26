@@ -34,7 +34,7 @@ jobs:
         run: pip install -r requirements.txt
       
       - name: Build with Maven
-        run: mvn clean package -DskipTests -Pwin-x64
+        run: mvn clean package -DskipTests -Pwindows
       
       - name: Build Windows Installer
         run: |
@@ -84,7 +84,12 @@ jobs:
         run: pip install -r requirements.txt
       
       - name: Build with Maven
-        run: mvn clean package -DskipTests -Pmac-${{ matrix.architecture }}
+        run: |
+          if [ "${{ matrix.architecture }}" == "x64" ]; then
+            mvn clean package -DskipTests -Pmac-intel
+          else
+            mvn clean package -DskipTests -Pmac-arm
+          fi
       
       - name: Build macOS Installer
         env:
@@ -135,7 +140,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y rpm
       
       - name: Build with Maven
-        run: mvn clean package -DskipTests -Plinux-${{ matrix.architecture }}
+        run: mvn clean package -DskipTests -Plinux
       
       - name: Build Linux Installers (.deb and .rpm)
         run: |
