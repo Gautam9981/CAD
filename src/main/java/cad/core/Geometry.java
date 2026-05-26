@@ -117,6 +117,50 @@ public class Geometry {
         return extrudedTriangles;
     }
 
+    public static void setExtrudedTriangles(List<float[]> tris) {
+        extrudedTriangles.clear();
+        extrudedTriangles.addAll(tris);
+    }
+
+    public static List<float[]> convertBodyToTriangles(cad.topology.BRepBody body) {
+        List<float[]> triangles = new ArrayList<>();
+        if (body == null) return triangles;
+        for (cad.topology.Face face : body.getFaces()) {
+            List<cad.topology.Vertex> vertices = new ArrayList<>();
+            cad.topology.EdgeLoop outerLoop = face.getOuterLoop();
+            if (outerLoop != null) {
+                for (cad.topology.Edge edge : outerLoop.getEdges()) {
+                    if (!vertices.contains(edge.getStartVertex())) {
+                        vertices.add(edge.getStartVertex());
+                    }
+                }
+            }
+            if (vertices.size() >= 3) {
+                cad.math.Vector3d v0 = vertices.get(0).getPoint();
+                for (int i = 1; i < vertices.size() - 1; i++) {
+                    cad.math.Vector3d v1 = vertices.get(i).getPoint();
+                    cad.math.Vector3d v2 = vertices.get(i + 1).getPoint();
+                    cad.math.Vector3d normal = v1.subtract(v0).cross(v2.subtract(v0)).normalize();
+                    float[] tri = new float[12];
+                    tri[0] = (float)normal.getX();
+                    tri[1] = (float)normal.getY();
+                    tri[2] = (float)normal.getZ();
+                    tri[3] = (float)v0.getX();
+                    tri[4] = (float)v0.getY();
+                    tri[5] = (float)v0.getZ();
+                    tri[6] = (float)v1.getX();
+                    tri[7] = (float)v1.getY();
+                    tri[8] = (float)v1.getZ();
+                    tri[9] = (float)v2.getX();
+                    tri[10] = (float)v2.getY();
+                    tri[11] = (float)v2.getZ();
+                    triangles.add(tri);
+                }
+            }
+        }
+        return triangles;
+    }
+
     public static float getModelMaxDimension() {
         List<float[]> trianglesToCheck = null;
 

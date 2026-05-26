@@ -155,6 +155,9 @@ public class SketchInteractionManager {
         }
 
         isDrawing = false;
+        if (sketch != null) {
+            sketch.clearTempEntities();
+        }
     }
 
     public void handleMouseClick(MouseEvent e, float worldX, float worldY) {

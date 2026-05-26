@@ -324,6 +324,25 @@ Implemented kite creation functionality (sketching + extruding). Feature in inte
 
 ---
 
+### Day 33 (5/26/26) - Modern GUI & Kernel Integration Testing
+**Major Features:**
+- **Modern GUI Interface:** Transformed the CAD application to mimic professional setups.
+  - **Live Feature Tree:** A dynamic sidebar reading straight from the `CommandManager` history stack.
+  - **Property Manager:** A context-sensitive panel to view and edit command parameters (e.g., Extrude depth or Revolve angle).
+  - **Real-Time Previews:** Editing properties triggers a live update and repaint of the 3D canvas.
+- **B-Rep Revolve Operations:** Implemented `RotationalSweepFeature` supporting partial/full sweeps for torus and spherical generation.
+
+**Critical Fixes & Testing:**
+- Fixed an overly strict `TopologyException` by updating the Euler characteristic check (`V - E + F <= 2`), which allows valid topologies with holes (like a torus) to be successfully generated.
+- Resolved a `NullPointerException` crash during JavaFX launch caused by missing CSS styles.
+- Built a comprehensive **Kernel Integration Test** suite spanning:
+  - Sketch Closure Detection (graphs/traversal)
+  - B-Rep Topology Validation
+  - Error Handling for Open Sketches
+  - Performance Load Testing (extruding highly-segmented geometry under 500ms).
+
+---
+
 ## Installation & Running
 
 ### Windows

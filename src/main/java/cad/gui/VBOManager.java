@@ -17,7 +17,7 @@ public class VBOManager {
         List<Float> verts = new ArrayList<>();
         List<Float> norms = new ArrayList<>();
 
-        GLUtessellator tess = glu.gluNewTess();
+        GLUtessellator tess = GLU.gluNewTess();
         TessCallback callback = new TessCallback(verts, norms);
         glu.gluTessCallback(tess, GLU.GLU_TESS_BEGIN, callback);
         glu.gluTessCallback(tess, GLU.GLU_TESS_VERTEX_DATA, callback);

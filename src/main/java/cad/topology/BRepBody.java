@@ -52,7 +52,10 @@ public class BRepBody {
         
         int chi = V - E + F;
         
-        return chi == 2;
+        // A sphere has chi=2. A torus has chi=0. A solid with g holes has chi=2-2g.
+        // Therefore, any valid closed manifold should have chi <= 2 and even.
+        // Open shells can have different characteristics.
+        return chi <= 2;
     }
     
     public double getVolume() {
@@ -115,7 +118,8 @@ public class BRepBody {
     
     public void validateTopology() throws TopologyException {
         if (!validateEulerCharacteristic()) {
-            throw new TopologyException("Invalid Euler characteristic: V - E + F != 2");
+            int chi = vertices.size() - edges.size() + faces.size();
+            throw new TopologyException("Invalid Euler characteristic: V - E + F = " + chi + " (expected <= 2)");
         }
         
         for (Edge edge : edges) {

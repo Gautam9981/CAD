@@ -144,4 +144,8 @@ public class CommandManager {
             l.onHistoryChanged();
         }
     }
+    
+    public List<Command> getCommandHistory() {
+        return new ArrayList<>(undoStack);
+    }
 }

@@ -1,7 +1,6 @@
 package cad.cli;
 
 import cad.core.*;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -259,21 +258,11 @@ public class StandardHandlers {
         CommandRegistry.register("undo", new CliHandler() {
             @Override
             public Command createCommand(String[] args) {
-                return new Command() {
-                    public void execute() {
-                        if (commandManager.undo())
-                            System.out.println("Undone.");
-                        else
-                            System.out.println("Nothing to undo.");
-                    }
-
-                    public void undo() {
-                        /* No-op or 'Redo' logic? usually history commands are meta */ }
-
-                    public String getDescription() {
-                        return "Undo";
-                    }
-                };
+                if (commandManager.undo())
+                    System.out.println("Undone.");
+                else
+                    System.out.println("Nothing to undo.");
+                return null;
             }
 
             @Override
@@ -282,6 +271,23 @@ public class StandardHandlers {
             }
         });
         CommandRegistry.registerAlias("u", "undo");
+
+        CommandRegistry.register("redo", new CliHandler() {
+            @Override
+            public Command createCommand(String[] args) {
+                if (commandManager.redo())
+                    System.out.println("Redone.");
+                else
+                    System.out.println("Nothing to redo.");
+                return null;
+            }
+
+            @Override
+            public String getUsage() {
+                return "redo - Redo last action";
+            }
+        });
+        CommandRegistry.registerAlias("r", "redo");
 
         CommandRegistry.register("cut", new CliHandler() {
             public Command createCommand(String[] args) {

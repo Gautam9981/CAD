@@ -214,8 +214,12 @@ public class GuiFX extends Application {
         root.setBottom(bottomPane);
         Scene scene = new Scene(root, 1600, 900);
         try {
-            String css = getClass().getResource("styles.css").toExternalForm();
-            scene.getStylesheets().add(css);
+            java.net.URL cssUrl = getClass().getResource("styles.css");
+            if (cssUrl != null) {
+                scene.getStylesheets().add(cssUrl.toExternalForm());
+            } else {
+                System.err.println("Warning: styles.css not found, skipping stylesheet.");
+            }
         } catch (Exception e) {
             System.err.println("Could not load CSS: " + e.getMessage());
         }
@@ -367,11 +371,54 @@ public class GuiFX extends Application {
         TreeView<String> tree = new TreeView<>(rootItem);
         tree.setShowRoot(true);
         VBox.setVgrow(tree, Priority.ALWAYS);
+        VBox propertyManager = new VBox(10);
+        propertyManager.setPadding(new Insets(10));
+        propertyManager.setStyle("-fx-background-color: #f4f4f4; -fx-border-color: #ccc;");
+        Label propTitle = new Label("Property Manager");
+        propTitle.setStyle("-fx-font-weight: bold;");
+        VBox propContent = new VBox(5);
+        propertyManager.getChildren().addAll(propTitle, new Separator(), propContent);
+
         tree.setOnMouseClicked(event -> {
-            if (event.getClickCount() == 2) {
-                TreeItem<String> selectedItem = tree.getSelectionModel().getSelectedItem();
-                if (selectedItem != null) {
-                    String itemName = selectedItem.getValue();
+            TreeItem<String> selectedItem = tree.getSelectionModel().getSelectedItem();
+            if (selectedItem != null) {
+                String itemName = selectedItem.getValue();
+                
+                // Update Property Manager based on selection
+                propContent.getChildren().clear();
+                Label lbl = new Label("Selected: " + itemName);
+                propContent.getChildren().add(lbl);
+                
+                if (itemName.contains("Extrude") || itemName.contains("Revolve")) {
+                    TextField valueField = new TextField();
+                    valueField.setPromptText("Enter new value");
+                    Button applyBtn = new Button("Apply");
+                    applyBtn.setOnAction(e -> {
+                        try {
+                            float val = Float.parseFloat(valueField.getText());
+                            int cmdIndex = Integer.parseInt(itemName.substring(0, itemName.indexOf(":")));
+                            cad.core.Command cmd = commandManager.getCommandHistory().get(cmdIndex);
+                            
+                            if (cmd instanceof cad.core.CreateExtrudeCommand) {
+                                ((cad.core.CreateExtrudeCommand) cmd).setHeight(val);
+                                cmd.execute();
+                                glRenderer.setStlTriangles(cad.core.Geometry.getExtrudedTriangles());
+                                glCanvas.repaint();
+                            } else if (cmd instanceof cad.core.CreateRevolveCommand) {
+                                ((cad.core.CreateRevolveCommand) cmd).setAngle(val);
+                                cmd.execute();
+                                glRenderer.setStlTriangles(cad.core.Geometry.getExtrudedTriangles());
+                                glCanvas.repaint();
+                            }
+                            appendOutput("Property updated successfully.");
+                        } catch (Exception ex) {
+                            appendOutput("Error updating property: " + ex.getMessage());
+                        }
+                    });
+                    propContent.getChildren().addAll(new Label("Parameter:"), valueField, applyBtn);
+                }
+                
+                if (event.getClickCount() == 2) {
                     orientViewToPlane(itemName);
                 }
             }
@@ -381,7 +428,41 @@ public class GuiFX extends Application {
         createPlaneItem.setOnAction(e -> showCreatePlaneDialog(rootItem));
         contextMenu.getItems().add(createPlaneItem);
         tree.setContextMenu(contextMenu);
-        container.getChildren().add(tree);
+        
+        SplitPane splitPane = new SplitPane();
+        splitPane.setOrientation(javafx.geometry.Orientation.VERTICAL);
+        splitPane.getItems().addAll(tree, propertyManager);
+        splitPane.setDividerPositions(0.7);
+        VBox.setVgrow(splitPane, Priority.ALWAYS);
+        
+        container.getChildren().add(splitPane);
+        
+        // Listen to CommandManager to populate History
+        if (commandManager != null) {
+            commandManager.addListener(new CommandManager.CommandListener() {
+                @Override
+                public void onCommandExecuted(cad.core.Command cmd) { updateHistoryNode(); }
+                @Override
+                public void onUndo(cad.core.Command cmd) { updateHistoryNode(); }
+                @Override
+                public void onRedo(cad.core.Command cmd) { updateHistoryNode(); }
+                @Override
+                public void onHistoryChanged() { updateHistoryNode(); }
+                
+                private void updateHistoryNode() {
+                    Platform.runLater(() -> {
+                        history.getChildren().clear();
+                        java.util.List<cad.core.Command> cmds = commandManager.getCommandHistory();
+                        for (int i = 0; i < cmds.size(); i++) {
+                            cad.core.Command c = cmds.get(i);
+                            history.getChildren().add(new TreeItem<>(i + ": " + c.getDescription()));
+                        }
+                        history.setExpanded(true);
+                    });
+                }
+            });
+        }
+        
         return container;
     }
     private void initializeCanvasAsync(StackPane parent) {
@@ -1569,6 +1650,20 @@ public class GuiFX extends Application {
                         showKeyboardHelp();
                     }
                     break;
+                case KeyEvent.VK_Z:
+                    if (e.isControlDown()) {
+                        if (e.isShiftDown()) {
+                            performRedo();
+                        } else {
+                            performUndo();
+                        }
+                    }
+                    break;
+                case KeyEvent.VK_Y:
+                    if (e.isControlDown()) {
+                        performRedo();
+                    }
+                    break;
             }
             if (viewChanged && glCanvas != null) {
                 glCanvas.repaint();
@@ -1606,6 +1701,14 @@ public class GuiFX extends Application {
         if (commandManager != null && commandManager.canUndo()) {
             commandManager.undo();
             appendOutput(commandManager.getUndoDescription());
+            if (glRenderer != null) {
+                glRenderer.setStlTriangles(cad.core.Geometry.getExtrudedTriangles());
+                if (cad.core.Geometry.getExtrudedTriangles().isEmpty()) {
+                    glRenderer.setShowSketch(true);
+                } else {
+                    glRenderer.setShowSketch(false);
+                }
+            }
             if (glCanvas != null) {
                 glCanvas.repaint();
             }
@@ -1617,6 +1720,14 @@ public class GuiFX extends Application {
         if (commandManager != null && commandManager.canRedo()) {
             commandManager.redo();
             appendOutput(commandManager.getRedoDescription());
+            if (glRenderer != null) {
+                glRenderer.setStlTriangles(cad.core.Geometry.getExtrudedTriangles());
+                if (cad.core.Geometry.getExtrudedTriangles().isEmpty()) {
+                    glRenderer.setShowSketch(true);
+                } else {
+                    glRenderer.setShowSketch(false);
+                }
+            }
             if (glCanvas != null) {
                 glCanvas.repaint();
             }
@@ -1657,7 +1768,11 @@ public class GuiFX extends Application {
         if (entity != null) {
             cad.core.Dimension dim = sketch.createDimensionFor(entity, worldX, worldY);
             if (dim != null) {
-                sketch.addDimension(dim);
+                if (commandManager != null) {
+                    commandManager.executeCommand(new cad.core.AddDimensionCommand(sketch, dim));
+                } else {
+                    sketch.addDimension(dim);
+                }
                 appendOutput("Dimension added: " + dim.getLabel());
                 glCanvas.repaint();
             } else {
@@ -2078,7 +2193,7 @@ public class GuiFX extends Application {
                     double angle = 2 * Math.PI * t;
                     float x = (float) (radius * Math.cos(angle));
                     float y = (float) (radius * Math.sin(angle));
-                    pathPoints.add(path.new PointEntity(x, y));
+                    pathPoints.add(new cad.core.Sketch.PointEntity(x, y));
                 }
                 path.addPolygon(pathPoints);
                 cad.core.Geometry.sweep(profile, path, false);
@@ -2304,9 +2419,9 @@ public class GuiFX extends Application {
                     appendOutput("Error: Extrusion height must be greater than 0.");
                     return;
                 }
-                sketch.extrude(height);
+                commandManager.executeCommand(new cad.core.CreateExtrudeCommand(sketch, (float) height));
                 sketch.setDirty(true);
-                List<float[]> extrudedTriangles = sketch.getExtrudedTriangles();
+                List<float[]> extrudedTriangles = cad.core.Geometry.getExtrudedTriangles();
                 if (extrudedTriangles != null && !extrudedTriangles.isEmpty()) {
                     glRenderer.setStlTriangles(extrudedTriangles);
                     appendOutput("Successfully extruded sketch with height " + height);
@@ -2608,11 +2723,16 @@ public class GuiFX extends Application {
                             try {
                                 float angle = Float.parseFloat(angleField.getText());
                                 String axisName = axisBox.getValue().substring(0, 1);
-                                Geometry.revolve(sketch, axisName, angle, Geometry.BooleanOp.UNION);
+                                
+                                cad.core.CreateRevolveCommand cmd = new cad.core.CreateRevolveCommand(sketch, axisName, angle, 36);
+                                commandManager.executeCommand(cmd);
+                                
+                                java.util.List<float[]> tris = cad.core.Geometry.getExtrudedTriangles();
+                                
                                 if (sketch != null)
                                     sketch.setDirty(true);
-                                appendOutput("Revolved sketch " + angle + " degrees around " + axisName + "-Axis");
-                                glRenderer.setStlTriangles(Geometry.getExtrudedTriangles());
+                                appendOutput("Revolved sketch " + angle + " degrees around " + axisName + "-Axis (B-Rep via Command)");
+                                glRenderer.setStlTriangles(tris);
                                 glRenderer.setShowSketch(false);
                                 requestViewChange(false);
                                 glCanvas.repaint();

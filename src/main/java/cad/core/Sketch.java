@@ -709,7 +709,7 @@ public class Sketch {
                 return true;
             }
         }
-        return false;
+        return !findClosedLoopsFromLines().isEmpty();
     }
 
     private UnitSystem unitSystem = UnitSystem.MMGS;

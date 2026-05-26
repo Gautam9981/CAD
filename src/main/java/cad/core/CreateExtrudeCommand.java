@@ -2,7 +2,7 @@ package cad.core;
 
 public class CreateExtrudeCommand implements Command {
     private final Sketch sketch;
-    private final float height;
+    private float height;
     private final Geometry.BooleanOp op;
     private Geometry.State previousState;
 
@@ -14,6 +14,14 @@ public class CreateExtrudeCommand implements Command {
         this.sketch = sketch;
         this.height = height;
         this.op = op;
+    }
+
+    public float getHeight() {
+        return height;
+    }
+
+    public void setHeight(float height) {
+        this.height = height;
     }
 
     @Override

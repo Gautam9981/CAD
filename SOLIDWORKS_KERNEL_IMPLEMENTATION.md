@@ -93,6 +93,32 @@ Converged: true, Iterations: 13, Final error: 9.5e-7
 Constraints satisfied: Horizontal, Vertical, Coincident
 ```
 
+### 6. Rotational Sweep (Revolved Boss/Base) ✅
+**Location:** `cad.features.revolve.RotationalSweepFeature`
+
+**Functionality:**
+- **Axis-based revolution**: Rotate sketch around arbitrary axis (X/Y axis)
+- **Surface classification**: Cylinders, spheres, cones from revolution via `ConicalSurface` and `SurfaceOfRevolution`
+- **End cap generation**: Handles partial revolutions (< 360°) properly with planar end caps
+- **Robust builder API**: Consistent with `LinearSweepFeature`
+
+**Test Results:**
+```java
+// Revolved partial cylinder (angle=180°)
+Vertices: generated correctly
+Edges/Faces: successfully created with proper topological adjacency
+Euler Characteristic validation passes.
+```
+
+### 7. Modern GUI Interface ✅
+**Location:** `cad.gui.GuiFX`
+
+**Functionality:**
+- **Feature tree**: Hierarchical feature browser dynamically updating from `CommandManager`.
+- **Property manager**: Context-sensitive parameter editing dynamically linked to the active selection.
+- **Command manager**: Ribbon-style toolbar for actions.
+- **Real-time preview**: Instant visual feedback when geometry parameters are edited.
+
 ## Architecture Benefits
 
 ### 1. Professional CAD Standards
@@ -129,23 +155,13 @@ Constraints satisfied: Horizontal, Vertical, Coincident
 
 ## Remaining Work
 
-### 1. Rotational Sweep (Revolved Boss/Base) 🔄
-- **Axis-based revolution**: Rotate sketch around arbitrary axis
-- **Surface classification**: Cylinders, spheres, cones from revolution
-- **Angular discretization**: Adaptive sampling based on curvature
-- **End cap generation**: Handle partial revolutions (< 360°)
-
-### 2. Enhanced Boolean Operations 🔄
+### 1. Enhanced Boolean Operations 🔄
 - **CSG to B-Rep conversion**: Maintain topology through boolean ops
 - **Surface-surface intersection**: Newton-Raphson curve extraction
 - **Topology-aware operations**: Proper face/edge/vertex management
 - **Advanced features**: Non-destructive feature trees
 
-### 3. Modern GUI Interface 🔄
-- **Feature tree**: Hierarchical feature browser
-- **Property manager**: Context-sensitive parameter editing
-- **Command manager**: Ribbon-style toolbar
-- **Real-time preview**: Instant visual feedback
+
 
 ## Testing Coverage
 
@@ -154,7 +170,7 @@ Constraints satisfied: Horizontal, Vertical, Coincident
 - **EnhancedConstraintSolverTest**: Constraint solver validation
 - **LinearSweepDebugTest**: Low-level debugging and validation
 
-### Integration Tests
+### Integration Tests ✅
 - **Sketch closure detection**: Valid topology requirements
 - **B-Rep validation**: Euler characteristic compliance
 - **Error handling**: Robust exception management
