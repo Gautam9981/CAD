@@ -267,8 +267,8 @@ public class GuiFX extends Application {
                 createRibbonButton("Kite", "Kite Entity", e -> showKiteDialog()),
                 createRibbonButton("NACA", "NACA Airfoil", e -> showNacaDialog()),
                 new Separator(),
-                createRibbonButton("Trim", "Trim Entities", e -> showNotImplemented("Trim")),
-                createRibbonButton("Offset", "Offset Entities", e -> showNotImplemented("Offset")));
+                createRibbonButton("Trim", "Trim Entities", e -> performTrim()),
+                createRibbonButton("Offset", "Offset Entities", e -> performOffset()));
         sketchTab.setContent(sketchToolbar);
         Tab featuresTab = new Tab("Features");
         ToolBar featuresToolbar = new ToolBar();
@@ -284,7 +284,7 @@ public class GuiFX extends Application {
                 createRibbonButton("Extruded\nCut", "Cut Material", e -> performExtrudeCut()),
                 createRibbonButton("Intersect", "Boolean Intersect", e -> performIntersect()),
                 createRibbonButton("Fillet", "Round Edges", e -> activateFilletTool()),
-                createRibbonButton("Shell", "Shell Feature", e -> showNotImplemented("Shell")),
+                createRibbonButton("Shell", "Shell Feature", e -> performShell()),
                 createRibbonButton("Wrap", "Wrap Feature", e -> showNotImplemented("Wrap")),
                 createRibbonButton("Draft", "Draft Feature", e -> showNotImplemented("Draft")));
         featuresTab.setContent(featuresToolbar);
@@ -1954,6 +1954,181 @@ public class GuiFX extends Application {
                 });
         dialog.setScene(new Scene(layout, 300, 150));
         dialog.show();
+    }
+    private void performShell() {
+        if (Geometry.getExtrudedTriangles() == null || Geometry.getExtrudedTriangles().isEmpty()) {
+            appendOutput("No 3D body available. Create or load a 3D solid first.");
+            return;
+        }
+        javafx.scene.control.Dialog<Double> dialog = new javafx.scene.control.Dialog<>();
+        dialog.setTitle("Shell");
+        dialog.setHeaderText("Enter shell thickness:");
+        ButtonType okButton = new ButtonType("Apply", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButton, ButtonType.CANCEL);
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+        TextField thicknessField = new TextField("1.0");
+        grid.add(new Label("Thickness:"), 0, 0);
+        grid.add(thicknessField, 1, 0);
+        dialog.getDialogPane().setContent(grid);
+        Platform.runLater(() -> thicknessField.requestFocus());
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == okButton) {
+                try {
+                    return Double.parseDouble(thicknessField.getText());
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+            return null;
+        });
+        Optional<Double> result = dialog.showAndWait();
+        result.ifPresent(thickness -> {
+            if (thickness <= 0) {
+                appendOutput("Shell thickness must be positive.");
+                return;
+            }
+            Geometry.shell(thickness.floatValue());
+            if (glRenderer != null) {
+                glRenderer.setStlTriangles(Geometry.getExtrudedTriangles());
+                glRenderer.setShowSketch(false);
+            }
+            requestViewChange(false);
+            glCanvas.repaint();
+            appendOutput("Shell applied with thickness " + thickness + " " + currentUnits.getAbbreviation());
+        });
+    }
+    private void performTrim() {
+        if (interactionManager == null) {
+            appendOutput("Trim unavailable: interaction manager not initialized.");
+            return;
+        }
+        List<Entity> selected = interactionManager.getSelectedEntities();
+        if (selected.isEmpty()) {
+            appendOutput("Select one or more sketch entities, then click Trim.");
+            return;
+        }
+        int removedCount = 0;
+        for (Entity entity : selected) {
+            if (sketch.removeEntity(entity)) {
+                removedCount++;
+            }
+        }
+        interactionManager.clearSelection();
+        if (removedCount > 0) {
+            appendOutput("Trimmed " + removedCount + " selected entit" + (removedCount == 1 ? "y." : "ies."));
+            glCanvas.repaint();
+        } else {
+            appendOutput("No selected entities could be trimmed.");
+        }
+    }
+    private void performOffset() {
+        if (interactionManager == null) {
+            appendOutput("Offset unavailable: interaction manager not initialized.");
+            return;
+        }
+        List<Entity> selected = interactionManager.getSelectedEntities();
+        if (selected.isEmpty()) {
+            appendOutput("Select one or more sketch entities, then click Offset.");
+            return;
+        }
+        javafx.scene.control.Dialog<Double> dialog = new javafx.scene.control.Dialog<>();
+        dialog.setTitle("Offset");
+        dialog.setHeaderText("Enter offset distance (can be negative):");
+        ButtonType okButton = new ButtonType("Apply", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButton, ButtonType.CANCEL);
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+        TextField distanceField = new TextField("2.0");
+        grid.add(new Label("Distance:"), 0, 0);
+        grid.add(distanceField, 1, 0);
+        dialog.getDialogPane().setContent(grid);
+        Platform.runLater(() -> distanceField.requestFocus());
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == okButton) {
+                try {
+                    return Double.parseDouble(distanceField.getText());
+                } catch (NumberFormatException e) {
+                    return null;
+                }
+            }
+            return null;
+        });
+        Optional<Double> result = dialog.showAndWait();
+        result.ifPresent(offset -> {
+            if (Math.abs(offset) < 1e-6) {
+                appendOutput("Offset distance is too small.");
+                return;
+            }
+            int created = 0;
+            for (Entity entity : selected) {
+                if (entity instanceof Sketch.Line line) {
+                    float dx = line.getX2() - line.getX1();
+                    float dy = line.getY2() - line.getY1();
+                    float len = (float) Math.sqrt(dx * dx + dy * dy);
+                    if (len < 1e-6f) {
+                        continue;
+                    }
+                    float nx = -dy / len;
+                    float ny = dx / len;
+                    float d = offset.floatValue();
+                    Sketch.Line newLine = new Sketch.Line(
+                            line.getX1() + nx * d, line.getY1() + ny * d,
+                            line.getX2() + nx * d, line.getY2() + ny * d);
+                    sketch.addEntity(newLine);
+                    created++;
+                } else if (entity instanceof Sketch.Circle circle) {
+                    float newRadius = circle.getRadius() + offset.floatValue();
+                    if (newRadius <= 0) {
+                        continue;
+                    }
+                    sketch.addEntity(new Sketch.Circle(circle.getX(), circle.getY(), newRadius));
+                    created++;
+                } else if (entity instanceof Sketch.Polygon polygon) {
+                    List<PointEntity> pts = polygon.getSketchPoints();
+                    if (pts.size() < 3) {
+                        continue;
+                    }
+                    float cx = 0f, cy = 0f;
+                    for (PointEntity p : pts) {
+                        cx += p.getX();
+                        cy += p.getY();
+                    }
+                    cx /= pts.size();
+                    cy /= pts.size();
+                    List<PointEntity> newPts = new java.util.ArrayList<>();
+                    for (PointEntity p : pts) {
+                        float vx = p.getX() - cx;
+                        float vy = p.getY() - cy;
+                        float vlen = (float) Math.sqrt(vx * vx + vy * vy);
+                        if (vlen < 1e-6f) {
+                            newPts.clear();
+                            break;
+                        }
+                        float scale = (vlen + offset.floatValue()) / vlen;
+                        if (scale <= 0) {
+                            newPts.clear();
+                            break;
+                        }
+                        newPts.add(new PointEntity(cx + vx * scale, cy + vy * scale));
+                    }
+                    if (newPts.size() == pts.size()) {
+                        sketch.addEntity(new Sketch.Polygon(newPts));
+                        created++;
+                    }
+                }
+            }
+            if (created > 0) {
+                appendOutput("Offset created " + created + " new entit" + (created == 1 ? "y." : "ies."));
+                glCanvas.repaint();
+            } else {
+                appendOutput("Offset could not create new entities from the current selection.");
+            }
+        });
     }
     private void extrudeSketch() {
         if (sketch.listSketch().isEmpty()) {
