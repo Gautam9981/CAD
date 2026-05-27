@@ -29,6 +29,7 @@ jpackage \
   --main-class "$MAIN_CLASS" \
   --main-jar "$MAIN_JAR" \
   --app-version "$VERSION" \
+  --icon "assets/logo.png" \
   --linux-shortcut \
   --linux-menu-group "Graphics"
 
@@ -42,6 +43,7 @@ jpackage \
   --main-class "$MAIN_CLASS" \
   --main-jar "$MAIN_JAR" \
   --app-version "$VERSION" \
+  --icon "assets/logo.png" \
   --linux-shortcut \
   --linux-menu-group "Graphics"
 

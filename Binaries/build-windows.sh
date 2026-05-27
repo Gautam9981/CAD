@@ -4,7 +4,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$DIR"
 
-VERSION="5.0.0"
+VERSION="5.1.0"
 APP_NAME="SketchApp"
 MAIN_CLASS="cad.Main"
 MAIN_JAR="SketchApp.jar"
@@ -22,6 +22,7 @@ jpackage \
   --main-class "$MAIN_CLASS" \
   --main-jar "$MAIN_JAR" \
   --app-version "$VERSION" \
+  --icon "assets/logo.ico" \
   --win-shortcut \
   --win-menu \
   --win-dir-chooser
